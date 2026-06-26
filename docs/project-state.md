@@ -39,6 +39,7 @@
 - 明确排除：`HpLossVar`、`ValueProp.Unblockable`、Beckon、Bad Luck、Regret。
 - Frost / 覆甲仍未纳入 `EffectiveBlock`，等待后续单独验证。
 - 本轮尚未做 Steam 运行时验证。
+- Phase 5A+5B 代码提交：`b170994a58fa21b18c7a37de01db147a1df15746`。
 
 ## 阶段状态
 

@@ -98,4 +98,4 @@ Frost / 覆甲等 `VerifiedPreAttackBlock` 仍等待后续 5C/5D 单独验证。
 
 ## 提交记录
 
-- 待提交：`feat: include hand turn-end damage in shield forecast`
+- `b170994a58fa21b18c7a37de01db147a1df15746`：`feat: include hand turn-end damage in shield forecast`
