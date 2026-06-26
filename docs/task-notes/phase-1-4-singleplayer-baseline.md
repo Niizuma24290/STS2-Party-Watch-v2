@@ -2,7 +2,7 @@
 
 ## 状态
 
-进行中 / Phase 1B 阻塞
+已完成
 
 ## 目标
 
@@ -40,44 +40,49 @@
 - 日志出现 `[STS2 Party Watch] Loaded`。
 - 日志出现 `Loaded 2 mods (2 total)`。
 - 非战斗 HUD 隐藏已验证。
+- Steam 启动后的单人战斗中，敌人 Intent = 9 时 HUD 位于本机玩家血条右侧。
+- Intent = 9 / Block = 0：运行时确认显示 `🛡 -9`。
+- Intent = 9 / Block = 5：运行时确认显示 `🛡 -4`。
+- Intent = 9 / Block = 10：运行时确认 HUD 隐藏。
+- 多次 Block 变化后 HUD 会刷新。
+- 本次未保留诊断日志。
 
 ## 仅代码确认、尚未运行时验证
 
-- `NCombatUi.Activate` patch 创建/刷新 HUD controller。
-- `NCombatUi.Deactivate` patch 清理 HUD。
-- 单人路径通过 `LocalContext.GetMe(ICombatState)` 读取本机玩家。
-- 当前本机 Block 来自 `Creature.Block`。
-- 敌人攻击 RAW 来自 `AttackIntent.GetTotalDamage(new[] { localCreature }, enemy)`。
-- 多个敌人的可读攻击 Intent 会先累计 RAW，再统一减当前 Block。
-- HUD 文本严格为 `🛡 -N`。
-- HUD 尝试定位在本机玩家血条右侧，并预留水平空间；定位失败时回退到玩家节点右侧偏移。
-- 非单人、无战斗、无本机玩家、无本机 Creature、无攻击 Intent、RAW 不可读、OUT <= 0 时隐藏。
+- 多段攻击与多个敌人攻击累计仍未在本轮截图中独立验证。
+- 非攻击 Intent 不显示仍未在本轮截图中独立验证。
+- 读取失败场景不崩溃、不显示猜测值仍未在本轮截图中独立验证。
 
 ## 未解决问题
 
-- Phase 1B 进行中 / 阻塞。
-- 单人战斗中敌人 Intent = 9 时 HUD 未显示。
-- Block 0 → 5 → 10 后仍未显示。
-- Block = 5 时理论预期应为 `🛡 -4`。
-- 当前尚未确定问题位于：战斗读取、Intent 识别、`GetTotalDamage`、OUT 计算或 HUD 渲染。
-- 未做代码修复。
+- Frost / 覆甲等攻击前确定性 Block 尚未纳入 `🛡 -N`。
+- `♥ -N` 尚未实现。
+- 多人 HUD 仍冻结。
 
 ## 实际改动文件
 
+- `src/STS2PartyWatchCode/Combat/LocalIncomingDamageReader.cs`
+- `src/STS2PartyWatchCode/Patches/ForecastRefreshPatch.cs`
 - `docs/project-state.md`
+- `docs/interface-map.md`
+- `docs/mechanics-evidence.md`
 - `docs/task-notes/README.md`
 - `docs/task-notes/phase-1-4-singleplayer-baseline.md`
 
 ## 下一步唯一任务
 
-- Phase 1B：定位并最小修复单人攻击 HUD 不显示问题
+- Phase 5：攻击前确定性 Block 修正
 
 ## 预期提交文件
 
+- `src/STS2PartyWatchCode/Combat/LocalIncomingDamageReader.cs`
+- `src/STS2PartyWatchCode/Patches/ForecastRefreshPatch.cs`
 - `docs/project-state.md`
+- `docs/interface-map.md`
+- `docs/mechanics-evidence.md`
 - `docs/task-notes/README.md`
 - `docs/task-notes/phase-1-4-singleplayer-baseline.md`
 
 ## 提交记录
 
-- 待提交：`docs: record load validation and HUD display blocker`
+- 待提交：`fix: render singleplayer attack forecast beside health bar`

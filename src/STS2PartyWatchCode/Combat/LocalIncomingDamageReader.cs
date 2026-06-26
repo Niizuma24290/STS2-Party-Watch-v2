@@ -26,6 +26,32 @@ public sealed class LocalIncomingDamageReader
             return IncomingDamageRead.Hidden;
         }
 
+        return ReadKnown(combatState, localCreature);
+    }
+
+    public IncomingDamageRead ReadForLocalCreature(Creature? localCreature)
+    {
+        var combatState = localCreature?.CombatState;
+        if (combatState is null || !combatState.IsLiveCombat())
+        {
+            return IncomingDamageRead.Hidden;
+        }
+
+        if (combatState.Players.Count != 1)
+        {
+            return IncomingDamageRead.Unknown;
+        }
+
+        if (localCreature is null || !localCreature.IsAlive)
+        {
+            return IncomingDamageRead.Hidden;
+        }
+
+        return ReadKnown(combatState, localCreature);
+    }
+
+    private static IncomingDamageRead ReadKnown(ICombatState combatState, Creature localCreature)
+    {
         var raw = 0;
         var foundAttack = false;
 

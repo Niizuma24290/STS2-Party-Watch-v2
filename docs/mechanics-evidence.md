@@ -22,10 +22,15 @@
 
 ## Phase 1–4 runtime validation
 
-- Not completed.
-- Direct `SlayTheSpire2.exe` launch reached Steam initialization error: `No appID found`.
-- Because the direct launch did not reach Mod loading or combat, no Phase 1–4 combat mechanics are considered runtime-proven yet.
+- Phase 1A load validation completed through Steam launch.
+- Mod list shows `STS2 Party Watch v2`.
+- Startup log showed `[STS2 Party Watch] Loaded` and `Loaded 2 mods (2 total)`.
+- Noncombat HUD hidden was verified.
+- Steam-launched singleplayer combat verified enemy Intent = 9 with current Block = 5 displays `🛡 -4` beside the local player health bar.
+- User confirmed the same Intent = 9 test path is correct for Block = 0 displaying `🛡 -9` and Block = 10 hiding the HUD.
+- Multiple Block changes refreshed the HUD in the same combat.
+- Direct `SlayTheSpire2.exe` launch reached Steam initialization error: `No appID found`; direct exe launch is not a valid runtime validation path.
 
 ## v2 validation requirement
 
-No carried observation or code-confirmed mechanic is considered a v2 runtime proof until revalidated by a scoped v2 runtime task.
+Carried observations remain background only. Only the Steam-launched v2 scenes above are considered Phase 1–4 runtime proof.
