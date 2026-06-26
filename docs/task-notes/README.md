@@ -8,7 +8,7 @@ Phase 1A 已完成。Phase 1B 已完成。Phase 5A+5B 已完成：Burn/DamageVar
 
 ## 当前唯一任务
 
-Phase 5C：Frost 是否应计入 EffectiveBlock 的运行时验证与最小接入
+Phase 5C：VerifiedPreAttackBlock 第一批运行时验证与最小接入
 
 ## 禁止事项
 

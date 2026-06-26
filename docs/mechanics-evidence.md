@@ -49,7 +49,7 @@ EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock
 | Beckon | 否 | `HpLossVar` / `ValueProp.Unblockable` | 留给 Phase 6 | 留给 Phase 6 |
 | Bad Luck | 否 | `HpLossVar` / `ValueProp.Unblockable` | 留给 Phase 6 | 留给 Phase 6 |
 | Regret | 否 | `ValueProp.Unblockable`，数值依赖手牌数 | 留给 Phase 6 | 留给 Phase 6 |
-| Frost / 覆甲 | 不属于 raw | 属于 `EffectiveBlock` 修正 | 窄范围只读入口 | 待后续 5C/5D 验证 |
+| Frost / 覆甲 / 本轮遗物 Block | 不属于 raw | 属于 `EffectiveBlock` 修正 | 窄范围只读入口 | 待 Phase 5C 验证 |
 
 ## Phase 5A+5B code-confirmed mechanics
 
@@ -69,3 +69,17 @@ EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock
 - Intent 9 + Burn 2 + Block 10 显示 `🛡 -1`。
 - Burn 手牌变化后 HUD 会刷新。
 - Beckon、Bad Luck、Regret 仍保留给 Phase 6 的 `♥ -N`，本轮未实现。
+
+## Phase 5C EffectiveBlock source ledger
+
+| 来源 | 是否本轮接入候选 | 原因 | 读取方式 / 入口 | 运行时状态 |
+| --- | ---: | --- | --- | --- |
+| Frost | 是 | 回合结束 orb passive trigger 会在手牌回合末伤害前给 Block；`PassiveVal` 包含 Focus 修正 | `player.PlayerCombatState.OrbQueue.Orbs.OfType<FrostOrb>().Sum(o => o.PassiveVal)` | 待验证 |
+| 覆甲 | 是 | `PlatingPower.BeforeSideTurnEndEarly` 给 Block，注释说明早于回合末伤害 | `localCreature.GetPower<PlatingPower>()?.Amount` 或等价只读 power 入口 | 待验证 |
+| 奥利哈刚 | 是 | 当前 Block 为 0 时在 very early 标记，随后给 Block；检查早于覆甲 | `Orichalcum` 持有状态 + `DynamicVars.Block` + 当前 Block 条件 | 待验证 |
+| 假奥利哈刚 | 是 | 逻辑同奥利哈刚，数值为 3；实际可持有性待验证 | `FakeOrichalcum` 持有状态 + `DynamicVars.Block` + 当前 Block 条件 | 待验证 |
+| 波纹水盆 | 是 | 本回合未打出 Attack 时，`BeforeSideTurnEnd` 给 Block | `RippleBasin` 持有状态 + 当前回合 `CardPlaysFinished` 中是否有本机 Attack | 待验证 |
+| 斗篷扣 | 是 | `BeforeSideTurnEnd` 按手牌数给 Block | `CloakClasp` 持有状态 + `PileType.Hand.GetPile(player).Cards.Count` | 待验证 |
+| 钨钢棍 | 否，本轮只记录 | `ModifyHpLostAfterOsty` 减 HP loss，不是 Block | `TungstenRod.ModifyHpLostAfterOsty` | 后续补足 |
+| 律动残余 | 否，本轮只记录 | 限制本回合 HP loss 上限，不是 Block | `BeatingRemnant.ModifyHpLostAfterOsty` + `DamageReceivedThisTurn` | 后续补足 |
+| 钻石头冠 | 否，本轮只记录 | 回合末施加 `DiamondDiademPower`，后续将 powered attack 伤害乘 0.5，不是 Block | `DiamondDiadem.BeforeSideTurnEnd` / `DiamondDiademPower.ModifyDamageMultiplicative` | 后续补足 |

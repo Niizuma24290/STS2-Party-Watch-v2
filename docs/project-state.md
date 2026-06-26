@@ -3,7 +3,7 @@
 ## 当前快照
 
 - 任务登记文件夹：`docs/task-notes/`
-- 当前唯一任务：Phase 5C：Frost 是否应计入 EffectiveBlock 的运行时验证与最小接入
+- 当前唯一任务：Phase 5C：VerifiedPreAttackBlock 第一批运行时验证与最小接入
 - 当前分支：`main`
 - 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5A+5B 已完成。
 - 约束：不提交 DLL、PDB、PCK、logs、publish 输出、NuGet 缓存或游戏目录文件。
@@ -37,7 +37,7 @@
 - 目标：`🛡 -N = max(0, MonsterIntentRaw + HandTurnEndDamageRaw - EffectiveBlock)`。
 - 本次代码已接入手牌回合末 blockable `DamageVar`，并在手牌内容变化后刷新 HUD。
 - 明确排除：`HpLossVar`、`ValueProp.Unblockable`、Beckon、Bad Luck、Regret。
-- Frost / 覆甲仍未纳入 `EffectiveBlock`，等待后续单独验证。
+- Frost / 覆甲 / 奥利哈刚 / 假奥利哈刚 / 波纹水盆 / 斗篷扣仍未纳入 `EffectiveBlock`，等待 Phase 5C 单独验证。
 - Steam 运行时已验证：Intent 9 + Burn 2 进入 `🛡` 汇总，Blockable raw = 11。
 - Steam 运行时已验证：Block 0 显示 `🛡 -11`，Block 5 显示 `🛡 -6`，Block 10 显示 `🛡 -1`。
 - Steam 运行时已验证：Burn 在手牌中参与盾牌栏计算，手牌变化后 HUD 刷新。

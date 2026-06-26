@@ -19,7 +19,7 @@ EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock
 - 手牌回合末 `DamageVar` 的 `HandTurnEndDamageRaw`
 - 手牌变化后刷新 HUD
 
-Frost / 覆甲等 `VerifiedPreAttackBlock` 仍等待后续 5C/5D 单独验证。
+Frost / 覆甲 / 奥利哈刚 / 假奥利哈刚 / 波纹水盆 / 斗篷扣等 `VerifiedPreAttackBlock` 仍等待 Phase 5C 单独验证。
 
 ## 本任务允许做的事
 
@@ -36,7 +36,7 @@ Frost / 覆甲等 `VerifiedPreAttackBlock` 仍等待后续 5C/5D 单独验证。
 - 把 `HpLossVar` 纳入 `🛡 -N`。
 - 把 `ValueProp.Unblockable` 来源纳入 `🛡 -N`。
 - 实现 `♥ -N`。
-- 实现 Frost / 覆甲 / 遗物 Block。
+- 实现 Frost / 覆甲 / 遗物 Block 的正式接入，除非对应来源已完成本 Phase 的代码确认与运行时验证。
 - 开发多人 HUD。
 - 提交 DLL、PDB、PCK、logs、publish 输出、NuGet 缓存或游戏目录文件。
 
@@ -66,8 +66,32 @@ Frost / 覆甲等 `VerifiedPreAttackBlock` 仍等待后续 5C/5D 单独验证。
 ## 未解决问题
 
 - Frost 尚未纳入 `EffectiveBlock`。
-- 覆甲尚未纳入 `EffectiveBlock`。
+- 覆甲（`PlatingPower`）尚未纳入 `EffectiveBlock`。
+- 奥利哈刚（`Orichalcum`）尚未纳入 `EffectiveBlock`。
+- 假奥利哈刚（`FakeOrichalcum`）尚未纳入 `EffectiveBlock`。
+- 波纹水盆（`RippleBasin`）尚未纳入 `EffectiveBlock`。
+- 斗篷扣（`CloakClasp`）尚未纳入 `EffectiveBlock`。
 - Beckon / Bad Luck / Regret 的 `♥ -N` 尚未实现。
+- 钨钢棍（`TungstenRod`）、律动残余（`BeatingRemnant`）、钻石头冠（`DiamondDiadem` / `DiamondDiademPower`）会影响伤害结果，但不在 Phase 5C 第一批接入范围；后续单独补足。
+
+## Phase 5C 第一批 EffectiveBlock 候选
+
+| 来源 | 类型 / 入口 | 是否本轮做 | 代码确认的时点 / 规则 | 运行时状态 |
+| --- | --- | ---: | --- | --- |
+| Frost | `player.PlayerCombatState.OrbQueue.Orbs` 中的 `FrostOrb.PassiveVal` | 是 | `FrostOrb.BeforeTurnEndOrbTrigger` 调 `CreatureCmd.GainBlock`；`PassiveVal` 已走 `Hook.ModifyOrbValue`，包含 Focus 影响 | 待验证 |
+| 覆甲 | `PlatingPower.Amount` | 是 | `BeforeSideTurnEndEarly` 给 `Amount` Block，注释说明早于回合末伤害 | 待验证 |
+| 奥利哈刚 | `Orichalcum` + `DynamicVars.Block` | 是 | `BeforeSideTurnEndVeryEarly` 在当前 Block 为 0 时标记，`BeforeSideTurnEnd` 给 6 Block；检查早于覆甲 | 待验证 |
+| 假奥利哈刚 | `FakeOrichalcum` + `DynamicVars.Block` | 是 | 同奥利哈刚，给 3 Block；事件/假遗物，实际持有场景需验证 | 待验证 |
+| 波纹水盆 | `RippleBasin` + `DynamicVars.Block` | 是 | `BeforeSideTurnEnd` 若本回合未打出 Attack，则给 4 Block | 待验证 |
+| 斗篷扣 | `CloakClasp` + `DynamicVars.Block` + 手牌数 | 是 | `BeforeSideTurnEnd` 按手牌数量给 Block | 待验证 |
+
+## Phase 5 后续遗物补足候选
+
+| 来源 | 类型 / 入口 | 为什么不进本轮 | 后续方向 |
+| --- | --- | --- | --- |
+| 钨钢棍 | `TungstenRod.ModifyHpLostAfterOsty` | 修改 HP loss，不是获得 Block | Phase 6 / HP loss 结果修正 |
+| 律动残余 | `BeatingRemnant.ModifyHpLostAfterOsty` | 限制每回合 HP loss 上限，不是获得 Block | Phase 6 / HP loss cap |
+| 钻石头冠 | `DiamondDiadem` 施加 `DiamondDiademPower` | 回合末施加伤害减半 Power，不是直接获得 Block | 后续伤害修正机制补足 |
 
 ## 实际改动文件
 
@@ -82,7 +106,7 @@ Frost / 覆甲等 `VerifiedPreAttackBlock` 仍等待后续 5C/5D 单独验证。
 
 ## 下一步唯一任务
 
-- Phase 5C：Frost 是否应计入 EffectiveBlock 的运行时验证与最小接入
+- Phase 5C：VerifiedPreAttackBlock 第一批运行时验证与最小接入
 
 ## 预期提交文件
 
