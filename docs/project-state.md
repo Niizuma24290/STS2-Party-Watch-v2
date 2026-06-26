@@ -3,9 +3,9 @@
 ## 当前快照
 
 - 任务登记文件夹：`docs/task-notes/`
-- 当前唯一任务：Phase 6：Beckon / Bad Luck / Regret 的 ♥ -N 时序验证与最小接入
+- 当前唯一任务：Phase 6A：Beckon / Bad Luck 的 ♥ -N 时序验证与最小接入
 - 当前分支：`main`
-- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证。
+- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入，Steam 运行时验证尚未完成。
 - 约束：不提交 DLL、PDB、PCK、logs、publish 输出、NuGet 缓存或游戏目录文件。
 
 ## Phase 1A 已完成
@@ -72,6 +72,18 @@
 - 机制缺口收口：Beckon、Bad Luck、Regret、钨钢棍、律动残余留给 Phase 6；钻石头冠 / `DiamondDiademPower` 归为后续伤害修正机制。
 - Phase 5D 收口提交：`5d9d4cdece14a9244efbc26fe4dd0e5173554a38`。
 
+## Phase 6A 代码接入完成，待运行时验证
+
+- 本轮只接入 Beckon / Bad Luck 的固定 direct HP loss，不接入 Regret。
+- 代码确认：Beckon 的 shipped 类型为 `MegaCrit.Sts2.Core.Models.Cards.Beckon`，`HasTurnEndInHandEffect == true`，回合末从 `HpLossVar(6m)` 读取数值并以 `ValueProp.Unblockable` 调用 `CreatureCmd.Damage`。
+- 代码确认：Bad Luck 的 shipped 类型为 `MegaCrit.Sts2.Core.Models.Cards.BadLuck`，`HasTurnEndInHandEffect == true`，回合末从 `HpLossVar(13m)` 读取数值并以 `ValueProp.Unblockable` 调用 `CreatureCmd.Damage`。
+- 代码确认：`CombatManager.DoTurnEnd` 只从当前手牌收集回合末手牌效果；`CardModel.OnTurnEndInHandWrapper` 先执行 `OnTurnEndInHand`，再按 Ethereal / Discard 规则收尾。
+- 已接入：`DirectHpLoss = BeckonLoss + BadLuckLoss`，并以独立 `♥ -N` 行显示；`🛡 -N` 仍按既有 blockable 公式计算。
+- 构建确认：`C:\sts2\dotnet\dotnet.exe build src\STS2PartyWatchCode\STS2PartyWatchCode.csproj --no-restore` 通过。
+- 发布确认：`C:\sts2\dotnet\dotnet.exe publish src\STS2PartyWatchCode\STS2PartyWatchCode.csproj --no-restore` 通过。
+- 原任务卡中的 `STS2PartyWatch.sln`、`NuGet.Config`、`tools/check-forbidden-files.ps1` 在当前仓库不存在；已用实际项目路径完成 restore/build/publish，并用 `git status --short --ignored` 确认 publish 输出仍为 ignored。
+- 本轮未完成：Steam 运行时验证矩阵、Regret、TungstenRod、BeatingRemnant、DiamondDiadem / DiamondDiademPower。
+
 ## 阶段状态
 
 | 阶段 | 状态 | 任务 | 完成标准 | 下一步依赖 |
@@ -80,7 +92,8 @@
 | Phase 1A | 已完成 | Mod 发现与加载验证 | Steam 启动、Mod 列表可见、Loaded 日志确认 | Phase 1B |
 | Phase 1B | 已完成 | 单人攻击 HUD 运行时验证 | `🛡 -N` 在单人攻击 Intent 场景正确显示 | Phase 5 |
 | Phase 5 | 已完成 | Blockable Incoming Damage 汇总 | 怪物攻击、手牌回合末 blockable DamageVar、第一批 EffectiveBlock 候选已纳入 `🛡 -N` 并完成回归验证 | Phase 6 |
-| Phase 6 | 未开始 | Direct HP Loss | Beckon、Bad Luck、Regret 显示 `♥ -N` | Phase 7 |
+| Phase 6A | 代码已接入，待运行时验证 | Direct HP Loss 固定值 | Beckon、Bad Luck 显示 `♥ -N`，并完成 Steam 运行时矩阵 | Phase 6B |
+| Phase 6B | 未开始 | Regret Direct HP Loss | Regret 的手牌数读取时点完成验证与最小接入 | Phase 7 |
 | Phase 7 | 未开始 | 单人验证与收口 | 单人 HUD 规则、运行时验证、文档收口 | 后续机制补充 |
 | Phase 8 | 冻结 | 多人研究 | 仅研究真实目标与原生预览，不做正式多人 HUD | 证据充分后再开启 |
 

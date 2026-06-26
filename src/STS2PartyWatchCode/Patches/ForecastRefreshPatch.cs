@@ -61,15 +61,31 @@ internal static class ForecastRefreshPatch
         Reposition(bar, label, containerSize);
 
         var result = Forecast.Calculate(Reader.ReadForLocalCreature(creature));
-        if (result.State != ForecastResultState.KnownDamage || result.OutDamage <= 0)
+        if (result.State != ForecastResultState.KnownDamage || (result.OutDamage <= 0 && result.DirectHpLoss <= 0))
         {
             label.Text = string.Empty;
             label.Hide();
             return;
         }
 
-        label.Text = $"🛡 -{result.OutDamage}";
+        label.Text = BuildForecastText(result);
         label.Show();
+    }
+
+    private static string BuildForecastText(ForecastResult result)
+    {
+        var lines = new List<string>(2);
+        if (result.OutDamage > 0)
+        {
+            lines.Add($"🛡 -{result.OutDamage}");
+        }
+
+        if (result.DirectHpLoss > 0)
+        {
+            lines.Add($"♥ -{result.DirectHpLoss}");
+        }
+
+        return string.Join("\n", lines);
     }
 
     private static bool TryGetLocalCreature(NHealthBar bar, out Creature? creature)
@@ -114,8 +130,8 @@ internal static class ForecastRefreshPatch
         {
             Name = LabelName,
             MouseFilter = Control.MouseFilterEnum.Ignore,
-            CustomMinimumSize = new Vector2(150f, 42f),
-            Size = new Vector2(150f, 42f),
+            CustomMinimumSize = new Vector2(150f, 84f),
+            Size = new Vector2(150f, 84f),
             ZIndex = 50,
             Text = string.Empty,
             Visible = false,

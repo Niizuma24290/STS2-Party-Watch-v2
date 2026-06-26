@@ -124,6 +124,42 @@ EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock
 | 分类 | 来源 |
 | --- | --- |
 | 已纳入 `🛡` | AttackIntent / DeathBlow 原生攻击预览、手牌 blockable `DamageVar`、Frost、PlatingPower、Orichalcum、FakeOrichalcum、RippleBasin、CloakClasp |
-| 已排除 | `HpLossVar`、`ValueProp.Unblockable`、Beckon、Bad Luck、Regret |
-| 留给 Phase 6 | Beckon / Bad Luck / Regret、TungstenRod、BeatingRemnant |
+| 已排除出 `🛡` | `HpLossVar`、`ValueProp.Unblockable`、Beckon、Bad Luck、Regret |
+| Phase 6A 已代码接入 `♥` | Beckon / Bad Luck |
+| 留给 Phase 6B / 后续 | Regret、TungstenRod、BeatingRemnant |
 | 后续伤害修正机制 | DiamondDiadem / DiamondDiademPower |
+
+## Phase 6A direct HP loss contract
+
+```text
+♥ -N = DirectHpLoss
+DirectHpLoss = BeckonLoss + BadLuckLoss
+```
+
+`♥ -N` 不与 `🛡 -N` 合并，不受当前 Block、Frost、覆甲或遗物 Block 影响。
+
+| 来源 | 是否进入 `♥` | 原因 | 读取方式 | 运行时状态 |
+| --- | ---: | --- | --- | --- |
+| Beckon | 是 | shipped `OnTurnEndInHand` 从 `HpLossVar(6m)` 读取并以 `ValueProp.Unblockable` 调 `CreatureCmd.Damage` | 当前手牌中精确类型 `Beckon` + `HpLossVar.BaseValue == 6` | 尚未验证 |
+| Bad Luck | 是 | shipped `OnTurnEndInHand` 从 `HpLossVar(13m)` 读取并以 `ValueProp.Unblockable` 调 `CreatureCmd.Damage` | 当前手牌中精确类型 `BadLuck` + `HpLossVar.BaseValue == 13` | 尚未验证 |
+| Regret | 否 | 数值依赖手牌数读取时点，本轮未验证 | 留给 Phase 6B | 尚未验证 |
+| TungstenRod | 否 | 修改实际 HP loss 结果，不是本轮固定来源 | 留给后续 | 尚未验证 |
+| BeatingRemnant | 否 | 限制每回合 HP loss 上限，不是本轮固定来源 | 留给后续 | 尚未验证 |
+
+## Phase 6A code-confirmed mechanics
+
+- Beckon 的 shipped 类型是 `MegaCrit.Sts2.Core.Models.Cards.Beckon`。
+- Beckon `HasTurnEndInHandEffect == true`，`CanonicalVars` 为 `HpLossVar(6m)`。
+- Beckon `OnTurnEndInHand` 调用 `CreatureCmd.Damage(choiceContext, Owner.Creature, DynamicVars.HpLoss.BaseValue, ValueProp.Unblockable | ValueProp.Unpowered | ValueProp.Move, this)`。
+- Bad Luck 的 shipped 类型是 `MegaCrit.Sts2.Core.Models.Cards.BadLuck`。
+- Bad Luck `CanonicalKeywords` 为 `Eternal` 和 `Unplayable`，`HasTurnEndInHandEffect == true`，`CanonicalVars` 为 `HpLossVar(13m)`。
+- Bad Luck `OnTurnEndInHand` 先等待 `0.25f`，再以同样的 Unblockable props 调用 `CreatureCmd.Damage(...)`。
+- `CombatManager.DoTurnEnd` 从当前 `PileType.Hand` 收集 `HasTurnEndInHandEffect` 卡牌；这些卡不会进入同一段提前 Ethereal exhaust 分支。
+- `CardModel.OnTurnEndInHandWrapper` 先将卡加入 Play pile，执行 `OnTurnEndInHand`，之后若有 Ethereal 才 exhaust，否则加入 discard pile。
+- 因此 Beckon / Bad Luck 必须在回合结束读取时仍在手牌；若已离开手牌，则不会被本轮 `♥` 预测计入。
+- 本实现只读取匹配类型自己的 `HpLossVar`，不扫描所有 `HpLossVar`，不调用真实伤害结算。
+
+## Phase 6A runtime validation
+
+- Steam 运行时验证尚未完成。
+- 不能把上述代码确认写作运行时事实；完成 Steam 验证后应在 `docs/task-notes/phase-6-direct-hp-loss.md` 与本文档登记具体场景、截图或日志证据位置。

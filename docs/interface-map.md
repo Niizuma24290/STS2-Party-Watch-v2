@@ -21,6 +21,11 @@
 | 仅代码确认，尚未运行时验证 | 读取回合末 blockable 卡牌伤害变量 | `card.DynamicVars.Values.OfType<DamageVar>()` | 公开集合读取 | 否 | `HpLossVar` 不读取；`ValueProp.Unblockable` 不进入 `🛡 -N`。 |
 | 仅代码确认，尚未运行时验证 | 原生修正回合末卡牌 DamageVar | `Hook.ModifyDamage(...)` | 公开静态方法，只读预览调用 | 否 | 不调用 `CreatureCmd.Damage(...)`、`BeforeDamageReceived`、`AfterDamageReceived` 或真实结算。 |
 | 仅代码确认，尚未运行时验证 | 手牌变化刷新 HUD | `CardPile.InvokeContentsChanged` | Harmony postfix | 否 | 只刷新已登记玩家血条 HUD，不每帧扫描。 |
+| 仅代码确认，尚未运行时验证 | 识别 Beckon 当前是否在本机玩家手牌 | `card is MegaCrit.Sts2.Core.Models.Cards.Beckon` + `CardPile.Get(PileType.Hand, player)` | 公开手牌集合读取 + 精确类型判断 | 否 | 只服务 Phase 6A；不扫描所有 `HpLossVar`。 |
+| 仅代码确认，尚未运行时验证 | 读取 Beckon 固定 HP loss | `card.DynamicVars.Values.OfType<HpLossVar>().SingleOrDefault()`，要求 `BaseValue == 6` | 公开 DynamicVars 读取 | 否 | 仅在卡牌仍在手牌且 `HasTurnEndInHandEffect == true` 时计入 `♥ -N`。 |
+| 仅代码确认，尚未运行时验证 | 识别 Bad Luck 当前是否在本机玩家手牌 | `card is MegaCrit.Sts2.Core.Models.Cards.BadLuck` + `CardPile.Get(PileType.Hand, player)` | 公开手牌集合读取 + 精确类型判断 | 否 | 只服务 Phase 6A；不扫描所有 `HpLossVar`。 |
+| 仅代码确认，尚未运行时验证 | 读取 Bad Luck 固定 HP loss | `card.DynamicVars.Values.OfType<HpLossVar>().SingleOrDefault()`，要求 `BaseValue == 13` | 公开 DynamicVars 读取 | 否 | 仅在卡牌仍在手牌且 `HasTurnEndInHandEffect == true` 时计入 `♥ -N`。 |
+| 仅代码确认，尚未运行时验证 | 确认回合末手牌 HP loss 时序 | `CombatManager.DoTurnEnd` + `CardModel.OnTurnEndInHandWrapper` | 最小反编译片段确认 | 否 | 有 `HasTurnEndInHandEffect` 的手牌先执行 `OnTurnEndInHand`；之后才 Ethereal exhaust 或加入 discard。 |
 | 已运行时验证 | 读取 Frost 回合末预期 Block | `player.PlayerCombatState.OrbQueue.Orbs.OfType<FrostOrb>()` 与 `FrostOrb.PassiveVal` | 公开只读属性 / 集合读取 | 是 | 仅计入 Frost passive；不模拟 evoke；Focus 通过 `PassiveVal` 走原生修正。 |
 | 已运行时验证 | 读取覆甲回合末预期 Block | `localCreature.GetPower<PlatingPower>()?.Amount` | 公开只读 power 入口 | 是 | 只读取本机玩家当前覆甲层数。 |
 | 已运行时验证 | 读取奥利哈刚预期 Block | `player.Relics.OfType<Orichalcum>()` + relic `BlockVar` + `Creature.Block == 0` | 公开只读 relic 集合 / DynamicVars 读取 | 是 | 仅在当前 Block 为 0 时计入。 |

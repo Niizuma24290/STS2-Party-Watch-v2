@@ -58,6 +58,11 @@ public sealed class LocalIncomingDamageReader
 
     private static IncomingDamageRead ReadKnown(ICombatState combatState, Creature localCreature)
     {
+        if (localCreature.Player is null)
+        {
+            return IncomingDamageRead.Unknown;
+        }
+
         var raw = 0;
         var foundDamage = false;
 
@@ -80,29 +85,40 @@ public sealed class LocalIncomingDamageReader
             }
         }
 
-        if (localCreature.Player is not null && TryReadHandTurnEndDamage(localCreature.Player, localCreature, out var handTurnEndDamage))
+        if (TryReadHandTurnEndDamage(localCreature.Player, localCreature, out var handTurnEndDamage))
         {
             raw += handTurnEndDamage;
             foundDamage = foundDamage || handTurnEndDamage > 0;
         }
+        else
+        {
+            return IncomingDamageRead.Unknown;
+        }
 
-        if (!foundDamage)
+        if (!VerifiedFixedTurnEndHpLossReader.TryRead(localCreature.Player, out var directHpLoss))
+        {
+            return IncomingDamageRead.Unknown;
+        }
+
+        if (!foundDamage && directHpLoss <= 0)
         {
             return IncomingDamageRead.Hidden;
         }
 
-        if (localCreature.Player is null)
+        if (!foundDamage)
         {
-            return IncomingDamageRead.Unknown;
+            return IncomingDamageRead.Known(raw, localCreature.Block, directHpLoss);
         }
 
         var preAttackBlock = VerifiedPreAttackBlockReader.Read(localCreature.Player, localCreature);
         if (preAttackBlock.State != PreAttackBlockReadState.Known)
         {
-            return IncomingDamageRead.Unknown;
+            return directHpLoss > 0
+                ? IncomingDamageRead.UnknownDirect(directHpLoss)
+                : IncomingDamageRead.Unknown;
         }
 
-        return IncomingDamageRead.Known(raw, localCreature.Block + preAttackBlock.Block);
+        return IncomingDamageRead.Known(raw, localCreature.Block + preAttackBlock.Block, directHpLoss);
     }
 
     private static bool TryReadHandTurnEndDamage(Player player, Creature localCreature, out int damage)
