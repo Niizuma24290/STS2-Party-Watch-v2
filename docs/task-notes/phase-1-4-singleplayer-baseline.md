@@ -71,7 +71,7 @@
 
 ## 下一步唯一任务
 
-- Phase 5：攻击前确定性 Block 修正
+- Phase 5A+5B：Steam 启动后验证 Burn/DamageVar 进入 `🛡 -N` 与手牌变化刷新
 
 ## 预期提交文件
 

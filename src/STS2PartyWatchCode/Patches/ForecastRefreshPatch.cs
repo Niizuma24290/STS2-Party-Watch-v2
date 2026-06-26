@@ -3,6 +3,7 @@ using System.Reflection;
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Context;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using STS2PartyWatch.Combat;
@@ -18,6 +19,7 @@ internal static class ForecastRefreshPatch
     private static readonly FieldInfo? CreatureField = typeof(NHealthBar).GetField("_creature", BindingFlags.Instance | BindingFlags.NonPublic);
     private static readonly LocalIncomingDamageReader Reader = new();
     private static readonly LocalDamageForecast Forecast = new();
+    private static readonly List<WeakReference<NHealthBar>> RegisteredBars = new();
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(NHealthBar.SetCreature))]
@@ -47,6 +49,8 @@ internal static class ForecastRefreshPatch
             HideExisting(bar);
             return;
         }
+
+        RegisterBar(bar);
 
         var label = GetOrCreateLabel(bar);
         if (label is null)
@@ -152,6 +156,53 @@ internal static class ForecastRefreshPatch
         {
             existing.Text = string.Empty;
             existing.Hide();
+        }
+    }
+
+    private static void RegisterBar(NHealthBar bar)
+    {
+        for (var i = RegisteredBars.Count - 1; i >= 0; i--)
+        {
+            if (!RegisteredBars[i].TryGetTarget(out var existing) || !GodotObject.IsInstanceValid(existing))
+            {
+                RegisteredBars.RemoveAt(i);
+                continue;
+            }
+
+            if (ReferenceEquals(existing, bar))
+            {
+                return;
+            }
+        }
+
+        RegisteredBars.Add(new WeakReference<NHealthBar>(bar));
+    }
+
+    internal static void RefreshRegisteredBars()
+    {
+        for (var i = RegisteredBars.Count - 1; i >= 0; i--)
+        {
+            if (!RegisteredBars[i].TryGetTarget(out var bar) || !GodotObject.IsInstanceValid(bar))
+            {
+                RegisteredBars.RemoveAt(i);
+                continue;
+            }
+
+            Refresh(bar, null);
+        }
+    }
+}
+
+[HarmonyPatch(typeof(CardPile))]
+internal static class ForecastHandChangePatch
+{
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(CardPile.InvokeContentsChanged))]
+    private static void InvokeContentsChangedPostfix(CardPile __instance)
+    {
+        if (__instance.Type == PileType.Hand)
+        {
+            ForecastRefreshPatch.RefreshRegisteredBars();
         }
     }
 }

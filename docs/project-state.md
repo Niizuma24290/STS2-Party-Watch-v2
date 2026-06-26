@@ -3,9 +3,9 @@
 ## 当前快照
 
 - 任务登记文件夹：`docs/task-notes/`
-- 当前唯一任务：Phase 5：攻击前确定性 Block 修正
+- 当前唯一任务：Phase 5A+5B：Steam 启动后验证 Burn/DamageVar 进入 `🛡 -N` 与手牌变化刷新
 - 当前分支：`main`
-- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 1–4 单人攻击 HUD 基线可进入 Phase 5。
+- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5A+5B 已代码完成，等待运行时验证。
 - 约束：不提交 DLL、PDB、PCK、logs、publish 输出、NuGet 缓存或游戏目录文件。
 
 ## Phase 1A 已完成
@@ -32,6 +32,14 @@
 - 最终策略：标签挂在 `HpBarContainer` 的同级父节点或等价父节点，默认隐藏；仅在单人本机玩家、可读攻击 Intent、`OUT > 0` 时显示 `🛡 -N`。
 - 修复提交：`afbccfbf15cde6089565f8c28c83901eec4652ec`。
 
+## Phase 5A+5B 进行中
+
+- 目标：`🛡 -N = max(0, MonsterIntentRaw + HandTurnEndDamageRaw - EffectiveBlock)`。
+- 本次代码已接入手牌回合末 blockable `DamageVar`，并在手牌内容变化后刷新 HUD。
+- 明确排除：`HpLossVar`、`ValueProp.Unblockable`、Beckon、Bad Luck、Regret。
+- Frost / 覆甲仍未纳入 `EffectiveBlock`，等待后续单独验证。
+- 本轮尚未做 Steam 运行时验证。
+
 ## 阶段状态
 
 | 阶段 | 状态 | 任务 | 完成标准 | 下一步依赖 |
@@ -39,7 +47,7 @@
 | Phase 0 | 已完成 | 仓库初始化 | v2 新仓库、文档、远程 main 已建立 | 无 |
 | Phase 1A | 已完成 | Mod 发现与加载验证 | Steam 启动、Mod 列表可见、Loaded 日志确认 | Phase 1B |
 | Phase 1B | 已完成 | 单人攻击 HUD 运行时验证 | `🛡 -N` 在单人攻击 Intent 场景正确显示 | Phase 5 |
-| Phase 5 | 未开始 | 攻击前确定性 Block | Frost、覆甲等已验证 Block 纳入 `🛡 -N` | Phase 6 |
+| Phase 5 | 进行中 | Blockable Incoming Damage 汇总 | 怪物攻击与手牌回合末 blockable DamageVar 纳入 `🛡 -N`，已验证 Block 纳入 EffectiveBlock | Phase 6 |
 | Phase 6 | 未开始 | Direct HP Loss | Beckon、Bad Luck、Regret 显示 `♥ -N` | Phase 7 |
 | Phase 7 | 未开始 | 单人验证与收口 | 单人 HUD 规则、运行时验证、文档收口 | 后续机制补充 |
 | Phase 8 | 冻结 | 多人研究 | 仅研究真实目标与原生预览，不做正式多人 HUD | 证据充分后再开启 |

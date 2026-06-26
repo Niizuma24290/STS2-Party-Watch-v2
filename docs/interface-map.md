@@ -16,3 +16,8 @@
 | 已运行时验证 | 玩家血条绑定生命周期 | `NHealthBar.SetCreature` | Harmony postfix | 是 | 仅创建/刷新本机玩家血条旁标签，不修改 combat state。 |
 | 已运行时验证 | 玩家血条数值刷新 | `NHealthBar.RefreshValues` | Harmony postfix | 是 | Block 变化后 HUD 刷新已验证。 |
 | 已运行时验证 | 定位血条右侧 | `NHealthBar.HpBarContainer` 与私有 `SetHpBarContainerSizeWithOffsets(Vector2)` | 公开属性读取；Harmony postfix 监听尺寸更新 | 是 | 标签挂在 `HpBarContainer` 的同级父节点或等价父节点；仅用于 UI 定位。 |
+| 仅代码确认，尚未运行时验证 | 读取本机玩家手牌 | `CardPile.Get(PileType.Hand, player)` | 公开静态方法 | 否 | Phase 5A+5B 只读取本机玩家手牌，不读取队友。 |
+| 仅代码确认，尚未运行时验证 | 判断卡牌是否有回合末手牌伤害 | `CardModel.HasTurnEndInHandEffect` + `OnTurnEndInHand` 状态机 IL 中的 `CreatureCmd.Damage` 调用 | 只读 reflection / IL inspection，按卡牌类型缓存 | 否 | 仅用于筛选候选卡；无法确认则排除。 |
+| 仅代码确认，尚未运行时验证 | 读取回合末 blockable 卡牌伤害变量 | `card.DynamicVars.Values.OfType<DamageVar>()` | 公开集合读取 | 否 | `HpLossVar` 不读取；`ValueProp.Unblockable` 不进入 `🛡 -N`。 |
+| 仅代码确认，尚未运行时验证 | 原生修正回合末卡牌 DamageVar | `Hook.ModifyDamage(...)` | 公开静态方法，只读预览调用 | 否 | 不调用 `CreatureCmd.Damage(...)`、`BeforeDamageReceived`、`AfterDamageReceived` 或真实结算。 |
+| 仅代码确认，尚未运行时验证 | 手牌变化刷新 HUD | `CardPile.InvokeContentsChanged` | Harmony postfix | 否 | 只刷新已登记玩家血条 HUD，不每帧扫描。 |

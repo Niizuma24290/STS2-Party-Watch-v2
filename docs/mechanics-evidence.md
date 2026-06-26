@@ -34,3 +34,28 @@
 ## v2 validation requirement
 
 Carried observations remain background only. Only the Steam-launched v2 scenes above are considered Phase 1–4 runtime proof.
+
+## Phase 5 blockable incoming damage contract
+
+```text
+🛡 -N = max(0, MonsterIntentRaw + HandTurnEndDamageRaw - EffectiveBlock)
+EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock
+```
+
+| 来源 | 是否进 🛡 | 原因 | 读取方式 | 运行时状态 |
+| --- | ---: | --- | --- | --- |
+| 敌人 Attack / DeathBlow Intent | 是 | Blockable damage | `AttackIntent.GetTotalDamage(...)` | Phase 1B 已验证普通 Attack Intent |
+| Burn 等回合末 `DamageVar` | 候选 / 已代码接入 | `DamageVar` 且无 `ValueProp.Unblockable`，理论上走 Block | `CardPile.Get(PileType.Hand, player)` + `DamageVar` + `Hook.ModifyDamage(...)` | 待 Phase 5A+5B 运行时验证 |
+| Beckon | 否 | `HpLossVar` / `ValueProp.Unblockable` | 留给 Phase 6 | 留给 Phase 6 |
+| Bad Luck | 否 | `HpLossVar` / `ValueProp.Unblockable` | 留给 Phase 6 | 留给 Phase 6 |
+| Regret | 否 | `ValueProp.Unblockable`，数值依赖手牌数 | 留给 Phase 6 | 留给 Phase 6 |
+| Frost / 覆甲 | 不属于 raw | 属于 `EffectiveBlock` 修正 | 窄范围只读入口 | 待后续 5C/5D 验证 |
+
+## Phase 5A+5B code-confirmed mechanics
+
+- 手牌读取使用 `CardPile.Get(PileType.Hand, player)`。
+- 回合末伤害候选通过 `CardTurnEndDamageInspector.DoesTurnEndInHandCallDamage(card)` 确认卡牌 `OnTurnEndInHand` 状态机调用 `CreatureCmd.Damage`。
+- 只读取 `card.DynamicVars.Values.OfType<DamageVar>()`，不读取 `HpLossVar`。
+- `DamageVar` 若带有 `ValueProp.Unblockable`，不进入 `🛡 -N`。
+- `DamageVar` 预览值通过 `Hook.ModifyDamage(...)` 读取，不调用真实结算。
+- `CardPile.InvokeContentsChanged` 后会刷新已登记的玩家血条 HUD。
