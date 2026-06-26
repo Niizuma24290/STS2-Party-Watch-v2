@@ -2,7 +2,7 @@
 
 ## 状态
 
-进行中 / Phase 5A+5B 已代码完成，等待 Steam 运行时验证
+进行中 / Phase 5A+5B 已完成，Phase 5C 待开始
 
 ## 目标
 
@@ -52,20 +52,19 @@ Frost / 覆甲等 `VerifiedPreAttackBlock` 仍等待后续 5C/5D 单独验证。
 ## 已验证事实
 
 - Phase 1B 已验证：Intent 9 / Block 0、5、10 的怪物攻击基线可显示并刷新。
-- 本次未做 Steam 运行时验证。
+- Steam 运行时已验证：Intent 9 + Burn 2 进入 `🛡` 汇总，Blockable raw = 11。
+- Steam 运行时已验证：Intent 9 + Burn 2 + Block 0 显示 `🛡 -11`。
+- Steam 运行时已验证：Intent 9 + Burn 2 + Block 5 显示 `🛡 -6`。
+- Steam 运行时已验证：Intent 9 + Burn 2 + Block 10 显示 `🛡 -1`。
+- Steam 运行时已验证：Burn 在手牌中参与盾牌栏计算，手牌变化后 HUD 刷新。
 
 ## 仅代码确认、尚未运行时验证
 
-- 手牌读取使用 `CardPile.Get(PileType.Hand, player)`。
-- 回合末伤害候选通过 `CardTurnEndDamageInspector.DoesTurnEndInHandCallDamage(card)` 确认卡牌 `OnTurnEndInHand` 状态机调用 `CreatureCmd.Damage`。
-- 仅统计 `card.DynamicVars.Values.OfType<DamageVar>()`。
-- `ValueProp.Unblockable` 的 `DamageVar` 会被排除在 `🛡 -N` 外。
-- `DamageVar` 预览值通过 `Hook.ModifyDamage(player.RunState, combatState, playerCreature, playerCreature, damageVar.BaseValue, damageVar.Props, card, ModifyDamageHookType.All, CardPreviewMode.None, out _)` 读取。
-- `CardPile.InvokeContentsChanged` 会触发已登记玩家血条 HUD 刷新。
+- Burn 以外的其他回合末 blockable `DamageVar` 尚未逐个运行时验证。
+- `ValueProp.Unblockable` 的 `DamageVar` 排除规则尚未用实际卡牌运行时验证。
 
 ## 未解决问题
 
-- Burn / DamageVar 场景尚未 Steam 运行时验证。
 - Frost 尚未纳入 `EffectiveBlock`。
 - 覆甲尚未纳入 `EffectiveBlock`。
 - Beckon / Bad Luck / Regret 的 `♥ -N` 尚未实现。
@@ -83,7 +82,7 @@ Frost / 覆甲等 `VerifiedPreAttackBlock` 仍等待后续 5C/5D 单独验证。
 
 ## 下一步唯一任务
 
-- Phase 5A+5B：Steam 启动后验证 Burn/DamageVar 进入 `🛡 -N` 与手牌变化刷新
+- Phase 5C：Frost 是否应计入 EffectiveBlock 的运行时验证与最小接入
 
 ## 预期提交文件
 

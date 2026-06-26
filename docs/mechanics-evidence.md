@@ -45,7 +45,7 @@ EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock
 | 来源 | 是否进 🛡 | 原因 | 读取方式 | 运行时状态 |
 | --- | ---: | --- | --- | --- |
 | 敌人 Attack / DeathBlow Intent | 是 | Blockable damage | `AttackIntent.GetTotalDamage(...)` | Phase 1B 已验证普通 Attack Intent |
-| Burn 等回合末 `DamageVar` | 候选 / 已代码接入 | `DamageVar` 且无 `ValueProp.Unblockable`，理论上走 Block | `CardPile.Get(PileType.Hand, player)` + `DamageVar` + `Hook.ModifyDamage(...)` | 待 Phase 5A+5B 运行时验证 |
+| Burn 等回合末 `DamageVar` | 是 | `DamageVar` 且无 `ValueProp.Unblockable`，运行时已确认 Burn 走 `🛡` | `CardPile.Get(PileType.Hand, player)` + `DamageVar` + `Hook.ModifyDamage(...)` | Phase 5A+5B 已验证 Burn |
 | Beckon | 否 | `HpLossVar` / `ValueProp.Unblockable` | 留给 Phase 6 | 留给 Phase 6 |
 | Bad Luck | 否 | `HpLossVar` / `ValueProp.Unblockable` | 留给 Phase 6 | 留给 Phase 6 |
 | Regret | 否 | `ValueProp.Unblockable`，数值依赖手牌数 | 留给 Phase 6 | 留给 Phase 6 |
@@ -59,3 +59,13 @@ EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock
 - `DamageVar` 若带有 `ValueProp.Unblockable`，不进入 `🛡 -N`。
 - `DamageVar` 预览值通过 `Hook.ModifyDamage(...)` 读取，不调用真实结算。
 - `CardPile.InvokeContentsChanged` 后会刷新已登记的玩家血条 HUD。
+
+## Phase 5A+5B runtime validation
+
+- Steam 启动后验证 Burn 在手牌中会进入 `🛡 -N` 汇总。
+- Intent 9 + Burn 2 的 Blockable raw = 11。
+- Intent 9 + Burn 2 + Block 0 显示 `🛡 -11`。
+- Intent 9 + Burn 2 + Block 5 显示 `🛡 -6`。
+- Intent 9 + Burn 2 + Block 10 显示 `🛡 -1`。
+- Burn 手牌变化后 HUD 会刷新。
+- Beckon、Bad Luck、Regret 仍保留给 Phase 6 的 `♥ -N`，本轮未实现。
