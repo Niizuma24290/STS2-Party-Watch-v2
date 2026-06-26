@@ -119,4 +119,4 @@ Frost / 覆甲 / 奥利哈刚 / 假奥利哈刚 / 波纹水盆 / 斗篷扣等 `V
 ## 提交记录
 
 - `b170994a58fa21b18c7a37de01db147a1df15746`：`feat: include hand turn-end damage in shield forecast`
-- `aa398acb18a43728ac57ee9f8cfbf7fd5b8b1b30`：`feat: account for verified pre-attack block`
+- `a08cf59eeae9ce0d2d80b204339b80bfa9188815`：`feat: account for verified pre-attack block`

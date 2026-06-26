@@ -55,7 +55,7 @@
 - 构建确认：`C:\sts2\dotnet\dotnet.exe build src/STS2PartyWatchCode/STS2PartyWatchCode.csproj -c Release --no-restore` 通过。
 - Steam 运行时已验证：上述六个来源均可正确作为 `VerifiedPreAttackBlock` 影响 `🛡 -N`。
 - 本轮未实现：钨钢棍、律动残余、钻石头冠、`♥ -N`、多人 HUD、完整回合模拟器。
-- Phase 5C 提交：`aa398acb18a43728ac57ee9f8cfbf7fd5b8b1b30`。
+- Phase 5C 功能提交：`a08cf59eeae9ce0d2d80b204339b80bfa9188815`。
 
 ## 阶段状态
 
