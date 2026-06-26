@@ -105,3 +105,25 @@ EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock
 - Steam 运行时已验证波纹水盆可正确进入 `EffectiveBlock`。
 - Steam 运行时已验证斗篷扣可正确进入 `EffectiveBlock`。
 - Steam 运行时已验证 Phase 5C 后 `🛡 -N` 仍只显示盾牌栏结果，不显示 raw、Block 或来源明细。
+
+## Phase 5D runtime regression
+
+- Steam 运行时已验证基础攻击回归：Intent 9 / Block 0 显示 `🛡 -9`，Block 5 显示 `🛡 -4`，Block 10 隐藏。
+- Steam 运行时已验证无攻击 / 无 DamageVar 隐藏，非战斗隐藏。
+- Steam 运行时已验证 Burn / DamageVar 回归：Burn 2 / 无攻击 / Block 0 显示 `🛡 -2`，Burn 2 / 无攻击 / Block 2 隐藏。
+- Steam 运行时已验证 Intent 9 + Burn 2 + Block 5 显示 `🛡 -6`。
+- Steam 运行时已验证 Burn 进入手牌和离开手牌时 HUD 刷新。
+- Steam 运行时已验证 Frost、覆甲、奥利哈刚、假奥利哈刚、波纹水盆、斗篷扣各自真实战斗案例通过。
+- Steam 运行时已验证多个 `VerifiedPreAttackBlock` 来源共存时不重复计数。
+- Steam 运行时已验证当前 Block 已包含的值不会重复加入。
+- Steam 运行时已验证 `VerifiedPreAttackBlock` 与 Burn 共存时仍正确。
+- Steam 运行时已验证 Block 足以覆盖总伤害时 HUD 隐藏。
+
+## Phase 5 closure classification
+
+| 分类 | 来源 |
+| --- | --- |
+| 已纳入 `🛡` | AttackIntent / DeathBlow 原生攻击预览、手牌 blockable `DamageVar`、Frost、PlatingPower、Orichalcum、FakeOrichalcum、RippleBasin、CloakClasp |
+| 已排除 | `HpLossVar`、`ValueProp.Unblockable`、Beckon、Bad Luck、Regret |
+| 留给 Phase 6 | Beckon / Bad Luck / Regret、TungstenRod、BeatingRemnant |
+| 后续伤害修正机制 | DiamondDiadem / DiamondDiademPower |

@@ -3,9 +3,9 @@
 ## 当前快照
 
 - 任务登记文件夹：`docs/task-notes/`
-- 当前唯一任务：Phase 5D：Phase 5 全量回归验证与机制缺口收口
+- 当前唯一任务：Phase 6：Beckon / Bad Luck / Regret 的 ♥ -N 时序验证与最小接入
 - 当前分支：`main`
-- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5A+5B 已完成；Phase 5C 第一批 `VerifiedPreAttackBlock` 已完成接入与 Steam 运行时验证。
+- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证。
 - 约束：不提交 DLL、PDB、PCK、logs、publish 输出、NuGet 缓存或游戏目录文件。
 
 ## Phase 1A 已完成
@@ -57,6 +57,20 @@
 - 本轮未实现：钨钢棍、律动残余、钻石头冠、`♥ -N`、多人 HUD、完整回合模拟器。
 - Phase 5C 功能提交：`a08cf59eeae9ce0d2d80b204339b80bfa9188815`。
 
+## Phase 5D 已完成
+
+- Steam 运行时回归已验证：Intent 9 / Block 0 显示 `🛡 -9`。
+- Steam 运行时回归已验证：Intent 9 / Block 5 显示 `🛡 -4`。
+- Steam 运行时回归已验证：Intent 9 / Block 10 隐藏。
+- Steam 运行时回归已验证：无攻击 / 无 DamageVar 隐藏，非战斗隐藏。
+- Steam 运行时回归已验证：Burn 2 / 无攻击 / Block 0 显示 `🛡 -2`。
+- Steam 运行时回归已验证：Burn 2 / 无攻击 / Block 2 隐藏。
+- Steam 运行时回归已验证：Intent 9 + Burn 2 + Block 5 显示 `🛡 -6`。
+- Steam 运行时回归已验证：Burn 进入或离开手牌后 HUD 刷新。
+- Steam 运行时回归已验证：Frost、覆甲、奥利哈刚、假奥利哈刚、波纹水盆、斗篷扣各自真实战斗案例通过。
+- Steam 运行时回归已验证：多个 `VerifiedPreAttackBlock` 来源共存时不重复计数；Block 足以覆盖总伤害时 HUD 隐藏；与 Burn 共存时仍正确。
+- 机制缺口收口：Beckon、Bad Luck、Regret、钨钢棍、律动残余留给 Phase 6；钻石头冠 / `DiamondDiademPower` 归为后续伤害修正机制。
+
 ## 阶段状态
 
 | 阶段 | 状态 | 任务 | 完成标准 | 下一步依赖 |
@@ -64,7 +78,7 @@
 | Phase 0 | 已完成 | 仓库初始化 | v2 新仓库、文档、远程 main 已建立 | 无 |
 | Phase 1A | 已完成 | Mod 发现与加载验证 | Steam 启动、Mod 列表可见、Loaded 日志确认 | Phase 1B |
 | Phase 1B | 已完成 | 单人攻击 HUD 运行时验证 | `🛡 -N` 在单人攻击 Intent 场景正确显示 | Phase 5 |
-| Phase 5 | 进行中 | Blockable Incoming Damage 汇总 | 怪物攻击、手牌回合末 blockable DamageVar、第一批 EffectiveBlock 候选已纳入 `🛡 -N` | Phase 5D |
+| Phase 5 | 已完成 | Blockable Incoming Damage 汇总 | 怪物攻击、手牌回合末 blockable DamageVar、第一批 EffectiveBlock 候选已纳入 `🛡 -N` 并完成回归验证 | Phase 6 |
 | Phase 6 | 未开始 | Direct HP Loss | Beckon、Bad Luck、Regret 显示 `♥ -N` | Phase 7 |
 | Phase 7 | 未开始 | 单人验证与收口 | 单人 HUD 规则、运行时验证、文档收口 | 后续机制补充 |
 | Phase 8 | 冻结 | 多人研究 | 仅研究真实目标与原生预览，不做正式多人 HUD | 证据充分后再开启 |
