@@ -85,4 +85,4 @@
 
 ## 提交记录
 
-- 待提交：`fix: render singleplayer attack forecast beside health bar`
+- `afbccfbf15cde6089565f8c28c83901eec4652ec`：`fix: render singleplayer attack forecast beside health bar`
