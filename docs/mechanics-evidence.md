@@ -49,7 +49,7 @@ EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock
 | Beckon | 否 | `HpLossVar` / `ValueProp.Unblockable` | 留给 Phase 6 | 留给 Phase 6 |
 | Bad Luck | 否 | `HpLossVar` / `ValueProp.Unblockable` | 留给 Phase 6 | 留给 Phase 6 |
 | Regret | 否 | `ValueProp.Unblockable`，数值依赖手牌数 | 留给 Phase 6 | 留给 Phase 6 |
-| Frost / 覆甲 / 本轮遗物 Block | 不属于 raw | 属于 `EffectiveBlock` 修正 | 窄范围只读入口 | 待 Phase 5C 验证 |
+| Frost / 覆甲 / 本轮遗物 Block | 不属于 raw | 属于 `EffectiveBlock` 修正 | 窄范围只读入口 | Phase 5C 已运行时验证 |
 
 ## Phase 5A+5B code-confirmed mechanics
 
@@ -74,12 +74,34 @@ EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock
 
 | 来源 | 是否本轮接入候选 | 原因 | 读取方式 / 入口 | 运行时状态 |
 | --- | ---: | --- | --- | --- |
-| Frost | 是 | 回合结束 orb passive trigger 会在手牌回合末伤害前给 Block；`PassiveVal` 包含 Focus 修正 | `player.PlayerCombatState.OrbQueue.Orbs.OfType<FrostOrb>().Sum(o => o.PassiveVal)` | 待验证 |
-| 覆甲 | 是 | `PlatingPower.BeforeSideTurnEndEarly` 给 Block，注释说明早于回合末伤害 | `localCreature.GetPower<PlatingPower>()?.Amount` 或等价只读 power 入口 | 待验证 |
-| 奥利哈刚 | 是 | 当前 Block 为 0 时在 very early 标记，随后给 Block；检查早于覆甲 | `Orichalcum` 持有状态 + `DynamicVars.Block` + 当前 Block 条件 | 待验证 |
-| 假奥利哈刚 | 是 | 逻辑同奥利哈刚，数值为 3；实际可持有性待验证 | `FakeOrichalcum` 持有状态 + `DynamicVars.Block` + 当前 Block 条件 | 待验证 |
-| 波纹水盆 | 是 | 本回合未打出 Attack 时，`BeforeSideTurnEnd` 给 Block | `RippleBasin` 持有状态 + 当前回合 `CardPlaysFinished` 中是否有本机 Attack | 待验证 |
-| 斗篷扣 | 是 | `BeforeSideTurnEnd` 按手牌数给 Block | `CloakClasp` 持有状态 + `PileType.Hand.GetPile(player).Cards.Count` | 待验证 |
+| Frost | 是 | 回合结束 orb passive trigger 会在手牌回合末伤害前给 Block；`PassiveVal` 包含 Focus 修正 | `player.PlayerCombatState.OrbQueue.Orbs.OfType<FrostOrb>().Sum(o => o.PassiveVal)` | Phase 5C 已验证 |
+| 覆甲 | 是 | `PlatingPower.BeforeSideTurnEndEarly` 给 Block，注释说明早于回合末伤害 | `localCreature.GetPower<PlatingPower>()?.Amount` 或等价只读 power 入口 | Phase 5C 已验证 |
+| 奥利哈刚 | 是 | 当前 Block 为 0 时在 very early 标记，随后给 Block；检查早于覆甲 | `Orichalcum` 持有状态 + `DynamicVars.Block` + 当前 Block 条件 | Phase 5C 已验证 |
+| 假奥利哈刚 | 是 | 逻辑同奥利哈刚，数值为 3 | `FakeOrichalcum` 持有状态 + `DynamicVars.Block` + 当前 Block 条件 | Phase 5C 已验证 |
+| 波纹水盆 | 是 | 本回合未打出 Attack 时，`BeforeSideTurnEnd` 给 Block | `RippleBasin` 持有状态 + 当前回合 `CardPlaysFinished` 中是否有本机 Attack | Phase 5C 已验证 |
+| 斗篷扣 | 是 | `BeforeSideTurnEnd` 按手牌数给 Block | `CloakClasp` 持有状态 + `PileType.Hand.GetPile(player).Cards.Count` | Phase 5C 已验证 |
 | 钨钢棍 | 否，本轮只记录 | `ModifyHpLostAfterOsty` 减 HP loss，不是 Block | `TungstenRod.ModifyHpLostAfterOsty` | 后续补足 |
 | 律动残余 | 否，本轮只记录 | 限制本回合 HP loss 上限，不是 Block | `BeatingRemnant.ModifyHpLostAfterOsty` + `DamageReceivedThisTurn` | 后续补足 |
 | 钻石头冠 | 否，本轮只记录 | 回合末施加 `DiamondDiademPower`，后续将 powered attack 伤害乘 0.5，不是 Block | `DiamondDiadem.BeforeSideTurnEnd` / `DiamondDiademPower.ModifyDamageMultiplicative` | 后续补足 |
+
+## Phase 5C code-confirmed mechanics
+
+- `IncomingDamageRead` 现在传递 `EffectiveBlock`，预测层仍只做 `max(0, RawDamage - EffectiveBlock)`。
+- `VerifiedPreAttackBlockReader` 只读取六个固定候选：Frost、覆甲、奥利哈刚、假奥利哈刚、波纹水盆、斗篷扣。
+- Frost 使用 `player.PlayerCombatState.OrbQueue.Orbs.OfType<FrostOrb>()`，读取每个 `FrostOrb.PassiveVal`。
+- 覆甲使用 `localCreature.GetPower<PlatingPower>()?.Amount`。
+- 奥利哈刚和假奥利哈刚仅在 `Creature.Block == 0` 时计入各自 `BlockVar`。
+- 波纹水盆使用 `CombatManager.Instance.History.CardPlaysFinished` 判断本回合本机玩家是否已打出 Attack。
+- 斗篷扣使用 `CardPile.Get(PileType.Hand, player).Cards.Count * BlockVar`。
+- 任一读取失败会返回 Unknown 并隐藏 HUD，不显示猜测值。
+- 未加入通用 Power / Relic / Orb 扫描器；未修改 raw 伤害、Burn 分类或 HUD 文本。
+
+## Phase 5C runtime validation
+
+- Steam 运行时已验证 Frost 可正确进入 `EffectiveBlock`。
+- Steam 运行时已验证覆甲可正确进入 `EffectiveBlock`。
+- Steam 运行时已验证奥利哈刚可正确进入 `EffectiveBlock`。
+- Steam 运行时已验证假奥利哈刚可正确进入 `EffectiveBlock`。
+- Steam 运行时已验证波纹水盆可正确进入 `EffectiveBlock`。
+- Steam 运行时已验证斗篷扣可正确进入 `EffectiveBlock`。
+- Steam 运行时已验证 Phase 5C 后 `🛡 -N` 仍只显示盾牌栏结果，不显示 raw、Block 或来源明细。

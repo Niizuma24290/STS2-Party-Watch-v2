@@ -86,9 +86,23 @@ public sealed class LocalIncomingDamageReader
             foundDamage = foundDamage || handTurnEndDamage > 0;
         }
 
-        return foundDamage
-            ? IncomingDamageRead.Known(raw, localCreature.Block)
-            : IncomingDamageRead.Hidden;
+        if (!foundDamage)
+        {
+            return IncomingDamageRead.Hidden;
+        }
+
+        if (localCreature.Player is null)
+        {
+            return IncomingDamageRead.Unknown;
+        }
+
+        var preAttackBlock = VerifiedPreAttackBlockReader.Read(localCreature.Player, localCreature);
+        if (preAttackBlock.State != PreAttackBlockReadState.Known)
+        {
+            return IncomingDamageRead.Unknown;
+        }
+
+        return IncomingDamageRead.Known(raw, localCreature.Block + preAttackBlock.Block);
     }
 
     private static bool TryReadHandTurnEndDamage(Player player, Creature localCreature, out int damage)

@@ -2,7 +2,7 @@
 
 ## 状态
 
-进行中 / Phase 5A+5B 已完成，Phase 5C 待开始
+进行中 / Phase 5A+5B 已完成，Phase 5C 已完成
 
 ## 目标
 
@@ -19,7 +19,7 @@ EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock
 - 手牌回合末 `DamageVar` 的 `HandTurnEndDamageRaw`
 - 手牌变化后刷新 HUD
 
-Frost / 覆甲 / 奥利哈刚 / 假奥利哈刚 / 波纹水盆 / 斗篷扣等 `VerifiedPreAttackBlock` 仍等待 Phase 5C 单独验证。
+Frost / 覆甲 / 奥利哈刚 / 假奥利哈刚 / 波纹水盆 / 斗篷扣等 `VerifiedPreAttackBlock` 已完成最小代码接入与 Steam 运行时验证。
 
 ## 本任务允许做的事
 
@@ -57,6 +57,7 @@ Frost / 覆甲 / 奥利哈刚 / 假奥利哈刚 / 波纹水盆 / 斗篷扣等 `V
 - Steam 运行时已验证：Intent 9 + Burn 2 + Block 5 显示 `🛡 -6`。
 - Steam 运行时已验证：Intent 9 + Burn 2 + Block 10 显示 `🛡 -1`。
 - Steam 运行时已验证：Burn 在手牌中参与盾牌栏计算，手牌变化后 HUD 刷新。
+- Steam 运行时已验证：Frost、覆甲、奥利哈刚、假奥利哈刚、波纹水盆、斗篷扣均可进入 `EffectiveBlock` 并正确影响 `🛡 -N`。
 
 ## 仅代码确认、尚未运行时验证
 
@@ -65,12 +66,6 @@ Frost / 覆甲 / 奥利哈刚 / 假奥利哈刚 / 波纹水盆 / 斗篷扣等 `V
 
 ## 未解决问题
 
-- Frost 尚未纳入 `EffectiveBlock`。
-- 覆甲（`PlatingPower`）尚未纳入 `EffectiveBlock`。
-- 奥利哈刚（`Orichalcum`）尚未纳入 `EffectiveBlock`。
-- 假奥利哈刚（`FakeOrichalcum`）尚未纳入 `EffectiveBlock`。
-- 波纹水盆（`RippleBasin`）尚未纳入 `EffectiveBlock`。
-- 斗篷扣（`CloakClasp`）尚未纳入 `EffectiveBlock`。
 - Beckon / Bad Luck / Regret 的 `♥ -N` 尚未实现。
 - 钨钢棍（`TungstenRod`）、律动残余（`BeatingRemnant`）、钻石头冠（`DiamondDiadem` / `DiamondDiademPower`）会影响伤害结果，但不在 Phase 5C 第一批接入范围；后续单独补足。
 
@@ -78,12 +73,12 @@ Frost / 覆甲 / 奥利哈刚 / 假奥利哈刚 / 波纹水盆 / 斗篷扣等 `V
 
 | 来源 | 类型 / 入口 | 是否本轮做 | 代码确认的时点 / 规则 | 运行时状态 |
 | --- | --- | ---: | --- | --- |
-| Frost | `player.PlayerCombatState.OrbQueue.Orbs` 中的 `FrostOrb.PassiveVal` | 是 | `FrostOrb.BeforeTurnEndOrbTrigger` 调 `CreatureCmd.GainBlock`；`PassiveVal` 已走 `Hook.ModifyOrbValue`，包含 Focus 影响 | 待验证 |
-| 覆甲 | `PlatingPower.Amount` | 是 | `BeforeSideTurnEndEarly` 给 `Amount` Block，注释说明早于回合末伤害 | 待验证 |
-| 奥利哈刚 | `Orichalcum` + `DynamicVars.Block` | 是 | `BeforeSideTurnEndVeryEarly` 在当前 Block 为 0 时标记，`BeforeSideTurnEnd` 给 6 Block；检查早于覆甲 | 待验证 |
-| 假奥利哈刚 | `FakeOrichalcum` + `DynamicVars.Block` | 是 | 同奥利哈刚，给 3 Block；事件/假遗物，实际持有场景需验证 | 待验证 |
-| 波纹水盆 | `RippleBasin` + `DynamicVars.Block` | 是 | `BeforeSideTurnEnd` 若本回合未打出 Attack，则给 4 Block | 待验证 |
-| 斗篷扣 | `CloakClasp` + `DynamicVars.Block` + 手牌数 | 是 | `BeforeSideTurnEnd` 按手牌数量给 Block | 待验证 |
+| Frost | `player.PlayerCombatState.OrbQueue.Orbs` 中的 `FrostOrb.PassiveVal` | 是 | `FrostOrb.BeforeTurnEndOrbTrigger` 调 `CreatureCmd.GainBlock`；`PassiveVal` 已走 `Hook.ModifyOrbValue`，包含 Focus 影响 | 已验证 |
+| 覆甲 | `PlatingPower.Amount` | 是 | `BeforeSideTurnEndEarly` 给 `Amount` Block，注释说明早于回合末伤害 | 已验证 |
+| 奥利哈刚 | `Orichalcum` + `DynamicVars.Block` | 是 | `BeforeSideTurnEndVeryEarly` 在当前 Block 为 0 时标记，`BeforeSideTurnEnd` 给 6 Block；检查早于覆甲 | 已验证 |
+| 假奥利哈刚 | `FakeOrichalcum` + `DynamicVars.Block` | 是 | 同奥利哈刚，给 3 Block | 已验证 |
+| 波纹水盆 | `RippleBasin` + `DynamicVars.Block` + 本回合 Attack 历史 | 是 | `BeforeSideTurnEnd` 若本回合未打出 Attack，则给 4 Block | 已验证 |
+| 斗篷扣 | `CloakClasp` + `DynamicVars.Block` + 手牌数 | 是 | `BeforeSideTurnEnd` 按手牌数量给 Block | 已验证 |
 
 ## Phase 5 后续遗物补足候选
 
@@ -95,9 +90,10 @@ Frost / 覆甲 / 奥利哈刚 / 假奥利哈刚 / 波纹水盆 / 斗篷扣等 `V
 
 ## 实际改动文件
 
-- `src/STS2PartyWatchCode/Combat/CardTurnEndDamageInspector.cs`
+- `src/STS2PartyWatchCode/Combat/IncomingDamageRead.cs`
 - `src/STS2PartyWatchCode/Combat/LocalIncomingDamageReader.cs`
-- `src/STS2PartyWatchCode/Patches/ForecastRefreshPatch.cs`
+- `src/STS2PartyWatchCode/Combat/VerifiedPreAttackBlockReader.cs`
+- `src/STS2PartyWatchCode/Forecast/LocalDamageForecast.cs`
 - `docs/project-state.md`
 - `docs/interface-map.md`
 - `docs/mechanics-evidence.md`
@@ -106,13 +102,14 @@ Frost / 覆甲 / 奥利哈刚 / 假奥利哈刚 / 波纹水盆 / 斗篷扣等 `V
 
 ## 下一步唯一任务
 
-- Phase 5C：VerifiedPreAttackBlock 第一批运行时验证与最小接入
+- Phase 5D：Phase 5 全量回归验证与机制缺口收口
 
 ## 预期提交文件
 
-- `src/STS2PartyWatchCode/Combat/CardTurnEndDamageInspector.cs`
+- `src/STS2PartyWatchCode/Combat/IncomingDamageRead.cs`
 - `src/STS2PartyWatchCode/Combat/LocalIncomingDamageReader.cs`
-- `src/STS2PartyWatchCode/Patches/ForecastRefreshPatch.cs`
+- `src/STS2PartyWatchCode/Combat/VerifiedPreAttackBlockReader.cs`
+- `src/STS2PartyWatchCode/Forecast/LocalDamageForecast.cs`
 - `docs/project-state.md`
 - `docs/interface-map.md`
 - `docs/mechanics-evidence.md`
@@ -122,3 +119,4 @@ Frost / 覆甲 / 奥利哈刚 / 假奥利哈刚 / 波纹水盆 / 斗篷扣等 `V
 ## 提交记录
 
 - `b170994a58fa21b18c7a37de01db147a1df15746`：`feat: include hand turn-end damage in shield forecast`
+- `aa398acb18a43728ac57ee9f8cfbf7fd5b8b1b30`：`feat: account for verified pre-attack block`

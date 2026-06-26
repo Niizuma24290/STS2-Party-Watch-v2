@@ -21,3 +21,9 @@
 | 仅代码确认，尚未运行时验证 | 读取回合末 blockable 卡牌伤害变量 | `card.DynamicVars.Values.OfType<DamageVar>()` | 公开集合读取 | 否 | `HpLossVar` 不读取；`ValueProp.Unblockable` 不进入 `🛡 -N`。 |
 | 仅代码确认，尚未运行时验证 | 原生修正回合末卡牌 DamageVar | `Hook.ModifyDamage(...)` | 公开静态方法，只读预览调用 | 否 | 不调用 `CreatureCmd.Damage(...)`、`BeforeDamageReceived`、`AfterDamageReceived` 或真实结算。 |
 | 仅代码确认，尚未运行时验证 | 手牌变化刷新 HUD | `CardPile.InvokeContentsChanged` | Harmony postfix | 否 | 只刷新已登记玩家血条 HUD，不每帧扫描。 |
+| 已运行时验证 | 读取 Frost 回合末预期 Block | `player.PlayerCombatState.OrbQueue.Orbs.OfType<FrostOrb>()` 与 `FrostOrb.PassiveVal` | 公开只读属性 / 集合读取 | 是 | 仅计入 Frost passive；不模拟 evoke；Focus 通过 `PassiveVal` 走原生修正。 |
+| 已运行时验证 | 读取覆甲回合末预期 Block | `localCreature.GetPower<PlatingPower>()?.Amount` | 公开只读 power 入口 | 是 | 只读取本机玩家当前覆甲层数。 |
+| 已运行时验证 | 读取奥利哈刚预期 Block | `player.Relics.OfType<Orichalcum>()` + relic `BlockVar` + `Creature.Block == 0` | 公开只读 relic 集合 / DynamicVars 读取 | 是 | 仅在当前 Block 为 0 时计入。 |
+| 已运行时验证 | 读取假奥利哈刚预期 Block | `player.Relics.OfType<FakeOrichalcum>()` + relic `BlockVar` + `Creature.Block == 0` | 公开只读 relic 集合 / DynamicVars 读取 | 是 | 仅在当前 Block 为 0 时计入。 |
+| 已运行时验证 | 读取波纹水盆预期 Block | `player.Relics.OfType<RippleBasin>()` + `CombatManager.Instance.History.CardPlaysFinished` | 公开只读 relic 集合 / combat history 读取 | 是 | 仅判断本回合本机玩家是否已打出 Attack；历史入口异常时隐藏 HUD。 |
+| 已运行时验证 | 读取斗篷扣预期 Block | `player.Relics.OfType<CloakClasp>()` + `CardPile.Get(PileType.Hand, player).Cards.Count` + relic `BlockVar` | 公开只读 relic 集合 / 手牌集合读取 | 是 | 只按当前手牌数计算。 |

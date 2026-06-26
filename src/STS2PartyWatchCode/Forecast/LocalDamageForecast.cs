@@ -10,7 +10,7 @@ public sealed class LocalDamageForecast
         {
             IncomingDamageReadState.Hidden => ForecastResult.Hidden,
             IncomingDamageReadState.Unknown => ForecastResult.Unknown,
-            IncomingDamageReadState.Known => CalculateKnown(read.RawDamage, read.LocalBlock),
+            IncomingDamageReadState.Known => CalculateKnown(read.RawDamage, read.EffectiveBlock),
             _ => ForecastResult.Unknown
         };
     }

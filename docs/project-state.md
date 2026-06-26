@@ -3,9 +3,9 @@
 ## 当前快照
 
 - 任务登记文件夹：`docs/task-notes/`
-- 当前唯一任务：Phase 5C：VerifiedPreAttackBlock 第一批运行时验证与最小接入
+- 当前唯一任务：Phase 5D：Phase 5 全量回归验证与机制缺口收口
 - 当前分支：`main`
-- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5A+5B 已完成。
+- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5A+5B 已完成；Phase 5C 第一批 `VerifiedPreAttackBlock` 已完成接入与 Steam 运行时验证。
 - 约束：不提交 DLL、PDB、PCK、logs、publish 输出、NuGet 缓存或游戏目录文件。
 
 ## Phase 1A 已完成
@@ -43,6 +43,20 @@
 - Steam 运行时已验证：Burn 在手牌中参与盾牌栏计算，手牌变化后 HUD 刷新。
 - Phase 5A+5B 代码提交：`b170994a58fa21b18c7a37de01db147a1df15746`。
 
+## Phase 5C 已完成
+
+- 本轮仅接入第一批 `VerifiedPreAttackBlock` 候选：Frost、覆甲、奥利哈刚、假奥利哈刚、波纹水盆、斗篷扣。
+- 代码确认：`EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock`，再计算 `🛡 -N = max(0, BlockableRaw - EffectiveBlock)`。
+- 代码确认：Frost 读取 `FrostOrb.PassiveVal`，该值包含 Focus 的 `Hook.ModifyOrbValue` 修正。
+- 代码确认：覆甲读取 `PlatingPower.Amount`。
+- 代码确认：奥利哈刚 / 假奥利哈刚仅在当前 Block 为 0 时读取其 `BlockVar`。
+- 代码确认：波纹水盆读取本回合是否已打出本机 Attack。
+- 代码确认：斗篷扣读取当前手牌数并乘以其 `BlockVar`。
+- 构建确认：`C:\sts2\dotnet\dotnet.exe build src/STS2PartyWatchCode/STS2PartyWatchCode.csproj -c Release --no-restore` 通过。
+- Steam 运行时已验证：上述六个来源均可正确作为 `VerifiedPreAttackBlock` 影响 `🛡 -N`。
+- 本轮未实现：钨钢棍、律动残余、钻石头冠、`♥ -N`、多人 HUD、完整回合模拟器。
+- Phase 5C 提交：`aa398acb18a43728ac57ee9f8cfbf7fd5b8b1b30`。
+
 ## 阶段状态
 
 | 阶段 | 状态 | 任务 | 完成标准 | 下一步依赖 |
@@ -50,7 +64,7 @@
 | Phase 0 | 已完成 | 仓库初始化 | v2 新仓库、文档、远程 main 已建立 | 无 |
 | Phase 1A | 已完成 | Mod 发现与加载验证 | Steam 启动、Mod 列表可见、Loaded 日志确认 | Phase 1B |
 | Phase 1B | 已完成 | 单人攻击 HUD 运行时验证 | `🛡 -N` 在单人攻击 Intent 场景正确显示 | Phase 5 |
-| Phase 5 | 进行中 | Blockable Incoming Damage 汇总 | 怪物攻击与手牌回合末 blockable DamageVar 纳入 `🛡 -N`，已验证 Block 纳入 EffectiveBlock | Phase 5C |
+| Phase 5 | 进行中 | Blockable Incoming Damage 汇总 | 怪物攻击、手牌回合末 blockable DamageVar、第一批 EffectiveBlock 候选已纳入 `🛡 -N` | Phase 5D |
 | Phase 6 | 未开始 | Direct HP Loss | Beckon、Bad Luck、Regret 显示 `♥ -N` | Phase 7 |
 | Phase 7 | 未开始 | 单人验证与收口 | 单人 HUD 规则、运行时验证、文档收口 | 后续机制补充 |
 | Phase 8 | 冻结 | 多人研究 | 仅研究真实目标与原生预览，不做正式多人 HUD | 证据充分后再开启 |
