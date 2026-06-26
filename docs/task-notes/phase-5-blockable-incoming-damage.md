@@ -134,4 +134,4 @@ Frost / 覆甲 / 奥利哈刚 / 假奥利哈刚 / 波纹水盆 / 斗篷扣等 `V
 
 - `b170994a58fa21b18c7a37de01db147a1df15746`：`feat: include hand turn-end damage in shield forecast`
 - `a08cf59eeae9ce0d2d80b204339b80bfa9188815`：`feat: account for verified pre-attack block`
-- 待写入：`docs: close phase 5 blockable damage validation`
+- `5d9d4cdece14a9244efbc26fe4dd0e5173554a38`：`docs: close phase 5 blockable damage validation`

@@ -70,6 +70,7 @@
 - Steam 运行时回归已验证：Frost、覆甲、奥利哈刚、假奥利哈刚、波纹水盆、斗篷扣各自真实战斗案例通过。
 - Steam 运行时回归已验证：多个 `VerifiedPreAttackBlock` 来源共存时不重复计数；Block 足以覆盖总伤害时 HUD 隐藏；与 Burn 共存时仍正确。
 - 机制缺口收口：Beckon、Bad Luck、Regret、钨钢棍、律动残余留给 Phase 6；钻石头冠 / `DiamondDiademPower` 归为后续伤害修正机制。
+- Phase 5D 收口提交：`5d9d4cdece14a9244efbc26fe4dd0e5173554a38`。
 
 ## 阶段状态
 
