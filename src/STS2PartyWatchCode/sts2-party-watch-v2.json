@@ -3,10 +3,10 @@
   "name": "STS2 Party Watch v2",
   "author": "Niizuma24290",
   "description": "Read-only single-player combat attack forecast HUD.",
-  "version": "0.1.0",
-  "hasPck": false,
-  "hasDll": true,
+  "version": "v0.1.0",
+  "has_pck": false,
+  "has_dll": true,
   "dependencies": [],
-  "affectsGameplay": false,
-  "minGameVersion": "0.107.1"
+  "affects_gameplay": false,
+  "min_game_version": "0.107.1"
 }

@@ -1,13 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <AssemblyName>STS2PartyWatchCode</AssemblyName>
+    <AssemblyName>sts2-party-watch-v2</AssemblyName>
     <RootNamespace>STS2PartyWatch</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <Sts2GameRoot Condition="'$(Sts2GameRoot)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2</Sts2GameRoot>
     <Sts2ManagedDir>$(Sts2GameRoot)\data_sts2_windows_x86_64</Sts2ManagedDir>
@@ -29,6 +30,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="manifest.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="sts2-party-watch-v2.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

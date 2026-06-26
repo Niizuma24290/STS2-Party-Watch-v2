@@ -4,20 +4,19 @@
 
 ## 当前状态
 
-Phase 0 已完成。Phase 1–4 已完成代码实现、restore/build/publish，运行时验证未完成。
+Phase 1 工程前置已补齐；Steam 启动、Mod 列表、Loaded 日志和 HUD 运行时验证尚未完成。
 
 ## 当前唯一任务
 
-Phase 1–4：单人攻击 HUD 基线运行时验证
+Phase 1A：Steam 启动后的 Mod 发现与加载验证
 
 ## 禁止事项
 
-- 不写任何 Mod 功能代码。
-- 不创建 DLL、PDB、PCK、logs 或其他构建产物。
+- 不提交 DLL、PDB、PCK、logs、publish 输出、NuGet 缓存或游戏目录文件。
 - 不修改游戏文件。
-- 不把代码推测写成运行时验证事实。
+- 不把代码确认写成运行时验证事实。
 - 不创建第二套平行的进度目录。
-- 不开发正式多人伤害 HUD。
+- Phase 8 仍冻结，不开发正式多人伤害 HUD。
 
 ## 每次任务结束的登记规则
 
@@ -33,7 +32,7 @@ Phase 1–4：单人攻击 HUD 基线运行时验证
 | 阶段 | 状态 | 任务 | 完成标准 | 下一步依赖 |
 | --- | --- | --- | --- | --- |
 | Phase 0 | 已完成 | 仓库初始化 | v2 新仓库、文档、远程 main 已建立 | 无 |
-| Phase 1–4 | 进行中 | 单人攻击 HUD 基线 | Mod 可加载、可只读读取战斗、HUD 显示 `🛡 -N` | 运行时验证完成后进入 Phase 5 |
+| Phase 1–4 | 进行中 | 单人攻击 HUD 基线 | Mod 可加载、可只读读取战斗、HUD 显示 `🛡 -N` | Phase 1A 运行时加载验证 |
 | Phase 5 | 未开始 | 攻击前确定性 Block | Frost、覆甲等已验证 Block 纳入 `🛡 -N` | Phase 6 |
 | Phase 6 | 未开始 | Direct HP Loss | Beckon、Bad Luck、Regret 显示 `♥ -N` | Phase 7 |
 | Phase 7 | 未开始 | 单人验证与收口 | 单人 HUD 规则、运行时验证、文档收口 | 后续机制补充 |

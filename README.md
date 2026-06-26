@@ -34,4 +34,4 @@ Explicitly out of scope for v2.0:
 - Custom Strength, Weak, Vulnerable, Intangible, sequential hit, relic, or power formulas.
 - Config menus and generic diagnostics systems.
 
-Current status: bootstrap complete; no gameplay code yet.
+Current status: Phase 1 packaging prerequisites are complete in the project. Steam launch, Mod list visibility, Loaded log verification, and HUD runtime verification are deferred to the next task.

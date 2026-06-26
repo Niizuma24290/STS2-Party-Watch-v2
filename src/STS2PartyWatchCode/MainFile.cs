@@ -1,3 +1,4 @@
+using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Modding;
 
@@ -17,6 +18,7 @@ public static class MainFile
         }
 
         _initialized = true;
+        GD.Print("[STS2 Party Watch] Loaded");
         Console.WriteLine("[STS2 Party Watch] Loaded");
         new Harmony(HarmonyId).PatchAll(typeof(MainFile).Assembly);
     }
