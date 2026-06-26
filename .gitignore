@@ -1,0 +1,28 @@
+# Build artifacts
+bin/
+obj/
+*.dll
+*.pdb
+*.pck
+
+# Godot
+.godot/
+
+# Local build and package configuration
+NuGet.Config
+.local-nuget/
+local.props
+
+# Local work and evidence
+work/
+logs/
+*.log
+
+# IDE and OS
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+.DS_Store
+Thumbs.db
