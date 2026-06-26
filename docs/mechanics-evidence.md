@@ -11,6 +11,21 @@
 - RAW 13, Block 10 => OUT 3.
 - A tested Intangible scene produced native intent values 1x2 plus 1, and RAW 3.
 
+## Phase 1–4 code-confirmed mechanics
+
+- The v2 code calls native `AttackIntent.GetTotalDamage(new[] { localCreature }, enemy)` for every readable enemy `AttackIntent`.
+- The v2 code sums readable enemy attack RAW values before subtracting Block.
+- The v2 code reads current local `Creature.Block` exactly once per refresh.
+- The v2 code calculates `OUT = max(0, RAW - Block)`.
+- The v2 HUD only displays `🛡 -N` when OUT is greater than 0.
+- Non-attack intents, missing combat state, missing local player, missing local creature, dead local creature, no attack intent, and OUT <= 0 hide the HUD.
+
+## Phase 1–4 runtime validation
+
+- Not completed.
+- Direct `SlayTheSpire2.exe` launch reached Steam initialization error: `No appID found`.
+- Because the direct launch did not reach Mod loading or combat, no Phase 1–4 combat mechanics are considered runtime-proven yet.
+
 ## v2 validation requirement
 
-No carried observation is considered a v2 runtime proof until revalidated by a scoped v2 task.
+No carried observation or code-confirmed mechanic is considered a v2 runtime proof until revalidated by a scoped v2 runtime task.

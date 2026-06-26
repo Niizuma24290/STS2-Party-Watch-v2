@@ -4,11 +4,11 @@
 
 ## 当前状态
 
-Phase 0 已完成。v2 新仓库、基础文档、远程 `main` 已建立。
+Phase 0 已完成。Phase 1–4 已完成代码实现、restore/build/publish，运行时验证未完成。
 
 ## 当前唯一任务
 
-Phase 1–4：单人攻击 HUD 基线
+Phase 1–4：单人攻击 HUD 基线运行时验证
 
 ## 禁止事项
 
@@ -33,7 +33,7 @@ Phase 1–4：单人攻击 HUD 基线
 | 阶段 | 状态 | 任务 | 完成标准 | 下一步依赖 |
 | --- | --- | --- | --- | --- |
 | Phase 0 | 已完成 | 仓库初始化 | v2 新仓库、文档、远程 main 已建立 | 无 |
-| Phase 1–4 | 未开始 | 单人攻击 HUD 基线 | Mod 可加载、可只读读取战斗、HUD 显示 `🛡 -N` | Phase 5 |
+| Phase 1–4 | 进行中 | 单人攻击 HUD 基线 | Mod 可加载、可只读读取战斗、HUD 显示 `🛡 -N` | 运行时验证完成后进入 Phase 5 |
 | Phase 5 | 未开始 | 攻击前确定性 Block | Frost、覆甲等已验证 Block 纳入 `🛡 -N` | Phase 6 |
 | Phase 6 | 未开始 | Direct HP Loss | Beckon、Bad Luck、Regret 显示 `♥ -N` | Phase 7 |
 | Phase 7 | 未开始 | 单人验证与收口 | 单人 HUD 规则、运行时验证、文档收口 | 后续机制补充 |
