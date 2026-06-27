@@ -148,6 +148,7 @@ Phase 6A 中 Regret 未接入，因为其数值依赖手牌数读取时点，当
 - `48fd471e68405573b4d2918752d0dc6aeb1e406f`：`feat: add fixed direct hp loss forecast`
 - `8c9c0206f54b0e45f9b8c22c1acf8ee39ea9a934`：`docs: record beckon and bad luck runtime validation`
 - `4fb89f03eb042dad89ce4b263f91163e3b89840c`：`feat: include regret in direct hp loss forecast`
+- `b27dd2a1287db5b07e3765fca5b4bedd62b351f6`：`docs: record phase 6c runtime validation`
 
 ## 下一步唯一任务
 
