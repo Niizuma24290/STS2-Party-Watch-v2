@@ -4,11 +4,11 @@
 
 ## 当前状态
 
-Phase 1A 已完成。Phase 1B 已完成。Phase 5 已完成：攻击 Intent、Burn/DamageVar、第一批 EffectiveBlock 候选均已进入 `🛡 -N` 并完成 Steam 运行时回归验证。Phase 6A 已完成：Beckon / Bad Luck 固定 direct HP loss 已进入 `♥ -N` 并完成 Steam 运行时验证。Phase 6B 已完成代码接入：Regret 已按 shipped 代码机制进入 `♥ -N`，Steam 运行时验证尚未完成。
+Phase 1A 已完成。Phase 1B 已完成。Phase 5 已完成：攻击 Intent、Burn/DamageVar、第一批 EffectiveBlock 候选均已进入 `🛡 -N` 并完成 Steam 运行时回归验证。Phase 6 已完成：Beckon / Bad Luck / Regret 已进入 `♥ -N` 并完成 Steam 运行时联合验证。
 
 ## 当前唯一任务
 
-Phase 6C：Beckon / Bad Luck / Regret 的 Steam 运行时联合验证
+Phase 7：单人验证与收口
 
 ## 禁止事项
 
@@ -36,7 +36,7 @@ Phase 6C：Beckon / Bad Luck / Regret 的 Steam 运行时联合验证
 | Phase 1B | 已完成 | 单人攻击 HUD 运行时验证 | `🛡 -N` 在单人攻击 Intent 场景正确显示 | Phase 5 |
 | Phase 5 | 已完成 | Blockable Incoming Damage 汇总 | 怪物攻击、手牌回合末 blockable DamageVar、第一批 EffectiveBlock 候选已纳入 `🛡 -N` 并完成回归验证 | Phase 6 |
 | Phase 6A | 已完成 | Direct HP Loss 固定值 | Beckon、Bad Luck 显示 `♥ -N`，并完成 Steam 运行时矩阵 | Phase 6B |
-| Phase 6B | 代码已接入，待运行时验证 | Regret Direct HP Loss | Regret 按当前手牌总数进入 `♥ -N` | Phase 6C |
-| Phase 6C | 未开始 | Direct HP Loss 联合运行时验证 | Beckon、Bad Luck、Regret 的 `♥ -N` 完成 Steam 联合验证 | Phase 7 |
+| Phase 6B | 已完成 | Regret Direct HP Loss | Regret 按当前手牌总数进入 `♥ -N` | Phase 6C |
+| Phase 6C | 已完成 | Direct HP Loss 联合运行时验证 | Beckon、Bad Luck、Regret 的 `♥ -N` 完成 Steam 联合验证 | Phase 7 |
 | Phase 7 | 未开始 | 单人验证与收口 | 单人 HUD 规则、运行时验证、文档收口 | 后续机制补充 |
 | Phase 8 | 冻结 | 多人研究 | 仅研究真实目标与原生预览，不做正式多人 HUD | 证据充分后再开启 |

@@ -3,7 +3,8 @@
 ## 状态
 
 Phase 6A 已完成代码接入与 Steam 运行时验证。
-Phase 6B 已按 shipped 代码机制接入 Regret，尚未进行 Steam 运行时验证。
+Phase 6B 已按 shipped 代码机制接入 Regret。
+Phase 6C 已完成 Beckon / Bad Luck / Regret 的 Steam 运行时联合验证。
 
 本文件当前覆盖：
 
@@ -19,7 +20,7 @@ Phase 6B 已按 shipped 代码机制接入 Regret，尚未进行 Steam 运行时
 | --- | --- | ---: | ---: | --- | --- | ---: | --- |
 | Beckon | `MegaCrit.Sts2.Core.Models.Cards.Beckon` | 是 | 是 | `OnTurnEndInHand` 调 `CreatureCmd.Damage(..., ValueProp.Unblockable | ValueProp.Unpowered | ValueProp.Move, this)` | `HpLossVar(6m)` / `DynamicVars.HpLoss.BaseValue` | 否 | 已验证 |
 | Bad Luck | `MegaCrit.Sts2.Core.Models.Cards.BadLuck` | 是 | 是 | `OnTurnEndInHand` 先 `Cmd.Wait(0.25f)`，再调同样的 Unblockable `CreatureCmd.Damage` | `HpLossVar(13m)` / `DynamicVars.HpLoss.BaseValue` | 否 | 已验证 |
-| Regret | `MegaCrit.Sts2.Core.Models.Cards.Regret` | 是 | 是 | `BeforeSideTurnEnd` 记录当前手牌数；`OnTurnEndInHand` 调 Unblockable `CreatureCmd.Damage` | 当前 `PileType.Hand` 手牌总数，包含 Regret 自己 | 否 | 仅代码确认，尚未运行时验证 |
+| Regret | `MegaCrit.Sts2.Core.Models.Cards.Regret` | 是 | 是 | `BeforeSideTurnEnd` 记录当前手牌数；`OnTurnEndInHand` 调 Unblockable `CreatureCmd.Damage` | 当前 `PileType.Hand` 手牌总数，包含 Regret 自己 | 否 | 已验证 |
 
 ## 时序确认
 
@@ -120,7 +121,13 @@ Phase 6A 中 Regret 未接入，因为其数值依赖手牌数读取时点，当
 - 预测规则：如果 Regret 当前仍在手牌，每张 Regret 贡献一次当前手牌总数；当前手牌总数包含 Regret 自己。
 - 示例：1 张 Regret、手牌共 1 张 → `♥ -1`；1 张 Regret、手牌共 5 张 → `♥ -5`；2 张 Regret、手牌共 5 张 → `♥ -10`；Bad Luck + 1 张 Regret、手牌共 6 张 → `♥ -19`。
 - Regret 贡献进入 `DirectHpLoss`，不进入 `🛡`，不受 Block 影响。
-- 尚未进行 Steam 运行时验证；不能把本次代码接入写成运行时事实。
+- Steam 运行时已验证 Regret 可按当前手牌总数进入 `♥ -N`。
+
+## Phase 6C 联合验证
+
+- Steam 运行时已验证 Beckon / Bad Luck / Regret 可共同进入 `DirectHpLoss` 与 `♥ -N`。
+- Steam 运行时已验证 `♥ -N` 与 `🛡 -N` 分行显示，不合并。
+- Steam 运行时已验证 Regret 的贡献不受当前 Block 影响，不进入 `🛡 -N`。
 
 ## 实际改动文件
 
@@ -144,4 +151,4 @@ Phase 6A 中 Regret 未接入，因为其数值依赖手牌数读取时点，当
 
 ## 下一步唯一任务
 
-- Phase 6C：Beckon / Bad Luck / Regret 的 Steam 运行时联合验证
+- Phase 7：单人验证与收口

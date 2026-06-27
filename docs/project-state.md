@@ -3,9 +3,9 @@
 ## 当前快照
 
 - 任务登记文件夹：`docs/task-notes/`
-- 当前唯一任务：Phase 6C：Beckon / Bad Luck / Regret 的 Steam 运行时联合验证
+- 当前唯一任务：Phase 7：单人验证与收口
 - 当前分支：`main`
-- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入与 Steam 运行时验证；Phase 6B 已按 shipped 代码机制接入 Regret，尚未进行 Steam 运行时验证。
+- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入与 Steam 运行时验证；Phase 6B 已按 shipped 代码机制接入 Regret；Phase 6C 已完成 Beckon / Bad Luck / Regret 的 Steam 运行时联合验证。
 - 约束：不提交 DLL、PDB、PCK、logs、publish 输出、NuGet 缓存或游戏目录文件。
 
 ## Phase 1A 已完成
@@ -87,7 +87,7 @@
 - 证据案例：用户提供截图 `C:\Users\ROG\AppData\Local\Temp\codex-clipboard-2405da0f-af6a-41d9-aea8-addc99785f37.png`，手牌含 `霉运` 与 `灼伤`，敌人 Intent 16，Block 0，HUD 显示 `🛡 -18` / `♥ -13`。
 - 本轮未完成：Regret、TungstenRod、BeatingRemnant、DiamondDiadem / DiamondDiademPower。
 
-## Phase 6B 代码接入完成，待运行时验证
+## Phase 6B 已完成
 
 - 本轮只接入 Regret 的 direct HP loss，不接入 TungstenRod、BeatingRemnant、DiamondDiadem / DiamondDiademPower。
 - shipped 代码确认：Regret 的类型为 `MegaCrit.Sts2.Core.Models.Cards.Regret`，`HasTurnEndInHandEffect == true`。
@@ -96,7 +96,13 @@
 - 已接入：`RegretLoss = 当前手牌总数 × 当前手牌中的 Regret 数量`，当前手牌总数包含 Regret 自己。
 - 已接入：`DirectHpLoss = BeckonLoss + BadLuckLoss + RegretLoss`；`♥ -N` 不受 Block 影响，不进入 `🛡 -N`。
 - 本轮未新增刷新 patch，继续复用 `CardPile.InvokeContentsChanged` 与玩家血条刷新链。
-- 本轮未进行 Steam 运行时验证，不能写作运行时事实。
+- Steam 运行时已验证 Regret 可按当前手牌总数进入 `♥ -N`。
+
+## Phase 6C 已完成
+
+- Steam 运行时联合验证已完成：Beckon、Bad Luck、Regret 可共同进入 `DirectHpLoss` 与 `♥ -N`。
+- Steam 运行时已验证：`♥ -N` 与 `🛡 -N` 分行显示，不合并。
+- Steam 运行时已验证：Regret 的贡献不受当前 Block 影响，不进入 `🛡 -N`。
 
 ## 阶段状态
 
@@ -107,8 +113,8 @@
 | Phase 1B | 已完成 | 单人攻击 HUD 运行时验证 | `🛡 -N` 在单人攻击 Intent 场景正确显示 | Phase 5 |
 | Phase 5 | 已完成 | Blockable Incoming Damage 汇总 | 怪物攻击、手牌回合末 blockable DamageVar、第一批 EffectiveBlock 候选已纳入 `🛡 -N` 并完成回归验证 | Phase 6 |
 | Phase 6A | 已完成 | Direct HP Loss 固定值 | Beckon、Bad Luck 显示 `♥ -N`，并完成 Steam 运行时矩阵 | Phase 6B |
-| Phase 6B | 代码已接入，待运行时验证 | Regret Direct HP Loss | Regret 按当前手牌总数进入 `♥ -N` | Phase 6C |
-| Phase 6C | 未开始 | Direct HP Loss 联合运行时验证 | Beckon、Bad Luck、Regret 的 `♥ -N` 完成 Steam 联合验证 | Phase 7 |
+| Phase 6B | 已完成 | Regret Direct HP Loss | Regret 按当前手牌总数进入 `♥ -N` | Phase 6C |
+| Phase 6C | 已完成 | Direct HP Loss 联合运行时验证 | Beckon、Bad Luck、Regret 的 `♥ -N` 完成 Steam 联合验证 | Phase 7 |
 | Phase 7 | 未开始 | 单人验证与收口 | 单人 HUD 规则、运行时验证、文档收口 | 后续机制补充 |
 | Phase 8 | 冻结 | 多人研究 | 仅研究真实目标与原生预览，不做正式多人 HUD | 证据充分后再开启 |
 

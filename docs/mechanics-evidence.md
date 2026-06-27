@@ -126,7 +126,7 @@ EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock
 | 已纳入 `🛡` | AttackIntent / DeathBlow 原生攻击预览、手牌 blockable `DamageVar`、Frost、PlatingPower、Orichalcum、FakeOrichalcum、RippleBasin、CloakClasp |
 | 已排除出 `🛡` | `HpLossVar`、`ValueProp.Unblockable`、Beckon、Bad Luck、Regret |
 | Phase 6A 已代码接入并运行时验证 `♥` | Beckon / Bad Luck |
-| Phase 6B 已代码接入，待运行时验证 `♥` | Regret |
+| Phase 6B 已代码接入并运行时验证 `♥` | Regret |
 | 留给后续 | TungstenRod、BeatingRemnant |
 | 后续伤害修正机制 | DiamondDiadem / DiamondDiademPower |
 
@@ -144,7 +144,7 @@ RegretLoss = 当前手牌总数 × 当前手牌中的 Regret 数量
 | --- | ---: | --- | --- | --- |
 | Beckon | 是 | shipped `OnTurnEndInHand` 从 `HpLossVar(6m)` 读取并以 `ValueProp.Unblockable` 调 `CreatureCmd.Damage` | 当前手牌中精确类型 `Beckon` + `HpLossVar.BaseValue == 6` | 已验证 |
 | Bad Luck | 是 | shipped `OnTurnEndInHand` 从 `HpLossVar(13m)` 读取并以 `ValueProp.Unblockable` 调 `CreatureCmd.Damage` | 当前手牌中精确类型 `BadLuck` + `HpLossVar.BaseValue == 13` | 已验证 |
-| Regret | 是 | shipped `BeforeSideTurnEnd` 记录当前手牌数，`OnTurnEndInHand` 以该值造成 Unblockable HP loss | 当前手牌总数 × 当前手牌中的 Regret 数量 | 仅代码确认，尚未运行时验证 |
+| Regret | 是 | shipped `BeforeSideTurnEnd` 记录当前手牌数，`OnTurnEndInHand` 以该值造成 Unblockable HP loss | 当前手牌总数 × 当前手牌中的 Regret 数量 | 已验证 |
 | TungstenRod | 否 | 修改实际 HP loss 结果，不是本轮固定来源 | 留给后续 | 尚未验证 |
 | BeatingRemnant | 否 | 限制每回合 HP loss 上限，不是本轮固定来源 | 留给后续 | 尚未验证 |
 
@@ -173,8 +173,13 @@ RegretLoss = 当前手牌总数 × 当前手牌中的 Regret 数量
 
 ## Phase 6B runtime validation
 
-- 尚未进行 Steam 运行时验证。
-- 不能把 Phase 6B 的代码接入写成运行时事实。
+- Steam 运行时已验证 Regret 可按当前手牌总数进入 `♥ -N`。
+- Steam 运行时已验证 Regret 的贡献不受当前 Block 影响，不进入 `🛡 -N`。
+
+## Phase 6C runtime validation
+
+- Steam 运行时联合验证已完成：Beckon、Bad Luck、Regret 可共同进入 `DirectHpLoss` 与 `♥ -N`。
+- Steam 运行时已验证 `♥ -N` 与 `🛡 -N` 分行显示，不合并。
 
 ## Phase 6A runtime validation
 
