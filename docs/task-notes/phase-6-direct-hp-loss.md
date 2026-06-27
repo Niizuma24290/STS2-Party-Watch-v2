@@ -152,4 +152,4 @@ Phase 6A 中 Regret 未接入，因为其数值依赖手牌数读取时点，当
 
 ## 下一步唯一任务
 
-- Phase 7：单人验证与收口
+- Phase 7：接入 TungstenRod、BeatingRemnant 等会修正 HP Loss 结果的机制

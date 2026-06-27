@@ -3,7 +3,7 @@
 ## 当前快照
 
 - 任务登记文件夹：`docs/task-notes/`
-- 当前唯一任务：Phase 7：单人验证与收口
+- 当前唯一任务：Phase 7：接入 TungstenRod、BeatingRemnant 等会修正 HP Loss 结果的机制
 - 当前分支：`main`
 - 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入与 Steam 运行时验证；Phase 6B 已按 shipped 代码机制接入 Regret；Phase 6C 已完成 Beckon / Bad Luck / Regret 的 Steam 运行时联合验证。
 - 约束：不提交 DLL、PDB、PCK、logs、publish 输出、NuGet 缓存或游戏目录文件。
@@ -115,8 +115,10 @@
 | Phase 6A | 已完成 | Direct HP Loss 固定值 | Beckon、Bad Luck 显示 `♥ -N`，并完成 Steam 运行时矩阵 | Phase 6B |
 | Phase 6B | 已完成 | Regret Direct HP Loss | Regret 按当前手牌总数进入 `♥ -N` | Phase 6C |
 | Phase 6C | 已完成 | Direct HP Loss 联合运行时验证 | Beckon、Bad Luck、Regret 的 `♥ -N` 完成 Steam 联合验证 | Phase 7 |
-| Phase 7 | 未开始 | 单人验证与收口 | 单人 HUD 规则、运行时验证、文档收口 | 后续机制补充 |
-| Phase 8 | 冻结 | 多人研究 | 仅研究真实目标与原生预览，不做正式多人 HUD | 证据充分后再开启 |
+| Phase 7 | 待做 | HP Loss 结果修正机制 | 接入 TungstenRod、BeatingRemnant 等会修正 HP Loss 结果的机制 | Phase 8 |
+| Phase 8 | 待做 | 非 Block 承伤修正机制 | 补 DiamondDiademPower 等改变实际承伤、但不属于 Block 的伤害修正机制 | Phase 9 |
+| Phase 9 | 待做 | 单人正式版收口 | 异常场景、回归测试、文档整理、清理临时诊断与 UI 打磨 | Phase 10 |
+| Phase 10 | 冻结 | 多人研究 | 仅研究多人真实目标与原生 target-aware 伤害预览，证据不足前不做正式多人 HUD | 证据充分后再开启 |
 
 ## 任务登记规则
 

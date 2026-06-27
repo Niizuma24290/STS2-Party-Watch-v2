@@ -45,16 +45,21 @@ non-attack,
 one tested special-case scene.
 Record actual result versus forecast.
 
-## Phase 7 - v2.0 cleanup
+## Phase 7 - HP Loss result modifiers
+
+接入 TungstenRod、BeatingRemnant 等会修正 HP Loss 结果的机制。
+
+## Phase 8 - Non-Block damage modifiers
+
+补 DiamondDiademPower 等“改变实际承伤、但不属于 Block”的伤害修正机制。
+
+## Phase 9 - Single-player release cleanup
 
 Remove temporary diagnostics.
 Confirm only production responsibilities remain.
 Document known limitations.
 Tag v2.0.0 only after manual runtime validation.
 
-## Deferred
+## Phase 10 - Multiplayer research
 
-- v2.1 direct HP-loss pipeline.
-- v2.2 multiplayer state reading.
-- v2.3 actual-target resolution.
-- v2.4 teammate HUD.
+仅研究多人真实目标与原生 target-aware 伤害预览，证据不足前不做正式多人 HUD。
