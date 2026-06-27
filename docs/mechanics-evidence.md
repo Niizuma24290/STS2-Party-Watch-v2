@@ -140,8 +140,8 @@ DirectHpLoss = BeckonLoss + BadLuckLoss
 
 | 来源 | 是否进入 `♥` | 原因 | 读取方式 | 运行时状态 |
 | --- | ---: | --- | --- | --- |
-| Beckon | 是 | shipped `OnTurnEndInHand` 从 `HpLossVar(6m)` 读取并以 `ValueProp.Unblockable` 调 `CreatureCmd.Damage` | 当前手牌中精确类型 `Beckon` + `HpLossVar.BaseValue == 6` | 尚未验证 |
-| Bad Luck | 是 | shipped `OnTurnEndInHand` 从 `HpLossVar(13m)` 读取并以 `ValueProp.Unblockable` 调 `CreatureCmd.Damage` | 当前手牌中精确类型 `BadLuck` + `HpLossVar.BaseValue == 13` | 尚未验证 |
+| Beckon | 是 | shipped `OnTurnEndInHand` 从 `HpLossVar(6m)` 读取并以 `ValueProp.Unblockable` 调 `CreatureCmd.Damage` | 当前手牌中精确类型 `Beckon` + `HpLossVar.BaseValue == 6` | 已验证 |
+| Bad Luck | 是 | shipped `OnTurnEndInHand` 从 `HpLossVar(13m)` 读取并以 `ValueProp.Unblockable` 调 `CreatureCmd.Damage` | 当前手牌中精确类型 `BadLuck` + `HpLossVar.BaseValue == 13` | 已验证 |
 | Regret | 否 | 数值依赖手牌数读取时点，本轮未验证 | 留给 Phase 6B | 尚未验证 |
 | TungstenRod | 否 | 修改实际 HP loss 结果，不是本轮固定来源 | 留给后续 | 尚未验证 |
 | BeatingRemnant | 否 | 限制每回合 HP loss 上限，不是本轮固定来源 | 留给后续 | 尚未验证 |
@@ -161,5 +161,12 @@ DirectHpLoss = BeckonLoss + BadLuckLoss
 
 ## Phase 6A runtime validation
 
-- Steam 运行时验证尚未完成。
-- 不能把上述代码确认写作运行时事实；完成 Steam 验证后应在 `docs/task-notes/phase-6-direct-hp-loss.md` 与本文档登记具体场景、截图或日志证据位置。
+- Steam 运行时已验证 Beckon 在手牌中显示 `♥ -6`，且与真实回合结束结算一致。
+- Steam 运行时已验证 Bad Luck 在手牌中显示 `♥ -13`，且与真实回合结束结算一致。
+- Steam 运行时已验证 Beckon + Bad Luck 同时在手牌时显示 `♥ -19`。
+- Steam 运行时已验证当前 Block 改变不影响 `♥` 数值。
+- Steam 运行时已验证 Beckon / Bad Luck 离开手牌后，`♥` 同步减少或隐藏。
+- Steam 运行时已验证无 Beckon / Bad Luck 时不显示 `♥`，非战斗两行隐藏。
+- Steam 运行时截图案例：手牌含 Bad Luck（`霉运`）与 Burn（`灼伤`），敌人 Intent 16，当前 Block 0，HUD 显示 `🛡 -18` 与 `♥ -13` 分两行；`🛡 -18` = 敌人攻击 16 + Burn 2，`♥ -13` = Bad Luck direct HP loss。
+- 截图证据位置：`C:\Users\ROG\AppData\Local\Temp\codex-clipboard-2405da0f-af6a-41d9-aea8-addc99785f37.png`（用户提供，未提交）。
+- 本轮未观察到崩溃、错位、漏刷新或重复计算。
