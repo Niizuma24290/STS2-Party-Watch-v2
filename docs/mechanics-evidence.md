@@ -125,15 +125,17 @@ EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock
 | --- | --- |
 | 已纳入 `🛡` | AttackIntent / DeathBlow 原生攻击预览、手牌 blockable `DamageVar`、Frost、PlatingPower、Orichalcum、FakeOrichalcum、RippleBasin、CloakClasp |
 | 已排除出 `🛡` | `HpLossVar`、`ValueProp.Unblockable`、Beckon、Bad Luck、Regret |
-| Phase 6A 已代码接入 `♥` | Beckon / Bad Luck |
-| 留给 Phase 6B / 后续 | Regret、TungstenRod、BeatingRemnant |
+| Phase 6A 已代码接入并运行时验证 `♥` | Beckon / Bad Luck |
+| Phase 6B 已代码接入，待运行时验证 `♥` | Regret |
+| 留给后续 | TungstenRod、BeatingRemnant |
 | 后续伤害修正机制 | DiamondDiadem / DiamondDiademPower |
 
-## Phase 6A direct HP loss contract
+## Phase 6 direct HP loss contract
 
 ```text
 ♥ -N = DirectHpLoss
-DirectHpLoss = BeckonLoss + BadLuckLoss
+DirectHpLoss = BeckonLoss + BadLuckLoss + RegretLoss
+RegretLoss = 当前手牌总数 × 当前手牌中的 Regret 数量
 ```
 
 `♥ -N` 不与 `🛡 -N` 合并，不受当前 Block、Frost、覆甲或遗物 Block 影响。
@@ -142,7 +144,7 @@ DirectHpLoss = BeckonLoss + BadLuckLoss
 | --- | ---: | --- | --- | --- |
 | Beckon | 是 | shipped `OnTurnEndInHand` 从 `HpLossVar(6m)` 读取并以 `ValueProp.Unblockable` 调 `CreatureCmd.Damage` | 当前手牌中精确类型 `Beckon` + `HpLossVar.BaseValue == 6` | 已验证 |
 | Bad Luck | 是 | shipped `OnTurnEndInHand` 从 `HpLossVar(13m)` 读取并以 `ValueProp.Unblockable` 调 `CreatureCmd.Damage` | 当前手牌中精确类型 `BadLuck` + `HpLossVar.BaseValue == 13` | 已验证 |
-| Regret | 否 | 数值依赖手牌数读取时点，本轮未验证 | 留给 Phase 6B | 尚未验证 |
+| Regret | 是 | shipped `BeforeSideTurnEnd` 记录当前手牌数，`OnTurnEndInHand` 以该值造成 Unblockable HP loss | 当前手牌总数 × 当前手牌中的 Regret 数量 | 仅代码确认，尚未运行时验证 |
 | TungstenRod | 否 | 修改实际 HP loss 结果，不是本轮固定来源 | 留给后续 | 尚未验证 |
 | BeatingRemnant | 否 | 限制每回合 HP loss 上限，不是本轮固定来源 | 留给后续 | 尚未验证 |
 
@@ -158,6 +160,21 @@ DirectHpLoss = BeckonLoss + BadLuckLoss
 - `CardModel.OnTurnEndInHandWrapper` 先将卡加入 Play pile，执行 `OnTurnEndInHand`，之后若有 Ethereal 才 exhaust，否则加入 discard pile。
 - 因此 Beckon / Bad Luck 必须在回合结束读取时仍在手牌；若已离开手牌，则不会被本轮 `♥` 预测计入。
 - 本实现只读取匹配类型自己的 `HpLossVar`，不扫描所有 `HpLossVar`，不调用真实伤害结算。
+
+## Phase 6B code-confirmed mechanics
+
+- Regret 的 shipped 类型是 `MegaCrit.Sts2.Core.Models.Cards.Regret`。
+- Regret `CanonicalKeywords` 为 `Unplayable`，`HasTurnEndInHandEffect == true`。
+- Regret 在 `BeforeSideTurnEnd` 中，若自身仍在 `PileType.Hand`，记录 `base.Pile.Cards.Count`。
+- Regret 在 `OnTurnEndInHand` 中调用 `CreatureCmd.Damage(choiceContext, Owner.Creature, CardsInHand, ValueProp.Unblockable | ValueProp.Unpowered | ValueProp.Move, this)`，随后清零内部 `CardsInHand`。
+- 本实现不读取 Regret 私有字段 `_cardsInHand`，而是使用同一公开来源 `CardPile.Get(PileType.Hand, player).Cards.Count` 预测将被写入的手牌数。
+- 多张 Regret 同时在手牌时，每张 Regret 各贡献一次当前手牌总数。
+- Regret 进入 `DirectHpLoss` 与 `♥ -N`，不进入 `🛡 -N`，不受 Block 影响。
+
+## Phase 6B runtime validation
+
+- 尚未进行 Steam 运行时验证。
+- 不能把 Phase 6B 的代码接入写成运行时事实。
 
 ## Phase 6A runtime validation
 

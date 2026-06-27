@@ -21,6 +21,7 @@ internal static class VerifiedFixedTurnEndHpLossReader
                 return true;
             }
 
+            var handCount = handPile.Cards.Count;
             foreach (var card in handPile.Cards)
             {
                 if (TryGetBeckonHpLoss(card, out var beckonLoss))
@@ -32,6 +33,12 @@ internal static class VerifiedFixedTurnEndHpLossReader
                 if (TryGetBadLuckHpLoss(card, out var badLuckLoss))
                 {
                     hpLoss += badLuckLoss;
+                    continue;
+                }
+
+                if (TryGetRegretHpLoss(card, handCount, out var regretLoss))
+                {
+                    hpLoss += regretLoss;
                 }
             }
 
@@ -52,6 +59,18 @@ internal static class VerifiedFixedTurnEndHpLossReader
     private static bool TryGetBadLuckHpLoss(CardModel card, out int hpLoss)
     {
         return TryGetVerifiedFixedHpLoss<BadLuck>(card, 13, out hpLoss);
+    }
+
+    private static bool TryGetRegretHpLoss(CardModel card, int handCount, out int hpLoss)
+    {
+        hpLoss = 0;
+        if (card is not Regret || !card.HasTurnEndInHandEffect)
+        {
+            return false;
+        }
+
+        hpLoss = Math.Max(0, handCount);
+        return true;
     }
 
     private static bool TryGetVerifiedFixedHpLoss<TCard>(CardModel card, int expectedHpLoss, out int hpLoss)

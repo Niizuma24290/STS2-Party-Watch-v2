@@ -1,15 +1,17 @@
-# Phase 6A｜Beckon / Bad Luck Direct HP Loss
+# Phase 6｜Direct HP Loss
 
 ## 状态
 
-已完成代码接入与 Steam 运行时验证。
+Phase 6A 已完成代码接入与 Steam 运行时验证。
+Phase 6B 已按 shipped 代码机制接入 Regret，尚未进行 Steam 运行时验证。
 
-本轮只处理：
+本文件当前覆盖：
 
 - Beckon → `♥ -6`
 - Bad Luck → `♥ -13`
+- Regret → `♥ -(当前手牌总数 × Regret 数量)`
 
-本轮不处理 Regret、TungstenRod、BeatingRemnant、DiamondDiadem / DiamondDiademPower、任何新的 `🛡` 来源、多人 HUD、完整回合模拟器或通用 DirectHpLossForecastService。
+本轮不处理 TungstenRod、BeatingRemnant、DiamondDiadem / DiamondDiademPower、任何新的 `🛡` 来源、多人 HUD、完整回合模拟器或通用 DirectHpLossForecastService。
 
 ## shipped 代码确认
 
@@ -17,6 +19,7 @@
 | --- | --- | ---: | ---: | --- | --- | ---: | --- |
 | Beckon | `MegaCrit.Sts2.Core.Models.Cards.Beckon` | 是 | 是 | `OnTurnEndInHand` 调 `CreatureCmd.Damage(..., ValueProp.Unblockable | ValueProp.Unpowered | ValueProp.Move, this)` | `HpLossVar(6m)` / `DynamicVars.HpLoss.BaseValue` | 否 | 已验证 |
 | Bad Luck | `MegaCrit.Sts2.Core.Models.Cards.BadLuck` | 是 | 是 | `OnTurnEndInHand` 先 `Cmd.Wait(0.25f)`，再调同样的 Unblockable `CreatureCmd.Damage` | `HpLossVar(13m)` / `DynamicVars.HpLoss.BaseValue` | 否 | 已验证 |
+| Regret | `MegaCrit.Sts2.Core.Models.Cards.Regret` | 是 | 是 | `BeforeSideTurnEnd` 记录当前手牌数；`OnTurnEndInHand` 调 Unblockable `CreatureCmd.Damage` | 当前 `PileType.Hand` 手牌总数，包含 Regret 自己 | 否 | 仅代码确认，尚未运行时验证 |
 
 ## 时序确认
 
@@ -26,22 +29,27 @@
 - `OnTurnEndInHand` 执行后，如果卡牌带 Ethereal，才 exhaust；否则加入 discard pile。
 - 因此：若 Beckon / Bad Luck 在回合结束时仍在手牌，它们会先结算 HP loss，再离开手牌。若它们在回合结束前已因其他流程离开手牌，本 HUD 读取当前手牌，不显示对应 `♥`。
 - Bad Luck 的 shipped keywords 是 `Eternal` 和 `Unplayable`；Beckon 本体未声明 Ethereal / Exhaust / Discard 特殊关键字。
+- Regret 的 shipped keywords 是 `Unplayable`。
+- Regret 在 `BeforeSideTurnEnd` 中，若自身仍在 `PileType.Hand`，记录 `base.Pile.Cards.Count`；随后 `OnTurnEndInHand` 使用记录值造成 Unblockable HP loss。
+- HUD 预测不读取 Regret 私有字段 `_cardsInHand`，而是使用与 shipped 写入公式一致的当前公开手牌总数。
 
 ## 接入规则
 
 新增 `VerifiedFixedTurnEndHpLossReader`：
 
 - 只读取本机单人玩家当前手牌。
-- 只识别 `Beckon` 和 `BadLuck` 两个 shipped 类型。
+- 只识别 `Beckon`、`BadLuck`、`Regret` 三个 shipped 类型。
 - 只在卡牌仍在 `PileType.Hand` 且 `HasTurnEndInHandEffect == true` 时计入。
 - 只读取匹配卡牌自己的 `HpLossVar`，并要求 Beckon 精确等于 6、Bad Luck 精确等于 13。
+- 对 Regret，读取当前手牌总数；每张 Regret 贡献一次当前手牌总数。
 - 不扫描所有 `HpLossVar`。
 - 不调用 `CreatureCmd.Damage(...)`、命令、RNG、存档或网络入口。
 
 内部目标：
 
 ```text
-DirectHpLoss = BeckonLoss + BadLuckLoss
+DirectHpLoss = BeckonLoss + BadLuckLoss + RegretLoss
+RegretLoss = 当前手牌总数 × 当前手牌中的 Regret 数量
 ```
 
 UI 规则：
@@ -69,6 +77,9 @@ DirectHpLoss = 0 → 隐藏 ♥ 行
 - Bad Luck 进入手牌
 - Bad Luck 离开手牌
 - 两张同时存在
+- Regret 进入手牌
+- Regret 离开手牌
+- 手牌总数变化
 
 未新增每帧扫描，未新增默认开启的诊断日志。
 
@@ -101,7 +112,15 @@ Steam 启动游戏后，用户完成 Phase 6A-RV 验证并确认 Beckon / Bad Lu
 
 ## Regret 未接入原因
 
-Regret 的数值依赖手牌数读取时点，且本轮任务明确只验证 Beckon / Bad Luck 的固定值来源。Regret 不在本轮读取，不猜 0，也不显示猜测数值。
+Phase 6A 中 Regret 未接入，因为其数值依赖手牌数读取时点，当时只验证 Beckon / Bad Luck 的固定值来源。
+
+## Phase 6B Regret 接入
+
+- 已按 shipped 代码机制接入 Regret。
+- 预测规则：如果 Regret 当前仍在手牌，每张 Regret 贡献一次当前手牌总数；当前手牌总数包含 Regret 自己。
+- 示例：1 张 Regret、手牌共 1 张 → `♥ -1`；1 张 Regret、手牌共 5 张 → `♥ -5`；2 张 Regret、手牌共 5 张 → `♥ -10`；Bad Luck + 1 张 Regret、手牌共 6 张 → `♥ -19`。
+- Regret 贡献进入 `DirectHpLoss`，不进入 `🛡`，不受 Block 影响。
+- 尚未进行 Steam 运行时验证；不能把本次代码接入写成运行时事实。
 
 ## 实际改动文件
 
@@ -124,4 +143,4 @@ Regret 的数值依赖手牌数读取时点，且本轮任务明确只验证 Bec
 
 ## 下一步唯一任务
 
-- Phase 6B：Regret 的手牌数读取时点验证与最小接入
+- Phase 6C：Beckon / Bad Luck / Regret 的 Steam 运行时联合验证
