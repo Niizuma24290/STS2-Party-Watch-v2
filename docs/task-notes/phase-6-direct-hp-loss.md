@@ -120,7 +120,7 @@ Regret 的数值依赖手牌数读取时点，且本轮任务明确只验证 Bec
 ## 提交记录
 
 - `48fd471e68405573b4d2918752d0dc6aeb1e406f`：`feat: add fixed direct hp loss forecast`
-- `6ed186506a52285e692e8507ad69ef84a284d049`：`docs: record beckon and bad luck runtime validation`
+- `8c9c0206f54b0e45f9b8c22c1acf8ee39ea9a934`：`docs: record beckon and bad luck runtime validation`
 
 ## 下一步唯一任务
 
