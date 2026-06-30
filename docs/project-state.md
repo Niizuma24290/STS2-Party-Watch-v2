@@ -4,7 +4,7 @@
 - 用户实测规则确认：无实体按每个独立事件先变为 1；Block 可抵消该 1；多段攻击按每 hit 1；Beckon / Bad Luck / Regret 各自变为 1；无实体先于 `TungstenRod` 与 `BeatingRemnant`。
 - blockable damage 仍信任原生 `AttackIntent` / `Hook.ModifyDamage` 预览，避免二次 cap；direct HP loss 保留单事件粒度后再按无实体修正。
 - 本轮不接入 BufferPower、PoisonPower、DoomPower、DemisePower 或通用 HP loss 引擎。
-- 代码已构建、发布并安装；用户 Steam 运行时验证待完成。
+- 代码已构建、发布并安装；用户 Steam 运行时验证已通过。
 
 ## 追加快照：Constrict / Disintegration Power 自伤
 
@@ -21,7 +21,7 @@
 - 任务登记文件夹：`docs/task-notes/`
 - 当前唯一任务：Phase 9：单人正式版收口
 - 当前分支：`main`
-- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入与 Steam 运行时验证；Phase 6B 已按 shipped 代码机制接入 Regret；Phase 6C 已完成 Beckon / Bad Luck / Regret 的 Steam 运行时联合验证；Phase 7 已按正常游戏范围收口：TungstenRod 与 BeatingRemnant 已接入，复数棍子控制台无效状态不作为正式行为依据；Phase 8 已完成 DiamondDiademPower 最小接入并通过用户 Steam 运行时验证；Phase 9 合并 HUD 显示改造、水盆 + 惊涛修补、Constrict / Disintegration Power 自伤修补均已完成代码、文档与用户 Steam 运行时收口；当前追加 IntangiblePower / 无实体 HP loss 结果修补已完成代码接入、构建、发布和安装，等待用户 Steam 运行时验证。
+- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入与 Steam 运行时验证；Phase 6B 已按 shipped 代码机制接入 Regret；Phase 6C 已完成 Beckon / Bad Luck / Regret 的 Steam 运行时联合验证；Phase 7 已按正常游戏范围收口：TungstenRod 与 BeatingRemnant 已接入，复数棍子控制台无效状态不作为正式行为依据；Phase 8 已完成 DiamondDiademPower 最小接入并通过用户 Steam 运行时验证；Phase 9 合并 HUD 显示改造、水盆 + 惊涛修补、Constrict / Disintegration Power 自伤修补、IntangiblePower / 无实体 HP loss 结果修补均已完成代码、文档与用户 Steam 运行时收口。
 - 约束：不提交 DLL、PDB、PCK、logs、publish 输出、NuGet 缓存或游戏目录文件。
 
 ## Phase 1A 已完成

@@ -281,13 +281,12 @@
 
 - 本轮 Codex 未启动 Steam 游戏；当前为代码接入、构建、发布与安装验证。
 - 用户已提供实际机制规则，用于确定本轮实现顺序。
+- 用户已完成 Steam 运行时验证：无实体修补后的 HUD 结果正常，未发现问题。
 
 ### 未验证项
 
-- Steam 运行时尚未验证本轮新 DLL。
-- 无实体 + 多段攻击 + Block 的 HUD 结果尚未由本轮 Steam 复验。
-- 无实体 + Beckon / Bad Luck / Regret 的 HUD 结果尚未由本轮 Steam 复验。
-- 无实体 + `TungstenRod` / `BeatingRemnant` 组合尚未由本轮 Steam 复验。
+- 本轮无实体基础组合已由用户 Steam 运行时验证通过。
+- 未扩展验证 BufferPower、PoisonPower、DoomPower、DemisePower 或通用 HP loss 引擎；这些仍不在支持范围内。
 
 ### 明确风险或不支持情形
 
@@ -297,7 +296,7 @@
 
 ### 下一步唯一任务
 
-- 用户从 Steam 运行时验证无实体与 Block、多段攻击、direct HP loss、Tungsten Rod / Beating Remnant 的组合。
+- 本轮 IntangiblePower / 无实体修补已收口；下一步仍保持 Phase 10 冻结，只在后续有新明确问题时单独开小任务。
 
 ### 构建与安装
 
