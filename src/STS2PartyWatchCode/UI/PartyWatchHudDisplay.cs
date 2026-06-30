@@ -6,6 +6,7 @@ namespace STS2PartyWatch.UI;
 internal static class PartyWatchHudDisplay
 {
     private const int MainFontSize = 26;
+    private const float HealthBarRightPadding = 6f;
 
     public static string BuildHudDisplay(ForecastResult result)
     {
@@ -32,7 +33,7 @@ internal static class PartyWatchHudDisplay
         label.MouseFilter = Control.MouseFilterEnum.Ignore;
         label.CustomMinimumSize = new Vector2(GetWidth(showDetails), GetHeight(showDetails));
         label.Size = label.CustomMinimumSize;
-        label.HorizontalAlignment = HorizontalAlignment.Center;
+        label.HorizontalAlignment = HorizontalAlignment.Left;
         label.VerticalAlignment = VerticalAlignment.Center;
         label.AddThemeFontSizeOverride("font_size", MainFontSize);
         label.AddThemeColorOverride("font_color", PartyWatchUiSettings.TotalLossColor);
@@ -57,8 +58,8 @@ internal static class PartyWatchHudDisplay
                 healthBar.Position.X + MathF.Max(0f, (size.X - labelSize.X) * 0.5f),
                 healthBar.Position.Y + size.Y + 14f),
             _ => new Vector2(
-                healthBar.Position.X + size.X + 42f,
-                healthBar.Position.Y + MathF.Max(0f, (size.Y - labelSize.Y) * 0.5f))
+                healthBar.Position.X + size.X + HealthBarRightPadding,
+                healthBar.Position.Y + ((size.Y - labelSize.Y) * 0.5f))
         };
 
         position += new Vector2(PartyWatchUiSettings.OffsetX, PartyWatchUiSettings.OffsetY);
@@ -81,7 +82,7 @@ internal static class PartyWatchHudDisplay
         return string.Join("   ", details);
     }
 
-    private static float GetWidth(bool showDetails) => showDetails ? 240f : 108f;
+    private static float GetWidth(bool showDetails) => showDetails ? 240f : 84f;
 
-    private static float GetHeight(bool showDetails) => showDetails ? 78f : 44f;
+    private static float GetHeight(bool showDetails) => showDetails ? 78f : 36f;
 }
