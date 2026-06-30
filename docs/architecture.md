@@ -34,8 +34,17 @@ v2.0 keeps each module narrow and read-only.
 - Uses `LocalIncomingDamageReader` and `LocalDamageForecast` for all mechanics; the patch only coordinates refresh and display.
 - Displays total expected HP loss as the default HUD line.
 - Keeps trusted `🛡` / `♥` source details behind a UI-layer advanced toggle.
+- Delegates UI settings, visibility, display formatting, positioning, and turn-scoped display freezing to `UI/*` helpers.
 - Hides the label for hidden/unknown/zero-output states.
 - Does not create or execute combat commands.
+
+## UI helpers
+
+- `PartyWatchUiSettings` is the single source of HUD UI settings for the current game session.
+- `PartyWatchHudVisibilityPolicy` owns `ShouldRenderHud()` and conservatively hides the HUD when full-screen or modal UI is visible over combat.
+- `PartyWatchHudSnapshotStore` owns the display-only `FreezeHudWithinPlayerTurn` lifecycle; it never changes forecast mechanics.
+- `PartyWatchHudDisplay` owns `BuildHudDisplay(...)`, `ApplyHudStyle(...)`, and `ApplyHudPosition(...)`.
+- `PartyWatchSettingsPatch` injects the Party Watch panel into the native `NSettingsScreen`; settings are session-only until a verified official mod config API is available.
 
 No future v2 module may bypass this chain:
 
@@ -62,4 +71,5 @@ Single-player production notes:
 - `Patches/ForecastRefreshPatch` is the only module that owns the final HUD label and its display text.
 - `Patches/ForecastRefreshPatch` may add trusted final `OutDamage + DirectHpLoss` for display only; it must not reread game state or recalculate mechanics.
 - Breakdown details, when enabled, remain display-only and use the same trusted final values.
+- Freezing a HUD value is display-only: it chooses when to adopt a `ForecastResult`, not how that result is calculated.
 - UI reflection is restricted to reading `NHealthBar._creature` and `HpBarContainer` placement data; it does not read combat mechanics.

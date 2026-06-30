@@ -16,6 +16,9 @@
 | 已运行时验证 | 玩家血条绑定生命周期 | `NHealthBar.SetCreature` | Harmony postfix | 是 | 仅创建/刷新本机玩家血条旁标签，不修改 combat state。 |
 | 已运行时验证 | 玩家血条数值刷新 | `NHealthBar.RefreshValues` | Harmony postfix | 是 | Block 变化后 HUD 刷新已验证。 |
 | 已运行时验证 | 定位血条右侧 | `NHealthBar.HpBarContainer` 与私有 `SetHpBarContainerSizeWithOffsets(Vector2)` | 公开属性读取；Harmony postfix 监听尺寸更新 | 是 | 标签挂在 `HpBarContainer` 的同级父节点或等价父节点；仅用于 UI 定位。 |
+| 仅代码确认，尚未运行时验证 | HUD 可见性集中判断 | `PartyWatchHudVisibilityPolicy.ShouldRenderHud(NHealthBar, Creature)` | 读取本机战斗状态、血条节点可见性、Godot 可见 UI 树 | 否 | 检测到可见非战斗 Screen、modal、popup、overlay 或常见遮挡页面时保守隐藏。 |
+| 仅代码确认，尚未运行时验证 | 回合内 HUD 显示快照 | `Hook.BeforeSideTurnStart` / `Hook.BeforeTurnEnd` / `Hook.AfterCombatEnd` + `PartyWatchHudSnapshotStore` | Harmony postfix，仅存显示层 `ForecastResult` 快照 | 否 | 默认开启；不改变预测计算，只决定何时采用或保留已提交显示值。 |
+| 仅代码确认，尚未运行时验证 | Mod 设置界面入口 | `NSettingsScreen._Ready` + `PartyWatchSettingsPatch` | Harmony postfix，在原生 Settings 屏注入 Godot 控件面板 | 否 | 当前未找到可证实官方持久化 API，设置仅会话内生效。 |
 | 仅代码确认，尚未运行时验证 | 读取本机玩家手牌 | `CardPile.Get(PileType.Hand, player)` | 公开静态方法 | 否 | Phase 5A+5B 只读取本机玩家手牌，不读取队友。 |
 | 仅代码确认，尚未运行时验证 | 判断卡牌是否有回合末手牌伤害 | `CardModel.HasTurnEndInHandEffect` + `OnTurnEndInHand` 状态机 IL 中的 `CreatureCmd.Damage` 调用 | 只读 reflection / IL inspection，按卡牌类型缓存 | 否 | 仅用于筛选候选卡；无法确认则排除。 |
 | 仅代码确认，尚未运行时验证 | 读取回合末 blockable 卡牌伤害变量 | `card.DynamicVars.Values.OfType<DamageVar>()` | 公开集合读取 | 否 | `HpLossVar` 不读取；`ValueProp.Unblockable` 不进入 `🛡 -N`。 |

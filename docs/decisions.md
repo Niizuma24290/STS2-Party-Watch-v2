@@ -12,3 +12,6 @@
 - D-010: if blockable damage is not trustworthy but direct HP loss remains trustworthy, let the display total equal trusted `♥`; optional details omit `🛡`.
 - D-011: the display total is not a new mechanics algorithm; it is only `ForecastResult.OutDamage + ForecastResult.DirectHpLoss`.
 - D-012: `🛡` / `♥` breakdown details are an advanced UI display option and are disabled by default.
+- D-013: HUD visibility is decided by a central UI policy and should conservatively hide behind full-screen or modal UI.
+- D-014: turn-scoped HUD freezing is display-only and must not change forecast mechanics.
+- D-015: until a verified official mod config API is available, Party Watch UI settings are session-only and must not be written into game saves or guessed game settings paths.

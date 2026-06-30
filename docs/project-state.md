@@ -1,3 +1,13 @@
+## 追加快照：Phase 9A 前端 UI、设置与显示生命周期
+
+- 本轮只做前端产品化，不修改 `LocalIncomingDamageReader`、`LocalDamageForecast`、遗物/Power 修正或任何预测公式。
+- HUD 可见性集中到 `PartyWatchHudVisibilityPolicy.ShouldRenderHud()`：要求有效单人本机战斗、玩家存活、血条可见，并在 Settings、暂停、卡牌查看、奖励、地图、商店、事件、modal / popup / overlay 等可见时保守隐藏。
+- HUD 显示层新增 `FreezeHudWithinPlayerTurn` 快照：玩家 side turn 开始清空并等待第一份可信结果；提交后本回合保持稳定；点击结束回合后继续显示快照；下一玩家回合重新提交。
+- 新增原生 `NSettingsScreen` 注入面板，支持启用 HUD、高级 `🛡 / ♥` 明细、冻结开关、位置预设、X/Y 偏移、三组颜色和恢复默认。
+- 未找到可证实的官方单 Mod 配置持久化 API；本轮设置仅本次运行会话生效，不写游戏存档、CombatState、游戏资源文件或猜测 settings 路径。
+- 代码已构建、发布并安装；等待用户 Steam 运行时验证页面隐藏、冻结显示和设置面板可用性。
+- 下一步唯一任务：基于实际游戏截图进行 HUD 位置、字号、间距、颜色与设置页可读性的视觉微调。
+
 ## 追加快照：TungstenRod / BeatingRemnant 预测顺序
 
 - 本轮只调整 Party Watch 的 HP loss 结果修正预测顺序：`TungstenRod` 固定早于 `BeatingRemnant`。
@@ -26,9 +36,9 @@
 ## 当前快照
 
 - 任务登记文件夹：`docs/task-notes/`
-- 当前唯一任务：Phase 9：单人正式版收口
+- 当前唯一任务：基于实际游戏截图进行 HUD 位置、字号、间距、颜色与设置页可读性的视觉微调
 - 当前分支：`main`
-- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入与 Steam 运行时验证；Phase 6B 已按 shipped 代码机制接入 Regret；Phase 6C 已完成 Beckon / Bad Luck / Regret 的 Steam 运行时联合验证；Phase 7 已按正常游戏范围收口：TungstenRod 与 BeatingRemnant 已接入，复数棍子控制台无效状态不作为正式行为依据；Phase 8 已完成 DiamondDiademPower 最小接入并通过用户 Steam 运行时验证；Phase 9 合并 HUD 显示改造、水盆 + 惊涛修补、Constrict / Disintegration Power 自伤修补、IntangiblePower / 无实体 HP loss 结果修补均已完成代码、文档与用户 Steam 运行时收口；本轮追加 TungstenRod 早于 BeatingRemnant 的预测顺序调整，等待用户 Steam 运行时验证。
+- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入与 Steam 运行时验证；Phase 6B 已按 shipped 代码机制接入 Regret；Phase 6C 已完成 Beckon / Bad Luck / Regret 的 Steam 运行时联合验证；Phase 7 已按正常游戏范围收口：TungstenRod 与 BeatingRemnant 已接入，复数棍子控制台无效状态不作为正式行为依据；Phase 8 已完成 DiamondDiademPower 最小接入并通过用户 Steam 运行时验证；Phase 9 合并 HUD 显示改造、水盆 + 惊涛修补、Constrict / Disintegration Power 自伤修补、IntangiblePower / 无实体 HP loss 结果修补均已完成代码、文档与用户 Steam 运行时收口；追加 TungstenRod 早于 BeatingRemnant 的预测顺序调整等待用户 Steam 运行时验证；Phase 9A 前端 UI、设置与显示生命周期已完成代码接入、构建、发布与安装，等待用户 Steam 运行时验证。
 - 约束：不提交 DLL、PDB、PCK、logs、publish 输出、NuGet 缓存或游戏目录文件。
 
 ## Phase 1A 已完成
