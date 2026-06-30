@@ -8,24 +8,6 @@ namespace STS2PartyWatch.UI;
 
 internal static class PartyWatchHudVisibilityPolicy
 {
-    private static readonly string[] BlockingNodeNameTokens =
-    [
-        "Modal",
-        "Popup",
-        "Settings",
-        "Pause",
-        "Map",
-        "Reward",
-        "Shop",
-        "Merchant",
-        "Event",
-        "CardSelect",
-        "CardReward",
-        "CardGrid",
-        "Deck",
-        "Library"
-    ];
-
     public static bool ShouldRenderHud(NHealthBar bar, Creature creature)
     {
         if (!PartyWatchUiSettings.HudEnabled
@@ -103,8 +85,7 @@ internal static class PartyWatchHudVisibilityPolicy
             return true;
         }
 
-        var nodeName = node.Name.ToString();
-        return BlockingNodeNameTokens.Any(token => nodeName.Contains(token, StringComparison.OrdinalIgnoreCase));
+        return false;
     }
 
     private static bool IsAncestorOf(Node possibleAncestor, Node node)
