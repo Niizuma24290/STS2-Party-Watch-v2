@@ -15,7 +15,6 @@ internal static class PartyWatchHudVisibilityPolicy
         "MegaCrit.Sts2.Core.Nodes.Screens.Map.NMapScreen",
         "MegaCrit.Sts2.Core.Nodes.Screens.NDeckViewScreen",
         "MegaCrit.Sts2.Core.Nodes.Screens.NRewardsScreen",
-        "MegaCrit.Sts2.Core.Nodes.Screens.Overlays.",
         "MegaCrit.Sts2.Core.Nodes.Screens.PauseMenu.NPauseMenu",
         "MegaCrit.Sts2.Core.Nodes.Screens.Settings.NSettingsScreen",
         "MegaCrit.Sts2.Core.Nodes.Screens.Shops.",
@@ -84,6 +83,12 @@ internal static class PartyWatchHudVisibilityPolicy
     private static bool IsBlockingUiNode(Node node)
     {
         var typeName = node.GetType().FullName ?? string.Empty;
+        if (typeName == "MegaCrit.Sts2.Core.Nodes.CommonUi.NModalContainer"
+            || typeName == "MegaCrit.Sts2.Core.Nodes.Screens.Overlays.NOverlayStack")
+        {
+            return false;
+        }
+
         if (BlockingScreenTypeFragments.Any(fragment => typeName.Contains(fragment, StringComparison.Ordinal)))
         {
             return true;

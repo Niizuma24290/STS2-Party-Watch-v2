@@ -117,7 +117,7 @@ internal static class ForecastRefreshPatch
         return CreatureField?.GetValue(bar) as Creature;
     }
 
-    private static RichTextLabel? GetOrCreateLabel(NHealthBar bar)
+    private static Label? GetOrCreateLabel(NHealthBar bar)
     {
         var parent = GetLabelParent(bar);
         if (parent is null)
@@ -125,13 +125,13 @@ internal static class ForecastRefreshPatch
             return null;
         }
 
-        var existing = parent.GetNodeOrNull<RichTextLabel>(LabelName);
+        var existing = parent.GetNodeOrNull<Label>(LabelName);
         if (existing is not null)
         {
             return existing;
         }
 
-        var label = new RichTextLabel
+        var label = new Label
         {
             Name = LabelName,
             MouseFilter = Control.MouseFilterEnum.Ignore,
@@ -150,7 +150,7 @@ internal static class ForecastRefreshPatch
         return bar.HpBarContainer?.GetParent() as Control ?? bar;
     }
 
-    private static void Reposition(NHealthBar bar, RichTextLabel label, Vector2? containerSize)
+    private static void Reposition(NHealthBar bar, Label label, Vector2? containerSize)
     {
         var container = bar.HpBarContainer;
         if (container is null)
@@ -163,14 +163,14 @@ internal static class ForecastRefreshPatch
 
     private static void HideExisting(NHealthBar bar)
     {
-        var existing = GetLabelParent(bar)?.GetNodeOrNull<RichTextLabel>(LabelName);
+        var existing = GetLabelParent(bar)?.GetNodeOrNull<Label>(LabelName);
         if (existing is not null)
         {
             Hide(existing);
         }
     }
 
-    private static void Hide(RichTextLabel label)
+    private static void Hide(Label label)
     {
         label.Text = string.Empty;
         label.Hide();

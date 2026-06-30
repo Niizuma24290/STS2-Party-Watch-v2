@@ -1,38 +1,23 @@
 using Godot;
 using HarmonyLib;
-using MegaCrit.Sts2.Core.Nodes.Screens.Settings;
+using MegaCrit.Sts2.Core.Nodes.Screens.MainMenu;
 using STS2PartyWatch.UI;
 
 namespace STS2PartyWatch.Patches;
 
-[HarmonyPatch(typeof(NSettingsScreen))]
+[HarmonyPatch(typeof(NMainMenu))]
 internal static class PartyWatchSettingsPatch
 {
     private const string PanelName = "STS2PartyWatchSettingsPanel";
 
     [HarmonyPostfix]
     [HarmonyPatch("_Ready")]
-    private static void ReadyPostfix(NSettingsScreen __instance)
+    private static void ReadyPostfix(NMainMenu __instance)
     {
         AddSettingsPanel(__instance);
-        ForecastRefreshPatch.RefreshRegisteredBars();
     }
 
-    [HarmonyPostfix]
-    [HarmonyPatch("OnSubmenuShown")]
-    private static void OnSubmenuShownPostfix()
-    {
-        ForecastRefreshPatch.RefreshRegisteredBars();
-    }
-
-    [HarmonyPostfix]
-    [HarmonyPatch("OnSubmenuHidden")]
-    private static void OnSubmenuHiddenPostfix()
-    {
-        ForecastRefreshPatch.RefreshRegisteredBars();
-    }
-
-    private static void AddSettingsPanel(NSettingsScreen screen)
+    private static void AddSettingsPanel(Control screen)
     {
         if (screen.GetNodeOrNull<PanelContainer>(PanelName) is not null)
         {
@@ -46,14 +31,14 @@ internal static class PartyWatchSettingsPatch
             ZIndex = 100
         };
         panel.SetAnchorsPreset(Control.LayoutPreset.TopRight);
-        panel.OffsetLeft = -610f;
-        panel.OffsetTop = 92f;
-        panel.OffsetRight = -70f;
-        panel.OffsetBottom = 800f;
+        panel.OffsetLeft = -580f;
+        panel.OffsetTop = 90f;
+        panel.OffsetRight = -56f;
+        panel.OffsetBottom = 760f;
 
         var content = new VBoxContainer
         {
-            CustomMinimumSize = new Vector2(520f, 680f)
+            CustomMinimumSize = new Vector2(500f, 640f)
         };
         content.AddThemeConstantOverride("separation", 8);
 

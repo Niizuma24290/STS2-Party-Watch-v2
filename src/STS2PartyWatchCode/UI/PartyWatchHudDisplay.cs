@@ -5,7 +5,6 @@ namespace STS2PartyWatch.UI;
 
 internal static class PartyWatchHudDisplay
 {
-    private const float DetailFontRatio = 0.62f;
     private const int MainFontSize = 32;
 
     public static string BuildHudDisplay(ForecastResult result)
@@ -18,27 +17,25 @@ internal static class PartyWatchHudDisplay
 
         if (!PartyWatchUiSettings.ShowBreakdownDetails)
         {
-            return $"[center][font_size={MainFontSize}]-{total}[/font_size][/center]";
+            return $"-{total}";
         }
 
         var details = BuildForecastDetails(result.OutDamage, result.DirectHpLoss);
         return string.IsNullOrEmpty(details)
-            ? $"[center][font_size={MainFontSize}]-{total}[/font_size][/center]"
-            : $"[center][font_size={MainFontSize}]-{total}[/font_size]\n[font_size={GetDetailFontSize()}]{details}[/font_size][/center]";
+            ? $"-{total}"
+            : $"-{total}\n{details}";
     }
 
-    public static void ApplyHudStyle(RichTextLabel label)
+    public static void ApplyHudStyle(Label label)
     {
         var showDetails = PartyWatchUiSettings.ShowBreakdownDetails;
-        label.BbcodeEnabled = true;
-        label.FitContent = false;
-        label.ScrollActive = false;
         label.MouseFilter = Control.MouseFilterEnum.Ignore;
         label.CustomMinimumSize = new Vector2(GetWidth(showDetails), GetHeight(showDetails));
         label.Size = label.CustomMinimumSize;
-        label.AddThemeFontSizeOverride("normal_font_size", MainFontSize);
+        label.HorizontalAlignment = HorizontalAlignment.Center;
+        label.VerticalAlignment = VerticalAlignment.Center;
         label.AddThemeFontSizeOverride("font_size", MainFontSize);
-        label.AddThemeColorOverride("default_color", PartyWatchUiSettings.TotalLossColor);
+        label.AddThemeColorOverride("font_color", PartyWatchUiSettings.TotalLossColor);
         label.AddThemeColorOverride("font_shadow_color", Colors.Black);
         label.AddThemeConstantOverride("shadow_offset_x", 2);
         label.AddThemeConstantOverride("shadow_offset_y", 2);
@@ -73,18 +70,16 @@ internal static class PartyWatchHudDisplay
         var details = new List<string>(2);
         if (blockablePrediction > 0)
         {
-            details.Add($"[color=#{PartyWatchUiSettings.BlockableDetailColor.ToHtml(false)}]🛡 {blockablePrediction}[/color]");
+            details.Add($"\U0001F6E1 {blockablePrediction}");
         }
 
         if (directHpLossPrediction > 0)
         {
-            details.Add($"[color=#{PartyWatchUiSettings.DirectHpLossDetailColor.ToHtml(false)}]♥ {directHpLossPrediction}[/color]");
+            details.Add($"\u2665 {directHpLossPrediction}");
         }
 
         return string.Join("   ", details);
     }
-
-    private static int GetDetailFontSize() => Math.Max(18, (int)(MainFontSize * DetailFontRatio));
 
     private static float GetWidth(bool showDetails) => showDetails ? 240f : 108f;
 
