@@ -10,7 +10,7 @@
 ## Defaults And Limitations
 
 - Main HUD font size is now `26` for a smaller Minty-like health-bar-adjacent readout.
-- Default position is `Health bar right` with `X offset = -32`, `Y offset = 0`, placing it near Minty's old health-bar readout but slightly to the right.
+- Default position is `Health bar right` with `X offset = -56`, `Y offset = -16`, placing it closer to Minty's old health-bar readout line and slightly left of the previous Party Watch test position.
 - Advanced detail colors are still present in settings, but this immediate visibility fallback uses a single plain `Label`, so per-detail colors should be restored with a multi-label HUD view after the user confirms the HUD is visible again.
 - Settings are still session-only; no verified official per-mod persistence API has been wired.
 
