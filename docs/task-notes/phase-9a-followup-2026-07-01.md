@@ -22,3 +22,9 @@
 ## Next Step
 
 Confirm in Steam that the Party Watch `-N` label appears in combat, then tune HUD position/spacing and replace the temporary single-label advanced detail renderer with a multi-label renderer for per-detail colors.
+
+## Freeze Semantics Correction
+
+- Live test feedback showed the original freeze behavior locked the first valid prediction at player turn start. Example: enemy attack `13`, then the player gains `5` Block, but HUD still shows `-13`.
+- Freeze now means: update live during the player turn, remember the latest displayable result, and only freeze that latest result when the player turn is ending.
+- Expected behavior after this change: enemy attack `13` displays `-13`; after gaining `5` Block it updates to `-8`; after pressing end turn it holds the last value until the next player turn starts.

@@ -9,21 +9,26 @@ internal static class PartyWatchHudSnapshotStore
     private static Player? _player;
     private static Creature? _creature;
     private static ForecastResult? _snapshot;
-    private static bool _canCommitSnapshot = true;
+    private static ForecastResult? _latestLiveResult;
+    private static bool _hasPlayerEndedTurn;
 
     public static void OnPlayerSideTurnStarted(Player player, Creature creature)
     {
         _player = player;
         _creature = creature;
         _snapshot = null;
-        _canCommitSnapshot = true;
+        _latestLiveResult = null;
+        _hasPlayerEndedTurn = false;
     }
 
     public static void OnPlayerTurnEnding(Player player, Creature creature)
     {
         if (ReferenceEquals(_player, player) || ReferenceEquals(_creature, creature))
         {
-            _canCommitSnapshot = false;
+            _snapshot = _latestLiveResult is { } latest && HasDisplayableDamage(latest)
+                ? latest
+                : null;
+            _hasPlayerEndedTurn = true;
         }
     }
 
@@ -32,13 +37,15 @@ internal static class PartyWatchHudSnapshotStore
         _player = null;
         _creature = null;
         _snapshot = null;
-        _canCommitSnapshot = true;
+        _latestLiveResult = null;
+        _hasPlayerEndedTurn = false;
     }
 
     public static bool TryGetCommitted(Creature creature, out ForecastResult result)
     {
         if (PartyWatchUiSettings.FreezeHudWithinPlayerTurn
             && ReferenceEquals(_creature, creature)
+            && _hasPlayerEndedTurn
             && _snapshot is { } snapshot
             && HasDisplayableDamage(snapshot))
         {
@@ -57,7 +64,8 @@ internal static class PartyWatchHudSnapshotStore
             _player = creature.Player;
             _creature = creature;
             _snapshot = null;
-            _canCommitSnapshot = true;
+            _latestLiveResult = null;
+            _hasPlayerEndedTurn = false;
             return latest;
         }
 
@@ -66,20 +74,26 @@ internal static class PartyWatchHudSnapshotStore
             _player = creature.Player;
             _creature = creature;
             _snapshot = null;
-            _canCommitSnapshot = true;
+            _latestLiveResult = null;
+            _hasPlayerEndedTurn = false;
         }
 
-        if (_snapshot is { } snapshot && HasDisplayableDamage(snapshot))
+        if (_hasPlayerEndedTurn)
         {
-            return snapshot;
+            return _snapshot is { } snapshot && HasDisplayableDamage(snapshot)
+                ? snapshot
+                : ForecastResult.Hidden;
         }
 
-        if (!_canCommitSnapshot || !HasDisplayableDamage(latest))
+        _latestLiveResult = HasDisplayableDamage(latest)
+            ? latest
+            : null;
+
+        if (!HasDisplayableDamage(latest))
         {
             return ForecastResult.Hidden;
         }
 
-        _snapshot = latest;
         return latest;
     }
 
