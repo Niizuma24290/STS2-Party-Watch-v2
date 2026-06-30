@@ -5,6 +5,8 @@ using HarmonyLib;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
+using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Models.Relics;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using STS2PartyWatch.Combat;
 using STS2PartyWatch.Forecast;
@@ -16,6 +18,10 @@ internal static class ForecastRefreshPatch
 {
     private const string LabelName = "STS2PartyWatchForecastLabel";
     private const float RightPadding = 42f;
+    private static readonly bool UseCompactHudLayout = false;
+    private static readonly bool ShowHudBreakdownDetails = false;
+    private static readonly float HudLabelWidth = ShowHudBreakdownDetails ? 240f : 96f;
+    private static readonly float HudLabelHeight = ShowHudBreakdownDetails ? 84f : 42f;
     private static readonly FieldInfo? CreatureField = typeof(NHealthBar).GetField("_creature", BindingFlags.Instance | BindingFlags.NonPublic);
     private static readonly LocalIncomingDamageReader Reader = new();
     private static readonly LocalDamageForecast Forecast = new();
@@ -44,7 +50,7 @@ internal static class ForecastRefreshPatch
 
     private static void Refresh(NHealthBar bar, Vector2? containerSize)
     {
-        if (!TryGetLocalCreature(bar, out var creature))
+        if (!TryGetLocalCreature(bar, out var creature) || creature is null)
         {
             HideExisting(bar);
             return;
@@ -59,6 +65,7 @@ internal static class ForecastRefreshPatch
         }
 
         Reposition(bar, label, containerSize);
+        ObservedHpLossBudgetTracker.Observe(creature);
 
         var result = Forecast.Calculate(Reader.ReadForLocalCreature(creature));
         if (result.State != ForecastResultState.KnownDamage || (result.OutDamage <= 0 && result.DirectHpLoss <= 0))
@@ -74,18 +81,46 @@ internal static class ForecastRefreshPatch
 
     private static string BuildForecastText(ForecastResult result)
     {
-        var lines = new List<string>(2);
-        if (result.OutDamage > 0)
+        var blockablePrediction = result.OutDamage;
+        var directHpLossPrediction = result.DirectHpLoss;
+        var displayTotalPredictedHpLoss = blockablePrediction + directHpLossPrediction;
+        if (displayTotalPredictedHpLoss <= 0)
         {
-            lines.Add($"🛡 -{result.OutDamage}");
+            return string.Empty;
         }
 
-        if (result.DirectHpLoss > 0)
+        if (!ShowHudBreakdownDetails)
         {
-            lines.Add($"♥ -{result.DirectHpLoss}");
+            return $"-{displayTotalPredictedHpLoss}";
         }
 
-        return string.Join("\n", lines);
+        var details = BuildForecastDetails(blockablePrediction, directHpLossPrediction);
+        if (UseCompactHudLayout)
+        {
+            return string.IsNullOrEmpty(details)
+                ? $"-{displayTotalPredictedHpLoss}"
+                : $"-{displayTotalPredictedHpLoss}  {details}";
+        }
+
+        return string.IsNullOrEmpty(details)
+            ? $"-{displayTotalPredictedHpLoss}"
+            : $"-{displayTotalPredictedHpLoss}\n{details}";
+    }
+
+    private static string BuildForecastDetails(int blockablePrediction, int directHpLossPrediction)
+    {
+        var details = new List<string>(2);
+        if (blockablePrediction > 0)
+        {
+            details.Add($"🛡 {blockablePrediction}");
+        }
+
+        if (directHpLossPrediction > 0)
+        {
+            details.Add($"♥ {directHpLossPrediction}");
+        }
+
+        return string.Join("   ", details);
     }
 
     private static bool TryGetLocalCreature(NHealthBar bar, out Creature? creature)
@@ -130,8 +165,8 @@ internal static class ForecastRefreshPatch
         {
             Name = LabelName,
             MouseFilter = Control.MouseFilterEnum.Ignore,
-            CustomMinimumSize = new Vector2(150f, 84f),
-            Size = new Vector2(150f, 84f),
+            CustomMinimumSize = new Vector2(HudLabelWidth, HudLabelHeight),
+            Size = new Vector2(HudLabelWidth, HudLabelHeight),
             ZIndex = 50,
             Text = string.Empty,
             Visible = false,
@@ -220,5 +255,54 @@ internal static class ForecastHandChangePatch
         {
             ForecastRefreshPatch.RefreshRegisteredBars();
         }
+    }
+}
+
+[HarmonyPatch(typeof(Player))]
+internal static class ForecastRelicChangePatch
+{
+    [HarmonyPostfix]
+    [HarmonyPatch("AddRelicInternal")]
+    private static void AddRelicInternalPostfix()
+    {
+        ForecastRefreshPatch.RefreshRegisteredBars();
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch("RemoveRelicInternal")]
+    private static void RemoveRelicInternalPostfix()
+    {
+        ForecastRefreshPatch.RefreshRegisteredBars();
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch("MeltRelicInternal")]
+    private static void MeltRelicInternalPostfix()
+    {
+        ForecastRefreshPatch.RefreshRegisteredBars();
+    }
+}
+
+[HarmonyPatch(typeof(BeatingRemnant))]
+internal static class ForecastBeatingRemnantBudgetPatch
+{
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(BeatingRemnant.BeforeSideTurnStart))]
+    private static void BeforeSideTurnStartPostfix(BeatingRemnant __instance, object[] __args)
+    {
+        if (__args.Length < 3 || __args[2] is not IReadOnlyList<Creature> creaturesStartingTurn)
+        {
+            return;
+        }
+
+        var owner = __instance.Owner;
+        var ownerCreature = owner?.Creature;
+        if (owner is null || ownerCreature is null || !creaturesStartingTurn.Contains(ownerCreature))
+        {
+            return;
+        }
+
+        ObservedHpLossBudgetTracker.ResetWindow(owner);
+        ForecastRefreshPatch.RefreshRegisteredBars();
     }
 }

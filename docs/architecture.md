@@ -11,14 +11,14 @@ v2.0 keeps each module narrow and read-only.
 ## Combat/LocalIncomingDamageReader
 
 - Reads local combat state and enemy AttackIntent objects.
-- Calls the game-native GetTotalDamage API.
-- Produces RAW or an explicit unknown state.
+- Calls game-native preview APIs only for read-only damage forecasting.
+- Produces blockable damage, effective block, direct HP loss, or an explicit unknown state.
 - Does not touch UI nodes.
 
 ## Forecast/LocalDamageForecast
 
-- Receives RAW and local Creature.Block.
-- Calculates OUT = max(0, RAW - Block).
+- Receives blockable damage, effective block, and direct HP loss.
+- Calculates `🛡 = max(0, blockable damage - effective block)` and passes through verified direct HP loss.
 - Produces a small immutable result.
 - Does not inspect intents or UI.
 
@@ -28,23 +28,13 @@ v2.0 keeps each module narrow and read-only.
 - States: Hidden, KnownDamage, Unknown.
 - No Godot, UI, or combat access.
 
-## UI/ForecastHudView
-
-- Creates, updates, hides, and destroys only the 🛡 -OUT text.
-- Does not calculate RAW or OUT.
-- Does not inspect combat state directly.
-
 ## Patches/ForecastRefreshPatch
 
-- Hooks `NCombatUi.Activate` and `NCombatUi.Deactivate` to attach, update, and clear the HUD controller.
-- Does not calculate damage.
-- Does not own HUD state.
-
-## UI/ForecastHudController
-
-- Owns refresh cadence and coordinates the reader, calculator, and HUD view.
-- Reads no combat data directly except the local creature node required for HUD placement.
-- Places the HUD near the right side of the local player's health bar, with fallback spacing if the health bar node cannot be located.
+- Hooks the local `NHealthBar` lifecycle to create, position, update, and hide one small label near the player health bar.
+- Uses `LocalIncomingDamageReader` and `LocalDamageForecast` for all mechanics; the patch only coordinates refresh and display.
+- Displays total expected HP loss as the default HUD line.
+- Keeps trusted `🛡` / `♥` source details behind a UI-layer advanced toggle.
+- Hides the label for hidden/unknown/zero-output states.
 - Does not create or execute combat commands.
 
 No future v2 module may bypass this chain:
@@ -53,21 +43,23 @@ No future v2 module may bypass this chain:
 Combat reader
 => forecast calculator
 => result
-=> HUD view
+=> health-bar HUD label
 ```
 
 Architecture rules:
 
-- No HUD code may call GetTotalDamage.
+- No HUD code may call damage preview APIs.
 - No combat reader may access Godot UI nodes.
-- No patch may calculate RAW or OUT.
+- No patch may calculate mechanics values.
 - No module may depend on Minty.
 - No v2.0 module may read remote player state.
 - No temporary diagnostics code enters production modules without a separate scoped task.
 
-Phase 1–4 implementation notes:
+Single-player production notes:
 
-- `Combat/LocalIncomingDamageReader` is the only module that calls native `AttackIntent.GetTotalDamage`.
-- `Forecast/LocalDamageForecast` is the only module that calculates OUT.
-- `UI/ForecastHudView` only shows or hides the final `🛡 -N` text.
-- `UI/HealthBarLocator` uses narrow UI reflection only to place the HUD near the local health bar; it does not read combat mechanics.
+- `Combat/LocalIncomingDamageReader` is the only module that reads combat mechanics.
+- `Forecast/LocalDamageForecast` is the only module that combines blockable damage with effective block.
+- `Patches/ForecastRefreshPatch` is the only module that owns the final HUD label and its display text.
+- `Patches/ForecastRefreshPatch` may add trusted final `OutDamage + DirectHpLoss` for display only; it must not reread game state or recalculate mechanics.
+- Breakdown details, when enabled, remain display-only and use the same trusted final values.
+- UI reflection is restricted to reading `NHealthBar._creature` and `HpBarContainer` placement data; it does not read combat mechanics.

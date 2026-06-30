@@ -3,9 +3,9 @@
 ## 当前快照
 
 - 任务登记文件夹：`docs/task-notes/`
-- 当前唯一任务：Phase 7：接入 TungstenRod、BeatingRemnant 等会修正 HP Loss 结果的机制
+- 当前唯一任务：Phase 9：单人正式版收口
 - 当前分支：`main`
-- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入与 Steam 运行时验证；Phase 6B 已按 shipped 代码机制接入 Regret；Phase 6C 已完成 Beckon / Bad Luck / Regret 的 Steam 运行时联合验证。
+- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入与 Steam 运行时验证；Phase 6B 已按 shipped 代码机制接入 Regret；Phase 6C 已完成 Beckon / Bad Luck / Regret 的 Steam 运行时联合验证；Phase 7 已按正常游戏范围收口：TungstenRod 与 BeatingRemnant 已接入，复数棍子控制台无效状态不作为正式行为依据；Phase 8 已完成 DiamondDiademPower 最小接入并通过用户 Steam 运行时验证；Phase 9 合并 HUD 显示改造已完成代码接入，本轮追加水盆 + 惊涛最小修补，等待用户 Steam 运行时验证。
 - 约束：不提交 DLL、PDB、PCK、logs、publish 输出、NuGet 缓存或游戏目录文件。
 
 ## Phase 1A 已完成
@@ -104,6 +104,51 @@
 - Steam 运行时已验证：`♥ -N` 与 `🛡 -N` 分行显示，不合并。
 - Steam 运行时已验证：Regret 的贡献不受当前 Block 影响，不进入 `🛡 -N`。
 
+## Phase 7 已完成
+
+- 已接入窄范围 `VerifiedHpLossRelicModifier`，只处理已验证 HP Loss 事件上的 `TungstenRod` 与 `BeatingRemnant`。
+- 已接入按当前手牌顺序排列的 Burn / Beckon / Bad Luck / Regret 未来事件流；Burn 先经过既有 Block 逻辑得到实际 HP loss，再进入遗物修正。
+- 已接入 `BeatingRemnant` 共享预算：手牌回合末事件先消耗预算，敌人攻击事件在最后消耗剩余预算。
+- 已接入敌方 `AttackIntent.GetSingleDamage(...) * Repeats == GetTotalDamage(...)` 时的逐 hit 事件拆分，棍子可逐 hit 生效。
+- 已限制 `TungstenRod` 只修正可证明为单次 HP loss 的事件；存在棍子且敌方攻击无法拆分、又会造成正数 HP loss 时，盾牌行保持不支持。
+- 已确认多根 `TungstenRod` 属于控制台制造的无效状态，不作为正式玩法行为修改依据。
+- 已在原生遗物 add/remove/melt 后刷新 HUD，覆盖控制台中途添加遗物后的显示更新。
+- 已新增 HUD 侧实际 HP 下降累计预算：玩家 `BeforeSideTurnStart` 清零，当前窗口内只累计 HP 下降，回血不抵消；`BeatingRemnant` 预测改用该观测预算，不再直接信任 `_damageReceivedThisTurn`。
+- Phase 7 按正常游戏范围收口；复数棍子等控制台无效状态不作为 Phase 7 阻塞项。
+- 下一步进入 Phase 8 运行时验证：王冠 / `DiamondDiademPower` 最小接入。
+
+## Phase 8 已完成
+
+- 已新增窄范围 `VerifiedEnemyDamageModifier`，只处理 Diamond Diadem 对已验证敌方 attack damage 事件的修正。
+- 当前 `DiamondDiademPower` 已存在时继续信任原生 `AttackIntent.GetSingleDamage(...)` / `GetTotalDamage(...)`，避免双重减半。
+- 当前 Power 尚未存在但玩家持有 Diamond Diadem，且 `CardsPlayedThisTurn` 在考虑 `StampedePower` 后仍不超过 `CardThreshold` 时，预估回合结束会获得 Power，并按每 hit 乘 `0.5` 后取整。
+- `StampedePower` 已按窄范围用于王冠计数修正；本轮追加用于波纹水盆判断：若结束回合会先自动打出非 `Unplayable` Attack，则水盆不应预测获得 Block。
+- 无法证明 single hit 粒度的敌方聚合攻击不会使用总值减半；受 Diamond Diadem 影响的 `🛡` 保持 Unknown。
+- 不处理 Burn、Beckon、Bad Luck、Regret、其他 direct HP loss、玩家自伤、多人 HUD 或通用 damage 系统。
+- 构建确认：`C:\sts2\dotnet\dotnet.exe build .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore` 通过。
+- 发布确认：`C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore` 通过。
+- 初次用户验证时 HUD 未变化，根因确认为实际游戏 mods 目录仍加载旧 DLL。
+- 已按用户要求更新实际游戏 mods 目录 DLL，并确认 publish DLL 与游戏目录 DLL 的 SHA256 均为 `32B5C963E50FAE6BC04293E30C0E95D634877895F242C1C280FE44C64032B516`。
+- 用户 Steam 运行时验证通过：敌人头顶可继续显示原生伤害，HUD 会提前显示 Diamond Diadem 作用后的“现在点击结束回合后的实际承伤”。
+
+## Phase 9 已完成代码与文档收口，等待最终运行时回归
+
+- 已删除未引用的旧 UI 路径：`ForecastHudController`、`ForecastHudView`、`HealthBarLocator`。
+- 当前生产 HUD 路径只保留 `ForecastRefreshPatch` 在本机 `NHealthBar` 旁创建和刷新一个 label。
+- 合并 HUD 显示改造已接入：默认只显示 `-(OutDamage + DirectHpLoss)`。
+- 可信来源明细 `🛡 OutDamage` / `♥ DirectHpLoss` 已收为 UI 层高级开关，默认关闭；尚未接入正式设置页或外部配置文件。
+- 合并总值只由已有可信 `ForecastResult.OutDamage` 与 `ForecastResult.DirectHpLoss` 相加，不重新读取游戏状态，不改机制计算。
+- 已修复 HP loss relic 路径的 blockable hand damage 限制：有 Tungsten Rod / Beating Remnant 时，不再只允许 Burn；已通过 `CardTurnEndDamageInspector` 证明会造成 blockable `DamageVar` 的手牌回合末伤害也能进入逐事件修正。
+- 已追加修复波纹水盆 + 惊涛：`VerifiedPreAttackBlockReader` 在水盆分支中考虑 pending `StampedePower` 自动打出的非 `Unplayable` Attack，避免错误预加水盆 Block；等待用户 Steam 运行时验证。
+- Unknown 或 0 输出隐藏，不显示猜测值。
+- 已更新 `docs/architecture.md`，记录当前生产职责边界：combat reader 读机制，forecast 组合数值，patch 只负责 UI label。
+- 已更新 `docs/task-notes/phase-9-singleplayer-validation.md`，整理单人回归矩阵、已知限制和最终验证入口。
+- 已更新 `README.md`、`docs/decisions.md`、`docs/build-environment.md`、`docs/mechanics-evidence.md` 和 `docs/v2-roadmap.md`，同步最终展示说明、决策、构建命令、HUD 合同和路线图措辞。
+- 构建确认：`C:\sts2\dotnet\dotnet.exe build .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore` 通过，0 warning / 0 error。
+- 发布确认：`C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore` 通过。
+- 仓库检查：`git diff --check` 通过，仅有 LF/CRLF 提示；`git status --short` 未显示构建产物进入 git。
+- Phase 10 继续冻结：只研究多人真实目标与 target-aware 原生预览，不开发正式多人伤害 HUD。
+
 ## 阶段状态
 
 | 阶段 | 状态 | 任务 | 完成标准 | 下一步依赖 |
@@ -115,9 +160,9 @@
 | Phase 6A | 已完成 | Direct HP Loss 固定值 | Beckon、Bad Luck 显示 `♥ -N`，并完成 Steam 运行时矩阵 | Phase 6B |
 | Phase 6B | 已完成 | Regret Direct HP Loss | Regret 按当前手牌总数进入 `♥ -N` | Phase 6C |
 | Phase 6C | 已完成 | Direct HP Loss 联合运行时验证 | Beckon、Bad Luck、Regret 的 `♥ -N` 完成 Steam 联合验证 | Phase 7 |
-| Phase 7 | 待做 | HP Loss 结果修正机制 | 接入 TungstenRod、BeatingRemnant 等会修正 HP Loss 结果的机制 | Phase 8 |
-| Phase 8 | 待做 | 非 Block 承伤修正机制 | 补 DiamondDiademPower 等改变实际承伤、但不属于 Block 的伤害修正机制 | Phase 9 |
-| Phase 9 | 待做 | 单人正式版收口 | 异常场景、回归测试、文档整理、清理临时诊断与 UI 打磨 | Phase 10 |
+| Phase 7 | 已完成 | HP Loss 结果修正机制 | TungstenRod、BeatingRemnant 已按正常游戏范围收口；复数棍子控制台无效状态排除 | Phase 8 |
+| Phase 8 | 已完成 | 非 Block 承伤修正机制 | DiamondDiademPower 最小代码接入已构建/发布通过，并完成用户 Steam 运行时验证 | Phase 9 |
+| Phase 9 | 待验证 | 单人正式版收口 | 合并 HUD 显示改造已完成代码接入，等待用户 Steam 运行时验证 | Phase 10 |
 | Phase 10 | 冻结 | 多人研究 | 仅研究多人真实目标与原生 target-aware 伤害预览，证据不足前不做正式多人 HUD | 证据充分后再开启 |
 
 ## 任务登记规则

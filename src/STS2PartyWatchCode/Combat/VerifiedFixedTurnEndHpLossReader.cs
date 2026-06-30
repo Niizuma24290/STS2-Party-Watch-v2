@@ -22,23 +22,11 @@ internal static class VerifiedFixedTurnEndHpLossReader
             }
 
             var handCount = handPile.Cards.Count;
-            foreach (var card in handPile.Cards)
+            for (var i = 0; i < handPile.Cards.Count; i++)
             {
-                if (TryGetBeckonHpLoss(card, out var beckonLoss))
+                if (TryReadEvent(handPile.Cards[i], handCount, i, out var hpLossEvent))
                 {
-                    hpLoss += beckonLoss;
-                    continue;
-                }
-
-                if (TryGetBadLuckHpLoss(card, out var badLuckLoss))
-                {
-                    hpLoss += badLuckLoss;
-                    continue;
-                }
-
-                if (TryGetRegretHpLoss(card, handCount, out var regretLoss))
-                {
-                    hpLoss += regretLoss;
+                    hpLoss += hpLossEvent.VerifiedHpLoss;
                 }
             }
 
@@ -49,6 +37,31 @@ internal static class VerifiedFixedTurnEndHpLossReader
             hpLoss = 0;
             return false;
         }
+    }
+
+    public static bool TryReadEvent(CardModel card, int handCount, int nativeExecutionOrder, out UpcomingHpLossEvent hpLossEvent)
+    {
+        hpLossEvent = default;
+
+        if (TryGetBeckonHpLoss(card, out var beckonLoss))
+        {
+            hpLossEvent = new UpcomingHpLossEvent(card.GetType().Name, nativeExecutionOrder, HpLossDisplayLane.DirectHpLoss, beckonLoss, true);
+            return true;
+        }
+
+        if (TryGetBadLuckHpLoss(card, out var badLuckLoss))
+        {
+            hpLossEvent = new UpcomingHpLossEvent(card.GetType().Name, nativeExecutionOrder, HpLossDisplayLane.DirectHpLoss, badLuckLoss, true);
+            return true;
+        }
+
+        if (TryGetRegretHpLoss(card, handCount, out var regretLoss))
+        {
+            hpLossEvent = new UpcomingHpLossEvent(card.GetType().Name, nativeExecutionOrder, HpLossDisplayLane.DirectHpLoss, regretLoss, true);
+            return true;
+        }
+
+        return false;
     }
 
     private static bool TryGetBeckonHpLoss(CardModel card, out int hpLoss)

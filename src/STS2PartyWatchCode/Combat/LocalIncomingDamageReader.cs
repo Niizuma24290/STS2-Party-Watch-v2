@@ -6,6 +6,8 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Cards;
+using MegaCrit.Sts2.Core.Models.Relics;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.ValueProps;
 
@@ -65,6 +67,8 @@ public sealed class LocalIncomingDamageReader
 
         var raw = 0;
         var foundDamage = false;
+        var enemyAttackEvents = new List<BlockableFutureDamageEvent>();
+        var enemyAttackOrder = 0;
 
         foreach (var enemy in combatState.Enemies)
         {
@@ -81,8 +85,29 @@ public sealed class LocalIncomingDamageReader
                 }
 
                 foundDamage = true;
-                raw += attackIntent.GetTotalDamage(new[] { localCreature }, enemy);
+                var totalDamage = attackIntent.GetTotalDamage(new[] { localCreature }, enemy);
+                var attackEvents = ReadEnemyAttackEvents(
+                    localCreature.Player,
+                    attackIntent,
+                    localCreature,
+                    enemy,
+                    enemyAttackOrder,
+                    totalDamage,
+                    out var modificationState);
+                if (modificationState != EnemyDamageModificationState.Supported)
+                {
+                    return ReadKnownWithUnsupportedEnemyDamage(localCreature);
+                }
+
+                raw += attackEvents.Sum(e => e.Amount);
+                enemyAttackEvents.AddRange(attackEvents);
+                enemyAttackOrder++;
             }
+        }
+
+        if (HasVerifiedHpLossRelic(localCreature.Player))
+        {
+            return ReadKnownWithRelicModifiers(localCreature.Player, localCreature, enemyAttackEvents, foundDamage);
         }
 
         if (TryReadHandTurnEndDamage(localCreature.Player, localCreature, out var handTurnEndDamage))
@@ -119,6 +144,240 @@ public sealed class LocalIncomingDamageReader
         }
 
         return IncomingDamageRead.Known(raw, localCreature.Block + preAttackBlock.Block, directHpLoss);
+    }
+
+    private static IncomingDamageRead ReadKnownWithUnsupportedEnemyDamage(Creature localCreature)
+    {
+        var player = localCreature.Player;
+        if (player is null || HasVerifiedHpLossRelic(player))
+        {
+            return IncomingDamageRead.Unknown;
+        }
+
+        if (!VerifiedFixedTurnEndHpLossReader.TryRead(player, out var directHpLoss))
+        {
+            return IncomingDamageRead.Unknown;
+        }
+
+        return directHpLoss > 0
+            ? IncomingDamageRead.UnknownDirect(directHpLoss)
+            : IncomingDamageRead.Unknown;
+    }
+
+    private static IncomingDamageRead ReadKnownWithRelicModifiers(
+        Player player,
+        Creature localCreature,
+        IReadOnlyList<BlockableFutureDamageEvent> enemyAttackEvents,
+        bool foundEnemyAttack)
+    {
+        if (!TryReadOrderedHandTurnEndEvents(player, localCreature, out var handEvents, out var handBlockableRaw))
+        {
+            return IncomingDamageRead.Unknown;
+        }
+
+        if (handEvents.Count == 0 && !foundEnemyAttack)
+        {
+            return IncomingDamageRead.Hidden;
+        }
+
+        var blockableRaw = handBlockableRaw + enemyAttackEvents.Sum(e => e.Amount);
+        var remainingBlock = localCreature.Block;
+        if (blockableRaw > 0)
+        {
+            var preAttackBlock = VerifiedPreAttackBlockReader.Read(player, localCreature);
+            if (preAttackBlock.State != PreAttackBlockReadState.Known)
+            {
+                return IncomingDamageRead.Unknown;
+            }
+
+            remainingBlock += preAttackBlock.Block;
+        }
+
+        var hpLossEvents = new List<UpcomingHpLossEvent>(handEvents.Count + enemyAttackEvents.Count);
+        foreach (var handEvent in handEvents)
+        {
+            if (handEvent.DisplayLane == HpLossDisplayLane.Blockable)
+            {
+                var hpLoss = Math.Max(0, handEvent.Amount - remainingBlock);
+                remainingBlock = Math.Max(0, remainingBlock - handEvent.Amount);
+                hpLossEvents.Add(new UpcomingHpLossEvent(
+                    handEvent.Source,
+                    handEvent.NativeExecutionOrder,
+                    HpLossDisplayLane.Blockable,
+                    hpLoss,
+                    handEvent.IsSingleVerifiedEvent));
+            }
+            else
+            {
+                hpLossEvents.Add(new UpcomingHpLossEvent(
+                    handEvent.Source,
+                    handEvent.NativeExecutionOrder,
+                    HpLossDisplayLane.DirectHpLoss,
+                    handEvent.Amount,
+                    handEvent.IsSingleVerifiedEvent));
+            }
+        }
+
+        foreach (var enemyEvent in enemyAttackEvents)
+        {
+            var hpLoss = Math.Max(0, enemyEvent.Amount - remainingBlock);
+            remainingBlock = Math.Max(0, remainingBlock - enemyEvent.Amount);
+            hpLossEvents.Add(new UpcomingHpLossEvent(
+                enemyEvent.Source,
+                enemyEvent.NativeExecutionOrder,
+                HpLossDisplayLane.Blockable,
+                hpLoss,
+                enemyEvent.IsSingleVerifiedEvent));
+        }
+
+        var modified = VerifiedHpLossRelicModifier.Apply(
+            player,
+            hpLossEvents,
+            ObservedHpLossBudgetTracker.GetSpent(player));
+        if (modified.State == HpLossRelicModificationState.Supported)
+        {
+            return modified.BlockableHpLoss > 0 || modified.DirectHpLoss > 0
+                ? IncomingDamageRead.Known(modified.BlockableHpLoss, 0, modified.DirectHpLoss)
+                : IncomingDamageRead.Hidden;
+        }
+
+        if (modified.State == HpLossRelicModificationState.UnsupportedBecauseAggregateEnemyHpLossWithTungstenRod
+            && modified.DirectHpLoss > 0)
+        {
+            return IncomingDamageRead.UnknownDirect(modified.DirectHpLoss);
+        }
+
+        return IncomingDamageRead.Unknown;
+    }
+
+    private static bool HasVerifiedHpLossRelic(Player player)
+    {
+        return player.Relics.Any(relic => !relic.IsMelted && (relic is TungstenRod || relic is BeatingRemnant));
+    }
+
+    private static IReadOnlyList<BlockableFutureDamageEvent> ReadEnemyAttackEvents(
+        Player player,
+        AttackIntent attackIntent,
+        Creature localCreature,
+        Creature enemy,
+        int enemyAttackOrder,
+        int totalDamage,
+        out EnemyDamageModificationState modificationState)
+    {
+        var events = new List<BlockableFutureDamageEvent>();
+        var orderBase = 1_000_000 + (enemyAttackOrder * 1_000);
+        var repeats = attackIntent.Repeats;
+        if (repeats > 0)
+        {
+            var singleDamage = attackIntent.GetSingleDamage(new[] { localCreature }, enemy);
+            if (singleDamage >= 0 && singleDamage * repeats == totalDamage)
+            {
+                for (var i = 0; i < repeats; i++)
+                {
+                    var modified = VerifiedEnemyDamageModifier.ApplyDiamondDiadem(
+                        player,
+                        localCreature,
+                        attackIntent,
+                        enemy,
+                        singleDamage,
+                        true);
+                    if (modified.State != EnemyDamageModificationState.Supported)
+                    {
+                        modificationState = modified.State;
+                        return events;
+                    }
+
+                    events.Add(new BlockableFutureDamageEvent(
+                        $"EnemyAttackIntent[{enemyAttackOrder}:{i}]",
+                        orderBase + i,
+                        modified.Amount,
+                        true));
+                }
+
+                modificationState = EnemyDamageModificationState.Supported;
+                return events;
+            }
+        }
+
+        var aggregateModified = VerifiedEnemyDamageModifier.ApplyDiamondDiadem(
+            player,
+            localCreature,
+            attackIntent,
+            enemy,
+            totalDamage,
+            false);
+        if (aggregateModified.State != EnemyDamageModificationState.Supported)
+        {
+            modificationState = aggregateModified.State;
+            return events;
+        }
+
+        events.Add(new BlockableFutureDamageEvent(
+            $"EnemyAttackIntent[{enemyAttackOrder}]",
+            orderBase,
+            aggregateModified.Amount,
+            false));
+        modificationState = EnemyDamageModificationState.Supported;
+        return events;
+    }
+
+    private static bool TryReadOrderedHandTurnEndEvents(
+        Player player,
+        Creature localCreature,
+        out List<HandTurnEndHpLossEvent> events,
+        out int blockableRaw)
+    {
+        events = new List<HandTurnEndHpLossEvent>();
+        blockableRaw = 0;
+        var handPile = CardPile.Get(PileType.Hand, player);
+        if (handPile is null)
+        {
+            return true;
+        }
+
+        try
+        {
+            var handCount = handPile.Cards.Count;
+            for (var i = 0; i < handPile.Cards.Count; i++)
+            {
+                var card = handPile.Cards[i];
+                var foundBlockableDamageVar = false;
+                if (CardTurnEndDamageInspector.DoesTurnEndInHandCallDamage(card))
+                {
+                    foreach (var damageVar in card.DynamicVars.Values.OfType<DamageVar>())
+                    {
+                        if (damageVar.Props.HasFlag(ValueProp.Unblockable))
+                        {
+                            continue;
+                        }
+
+                        foundBlockableDamageVar = true;
+                        var damage = GetModifiedIncomingCardDamage(player, localCreature, card, damageVar);
+                        blockableRaw += damage;
+                        events.Add(new HandTurnEndHpLossEvent(card.GetType().Name, i, HpLossDisplayLane.Blockable, damage, true));
+                    }
+                }
+
+                if (!foundBlockableDamageVar
+                    && VerifiedFixedTurnEndHpLossReader.TryReadEvent(card, handCount, i, out var directHpLossEvent))
+                {
+                    events.Add(new HandTurnEndHpLossEvent(
+                        directHpLossEvent.Source,
+                        directHpLossEvent.NativeExecutionOrder,
+                        directHpLossEvent.DisplayLane,
+                        directHpLossEvent.VerifiedHpLoss,
+                        directHpLossEvent.IsSingleVerifiedEvent));
+                }
+            }
+
+            return true;
+        }
+        catch
+        {
+            events.Clear();
+            blockableRaw = 0;
+            return false;
+        }
     }
 
     private static bool TryReadHandTurnEndDamage(Player player, Creature localCreature, out int damage)
@@ -175,4 +434,17 @@ public sealed class LocalIncomingDamageReader
 
         return Math.Max(0, (int)modified);
     }
+
+    private readonly record struct HandTurnEndHpLossEvent(
+        string Source,
+        int NativeExecutionOrder,
+        HpLossDisplayLane DisplayLane,
+        int Amount,
+        bool IsSingleVerifiedEvent);
+
+    private readonly record struct BlockableFutureDamageEvent(
+        string Source,
+        int NativeExecutionOrder,
+        int Amount,
+        bool IsSingleVerifiedEvent);
 }

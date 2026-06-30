@@ -78,7 +78,7 @@ EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock
 | 覆甲 | 是 | `PlatingPower.BeforeSideTurnEndEarly` 给 Block，注释说明早于回合末伤害 | `localCreature.GetPower<PlatingPower>()?.Amount` 或等价只读 power 入口 | Phase 5C 已验证 |
 | 奥利哈刚 | 是 | 当前 Block 为 0 时在 very early 标记，随后给 Block；检查早于覆甲 | `Orichalcum` 持有状态 + `DynamicVars.Block` + 当前 Block 条件 | Phase 5C 已验证 |
 | 假奥利哈刚 | 是 | 逻辑同奥利哈刚，数值为 3 | `FakeOrichalcum` 持有状态 + `DynamicVars.Block` + 当前 Block 条件 | Phase 5C 已验证 |
-| 波纹水盆 | 是 | 本回合未打出 Attack 时，`BeforeSideTurnEnd` 给 Block | `RippleBasin` 持有状态 + 当前回合 `CardPlaysFinished` 中是否有本机 Attack | Phase 5C 已验证 |
+| 波纹水盆 | 是 | 本回合未打出 Attack 时，`BeforeSideTurnEnd` 给 Block；若 `StampedePower` 将在 `AutoPostPlay` 阶段先自动打出 Attack，则水盆不会给 Block | `RippleBasin` 持有状态 + 当前回合 `CardPlaysFinished` 中是否有本机 Attack + 窄范围 pending `StampedePower` Attack 判断 | Phase 5C 已验证基础水盆；水盆 + 惊涛组合待 Steam 验证 |
 | 斗篷扣 | 是 | `BeforeSideTurnEnd` 按手牌数给 Block | `CloakClasp` 持有状态 + `PileType.Hand.GetPile(player).Cards.Count` | Phase 5C 已验证 |
 | 钨钢棍 | 否，本轮只记录 | `ModifyHpLostAfterOsty` 减 HP loss，不是 Block | `TungstenRod.ModifyHpLostAfterOsty` | 后续补足 |
 | 律动残余 | 否，本轮只记录 | 限制本回合 HP loss 上限，不是 Block | `BeatingRemnant.ModifyHpLostAfterOsty` + `DamageReceivedThisTurn` | 后续补足 |
@@ -91,7 +91,7 @@ EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock
 - Frost 使用 `player.PlayerCombatState.OrbQueue.Orbs.OfType<FrostOrb>()`，读取每个 `FrostOrb.PassiveVal`。
 - 覆甲使用 `localCreature.GetPower<PlatingPower>()?.Amount`。
 - 奥利哈刚和假奥利哈刚仅在 `Creature.Block == 0` 时计入各自 `BlockVar`。
-- 波纹水盆使用 `CombatManager.Instance.History.CardPlaysFinished` 判断本回合本机玩家是否已打出 Attack。
+- 波纹水盆使用 `CombatManager.Instance.History.CardPlaysFinished` 判断本回合本机玩家是否已打出 Attack；并额外按原生时序处理 pending `StampedePower`：`AutoPostPlay` 阶段会先于 `RippleBasin.BeforeSideTurnEnd`，若惊涛持有者手牌中存在非 `Unplayable` Attack，则预测其会先自动打出 Attack，水盆不再计入预期 Block。
 - 斗篷扣使用 `CardPile.Get(PileType.Hand, player).Cards.Count * BlockVar`。
 - 任一读取失败会返回 Unknown 并隐藏 HUD，不显示猜测值。
 - 未加入通用 Power / Relic / Orb 扫描器；未修改 raw 伤害、Burn 分类或 HUD 文本。
@@ -192,3 +192,21 @@ RegretLoss = 当前手牌总数 × 当前手牌中的 Regret 数量
 - Steam 运行时截图案例：手牌含 Bad Luck（`霉运`）与 Burn（`灼伤`），敌人 Intent 16，当前 Block 0，HUD 显示 `🛡 -18` 与 `♥ -13` 分两行；`🛡 -18` = 敌人攻击 16 + Burn 2，`♥ -13` = Bad Luck direct HP loss。
 - 截图证据位置：`C:\Users\ROG\AppData\Local\Temp\codex-clipboard-2405da0f-af6a-41d9-aea8-addc99785f37.png`（用户提供，未提交）。
 - 本轮未观察到崩溃、错位、漏刷新或重复计算。
+
+## Phase 9 single-player release contract
+
+最终单人 HUD 默认只显示总预计失血：
+
+```text
+-{OutDamage + DirectHpLoss}
+```
+
+- `-N`：只由当前已有可信 `ForecastResult.OutDamage` 与 `ForecastResult.DirectHpLoss` 相加得到，不重新读取游戏状态，不新增预测算法。
+- `🛡 N` / `♥ N`：仅作为高级明细显示选项；默认关闭。其数值仍分别来自已验证的 blockable 未来承伤与 direct HP loss。
+
+隐藏 / Unknown 规则：
+
+- 非战斗、非本机玩家、多人、无可证明伤害、最终输出为 0 时隐藏。
+- blockable 伤害不可证明但 direct HP loss 可证明时，总预计失血等于该可信 direct HP loss；高级明细打开时只显示 `♥ N`。
+- 需要 single-hit 粒度但只能读到聚合值的场景，不把未知 blockable 值计入总值；高级明细打开时也不显示猜测后的 `🛡`。
+- 不显示 raw damage、Block、来源明细、诊断状态或第三种正式 HUD 行。

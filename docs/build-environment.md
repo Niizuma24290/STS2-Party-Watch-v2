@@ -50,15 +50,16 @@ The publish output must not contain `.deps.json`. The ModLoader scans JSON files
 ## Commands
 
 ```powershell
-C:\sts2\dotnet\dotnet.exe restore src/STS2PartyWatchCode/STS2PartyWatchCode.csproj
-C:\sts2\dotnet\dotnet.exe build src/STS2PartyWatchCode/STS2PartyWatchCode.csproj -c Release --no-restore
-C:\sts2\dotnet\dotnet.exe publish src/STS2PartyWatchCode/STS2PartyWatchCode.csproj -c Release --no-build -o work/publish/sts2-party-watch-v2
+C:\sts2\dotnet\dotnet.exe build .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore
+C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore
+git diff --check
+git status
 ```
 
 Expected publish output:
 
 ```text
-work/publish/sts2-party-watch-v2/
+src/STS2PartyWatchCode/bin/Release/net9.0/publish/
 ├─ sts2-party-watch-v2.json
 └─ sts2-party-watch-v2.dll
 ```
@@ -96,11 +97,7 @@ mods/
 
 There must not be an extra nested `publish/` directory under the mod folder.
 
-The helper script below performs build, publish, forbidden-file checks, and local copy. It does not start the game.
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/Install-LocalMod.ps1
-```
+Phase 9 task cards use only the explicit commands above. Do not use `STS2PartyWatch.sln`, `NuGet.Config`, or `tools/check-forbidden-files.ps1` for Phase 9.
 
 ## Not verified in this task
 

@@ -80,7 +80,7 @@ internal static class VerifiedPreAttackBlockReader
     private static int ReadRippleBasinBlock(Player player, ICombatState combatState)
     {
         var relic = FindRelic<RippleBasin>(player);
-        if (relic is null || HasPlayedAttackThisTurn(player, combatState))
+        if (relic is null || HasPlayedAttackThisTurn(player, combatState) || HasPendingStampedeAttack(player))
         {
             return 0;
         }
@@ -106,6 +106,22 @@ internal static class VerifiedPreAttackBlockReader
             entry.HappenedThisTurn(combatState)
             && entry.CardPlay.Card.Type == CardType.Attack
             && entry.CardPlay.Card.Owner == player);
+    }
+
+    private static bool HasPendingStampedeAttack(Player player)
+    {
+        var stampede = player.Creature.GetPower<StampedePower>();
+        if (stampede is null || stampede.Amount <= 0)
+        {
+            return false;
+        }
+
+        var handPile = CardPile.Get(PileType.Hand, player);
+        return handPile is not null
+            && handPile.Cards.Any(card =>
+                card.Owner == player
+                && card.Type == CardType.Attack
+                && !card.Keywords.Contains(CardKeyword.Unplayable));
     }
 
     private static TRelic? FindRelic<TRelic>(Player player)

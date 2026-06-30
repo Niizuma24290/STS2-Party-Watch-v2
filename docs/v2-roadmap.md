@@ -29,7 +29,7 @@ Validate Block 0, partial Block, and full Block.
 
 ## Phase 5 - HUD integration
 
-Create ForecastHudView at a proven local HUD anchor.
+Create the final HUD label at a proven local health-bar anchor.
 Show only 🛡 -OUT.
 Hide for OUT=0, unknown, and no attack.
 
