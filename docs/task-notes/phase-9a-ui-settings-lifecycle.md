@@ -38,7 +38,7 @@
 - `Show advanced shield / heart details`：默认关。
 - `Freeze HUD numbers after turn end`：默认开。
 - `Anchor preset`：默认 `Health bar right`；可选 right / left / above / below。
-- `X offset`：默认 `0`，范围 `-320..320`。
+- `X offset`：默认 `24`，范围 `-320..320`。
 - `Y offset`：默认 `0`，范围 `-240..240`。
 - `Total expected loss` 颜色：默认白色。
 - `Shield detail` 颜色：默认浅蓝。
