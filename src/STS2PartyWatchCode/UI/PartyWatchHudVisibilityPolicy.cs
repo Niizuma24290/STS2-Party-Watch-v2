@@ -8,6 +8,19 @@ namespace STS2PartyWatch.UI;
 
 internal static class PartyWatchHudVisibilityPolicy
 {
+    private static readonly string[] BlockingScreenTypeFragments =
+    [
+        "MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.",
+        "MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen.",
+        "MegaCrit.Sts2.Core.Nodes.Screens.Map.NMapScreen",
+        "MegaCrit.Sts2.Core.Nodes.Screens.NDeckViewScreen",
+        "MegaCrit.Sts2.Core.Nodes.Screens.NRewardsScreen",
+        "MegaCrit.Sts2.Core.Nodes.Screens.Overlays.",
+        "MegaCrit.Sts2.Core.Nodes.Screens.PauseMenu.NPauseMenu",
+        "MegaCrit.Sts2.Core.Nodes.Screens.Settings.NSettingsScreen",
+        "MegaCrit.Sts2.Core.Nodes.Screens.Shops.",
+    ];
+
     public static bool ShouldRenderHud(NHealthBar bar, Creature creature)
     {
         if (!PartyWatchUiSettings.HudEnabled
@@ -71,8 +84,7 @@ internal static class PartyWatchHudVisibilityPolicy
     private static bool IsBlockingUiNode(Node node)
     {
         var typeName = node.GetType().FullName ?? string.Empty;
-        if (typeName.StartsWith("MegaCrit.Sts2.Core.Nodes.Screens.", StringComparison.Ordinal)
-            && !typeName.Contains(".Combat", StringComparison.Ordinal))
+        if (BlockingScreenTypeFragments.Any(fragment => typeName.Contains(fragment, StringComparison.Ordinal)))
         {
             return true;
         }

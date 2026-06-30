@@ -17,8 +17,8 @@
 
 - HUD 仍挂在本机玩家 `NHealthBar.HpBarContainer` 的父节点下，而不是全局最顶层。
 - `ShouldRenderHud()` 至少要求：HUD 启用、血条节点有效、`ICombatState.IsLiveCombat()`、单人战斗、本机玩家、玩家存活、血条容器可见。
-- UI 遮挡侧使用 Godot 节点树的可见节点判断：若可见节点属于 `MegaCrit.Sts2.Core.Nodes.Screens.*` 的非战斗屏，或属于 `CommonUi` 的 modal / popup / overlay，则保守隐藏。
-- 额外按节点名 token 保守隐藏 Settings、Pause、Map、Reward、Shop、Merchant、Event、CardSelect、CardReward、CardGrid、Deck、Library 等常见全屏/模态界面。
+- UI 遮挡侧使用 Godot 节点树的可见节点判断：若可见节点属于已确认会覆盖战斗的设置、暂停、地图、奖励、卡牌查看、商店、Game Over 或 overlay screen，或属于 `CommonUi` 的 modal / popup / overlay，则保守隐藏。此前 broad `Screens.*` 规则会把正常战斗中的可见 screen 容器误判为遮挡页，导致 HUD 不显示，已收窄为明确类型片段。
+- 当前不再按普通节点名 token 隐藏 HUD，避免战斗页中的通用容器名误伤；后续若发现新的覆盖页，优先补明确类型片段。
 - 隐藏时清空 `RichTextLabel.Text` 并 `Hide()`；HUD 节点 `MouseFilter=Ignore`，不应留下可点击遮挡。
 
 ## HUD 刷新与冻结生命周期
