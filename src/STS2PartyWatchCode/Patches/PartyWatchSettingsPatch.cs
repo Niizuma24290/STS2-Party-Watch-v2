@@ -1,48 +1,120 @@
+using System.Reflection;
 using Godot;
 using HarmonyLib;
-using MegaCrit.Sts2.Core.Nodes.Screens.MainMenu;
+using MegaCrit.Sts2.Core.Nodes.Screens.Settings;
 using STS2PartyWatch.UI;
 
 namespace STS2PartyWatch.Patches;
 
-[HarmonyPatch(typeof(NMainMenu))]
+[HarmonyPatch(typeof(NSettingsScreen))]
 internal static class PartyWatchSettingsPatch
 {
+    private const string EntryButtonName = "STS2PartyWatchSettingsEntryButton";
     private const string PanelName = "STS2PartyWatchSettingsPanel";
+    private static readonly FieldInfo? ModdingButtonField =
+        typeof(NSettingsScreen).GetField("_moddingScreenButton", BindingFlags.Instance | BindingFlags.NonPublic);
 
     [HarmonyPostfix]
     [HarmonyPatch("_Ready")]
-    private static void ReadyPostfix(NMainMenu __instance)
+    private static void ReadyPostfix(NSettingsScreen __instance)
     {
-        AddSettingsPanel(__instance);
+        AddSettingsEntry(__instance);
+        ForecastRefreshPatch.RefreshRegisteredBars();
     }
 
-    private static void AddSettingsPanel(Control screen)
+    [HarmonyPostfix]
+    [HarmonyPatch("OnSubmenuShown")]
+    private static void OnSubmenuShownPostfix()
+    {
+        ForecastRefreshPatch.RefreshRegisteredBars();
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch("OnSubmenuHidden")]
+    private static void OnSubmenuHiddenPostfix()
+    {
+        ForecastRefreshPatch.RefreshRegisteredBars();
+    }
+
+    private static void AddSettingsEntry(NSettingsScreen screen)
     {
         if (screen.GetNodeOrNull<PanelContainer>(PanelName) is not null)
         {
             return;
         }
 
+        var panel = BuildSettingsPanel(screen);
+        screen.AddChild(panel);
+
+        var entry = new Button
+        {
+            Name = EntryButtonName,
+            Text = "Party Watch HUD",
+            MouseFilter = Control.MouseFilterEnum.Stop,
+            CustomMinimumSize = new Vector2(280f, 56f)
+        };
+        entry.Pressed += () =>
+        {
+            screen.GetNodeOrNull<PanelContainer>(PanelName)?.Show();
+            ForecastRefreshPatch.RefreshRegisteredBars();
+        };
+
+        var nativeButton = ModdingButtonField?.GetValue(screen) as Control;
+        var nativeParent = nativeButton?.GetParent() as Control;
+        if (nativeParent is not null && nativeParent.GetNodeOrNull<Button>(EntryButtonName) is null)
+        {
+            nativeParent.AddChild(entry);
+            return;
+        }
+
+        entry.SetAnchorsPreset(Control.LayoutPreset.TopRight);
+        entry.OffsetLeft = -360f;
+        entry.OffsetTop = 92f;
+        entry.OffsetRight = -64f;
+        entry.OffsetBottom = 154f;
+        screen.AddChild(entry);
+    }
+
+    private static PanelContainer BuildSettingsPanel(NSettingsScreen screen)
+    {
         var panel = new PanelContainer
         {
             Name = PanelName,
             MouseFilter = Control.MouseFilterEnum.Stop,
-            ZIndex = 100
+            ZIndex = 200,
+            Visible = false
         };
-        panel.SetAnchorsPreset(Control.LayoutPreset.TopRight);
-        panel.OffsetLeft = -580f;
-        panel.OffsetTop = 90f;
-        panel.OffsetRight = -56f;
-        panel.OffsetBottom = 760f;
+        panel.SetAnchorsPreset(Control.LayoutPreset.Center);
+        panel.OffsetLeft = -300f;
+        panel.OffsetTop = -390f;
+        panel.OffsetRight = 300f;
+        panel.OffsetBottom = 390f;
 
         var content = new VBoxContainer
         {
-            CustomMinimumSize = new Vector2(500f, 640f)
+            CustomMinimumSize = new Vector2(560f, 720f)
         };
-        content.AddThemeConstantOverride("separation", 8);
+        content.AddThemeConstantOverride("separation", 10);
 
-        content.AddChild(MakeHeader("Party Watch HUD"));
+        var header = new HBoxContainer();
+        header.AddThemeConstantOverride("separation", 16);
+        header.AddChild(MakeHeader("Party Watch HUD"));
+        var spacer = new Control { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
+        header.AddChild(spacer);
+        var back = new Button
+        {
+            Text = "Back",
+            CustomMinimumSize = new Vector2(120f, 44f)
+        };
+        back.Pressed += () =>
+        {
+            panel.Hide();
+            ForecastRefreshPatch.RefreshRegisteredBars();
+        };
+        header.AddChild(back);
+        content.AddChild(header);
+
+        content.AddChild(MakeSeparator());
         content.AddChild(MakeCheckBox(
             "Enable Party Watch HUD",
             PartyWatchUiSettings.HudEnabled,
@@ -69,24 +141,34 @@ internal static class PartyWatchSettingsPatch
         content.AddChild(MakeColorButton("Heart detail", PartyWatchUiSettings.DirectHpLossDetailColor, PartyWatchUiSettings.SetDirectHpLossDetailColor));
 
         content.AddChild(MakeSeparator());
-        var reset = new Button { Text = "Restore default settings" };
+        var reset = new Button
+        {
+            Text = "Restore default settings",
+            CustomMinimumSize = new Vector2(0f, 48f)
+        };
         reset.Pressed += () =>
         {
             PartyWatchUiSettings.ResetDefaults();
-            panel.GetParent()?.RemoveChild(panel);
+            screen.RemoveChild(panel);
             panel.QueueFree();
-            AddSettingsPanel(screen);
+            var replacement = BuildSettingsPanel(screen);
+            screen.AddChild(replacement);
+            replacement.Show();
         };
         content.AddChild(reset);
 
         panel.AddChild(content);
-        screen.AddChild(panel);
+        return panel;
     }
 
     private static Label MakeHeader(string text)
     {
-        var label = new Label { Text = text };
-        label.AddThemeFontSizeOverride("font_size", 22);
+        var label = new Label
+        {
+            Text = text,
+            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
+        };
+        label.AddThemeFontSizeOverride("font_size", 26);
         return label;
     }
 
@@ -98,7 +180,8 @@ internal static class PartyWatchSettingsPatch
         {
             Text = text,
             ButtonPressed = value,
-            MouseFilter = Control.MouseFilterEnum.Stop
+            MouseFilter = Control.MouseFilterEnum.Stop,
+            CustomMinimumSize = new Vector2(0f, 44f)
         };
         checkBox.Toggled += pressed => setter(pressed);
         return checkBox;
@@ -106,17 +189,10 @@ internal static class PartyWatchSettingsPatch
 
     private static Control MakeAnchorOption()
     {
-        var row = new HBoxContainer();
-        row.AddThemeConstantOverride("separation", 12);
-        row.AddChild(new Label
-        {
-            Text = "Anchor preset",
-            CustomMinimumSize = new Vector2(180f, 0f)
-        });
-
+        var row = MakeSettingsRow("Anchor preset");
         var option = new OptionButton
         {
-            CustomMinimumSize = new Vector2(260f, 0f)
+            CustomMinimumSize = new Vector2(280f, 44f)
         };
         option.AddItem("Health bar right");
         option.AddItem("Health bar left");
@@ -131,6 +207,7 @@ internal static class PartyWatchSettingsPatch
     private static Control MakeSlider(string text, double min, double max, float value, Action<float> setter)
     {
         var box = new VBoxContainer();
+        box.AddThemeConstantOverride("separation", 4);
         var label = new Label { Text = $"{text}: {value:0}" };
         var slider = new HSlider
         {
@@ -138,7 +215,7 @@ internal static class PartyWatchSettingsPatch
             MaxValue = max,
             Step = 1,
             Value = value,
-            CustomMinimumSize = new Vector2(450f, 0f)
+            CustomMinimumSize = new Vector2(500f, 32f)
         };
         slider.ValueChanged += newValue =>
         {
@@ -152,20 +229,28 @@ internal static class PartyWatchSettingsPatch
 
     private static Control MakeColorButton(string text, Color value, Action<Color> setter)
     {
-        var row = new HBoxContainer();
-        row.AddThemeConstantOverride("separation", 12);
-        row.AddChild(new Label
-        {
-            Text = text,
-            CustomMinimumSize = new Vector2(220f, 0f)
-        });
+        var row = MakeSettingsRow(text);
         var button = new ColorPickerButton
         {
             Color = value,
-            CustomMinimumSize = new Vector2(160f, 0f)
+            CustomMinimumSize = new Vector2(180f, 44f)
         };
         button.ColorChanged += color => setter(color);
         row.AddChild(button);
+        return row;
+    }
+
+    private static HBoxContainer MakeSettingsRow(string text)
+    {
+        var row = new HBoxContainer();
+        row.AddThemeConstantOverride("separation", 16);
+        row.AddChild(new Label
+        {
+            Text = text,
+            CustomMinimumSize = new Vector2(230f, 44f),
+            VerticalAlignment = VerticalAlignment.Center,
+            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
+        });
         return row;
     }
 }

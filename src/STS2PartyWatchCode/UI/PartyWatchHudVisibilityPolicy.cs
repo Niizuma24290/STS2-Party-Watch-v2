@@ -8,18 +8,6 @@ namespace STS2PartyWatch.UI;
 
 internal static class PartyWatchHudVisibilityPolicy
 {
-    private static readonly string[] BlockingScreenTypeFragments =
-    [
-        "MegaCrit.Sts2.Core.Nodes.Screens.CardSelection.",
-        "MegaCrit.Sts2.Core.Nodes.Screens.GameOverScreen.",
-        "MegaCrit.Sts2.Core.Nodes.Screens.Map.NMapScreen",
-        "MegaCrit.Sts2.Core.Nodes.Screens.NDeckViewScreen",
-        "MegaCrit.Sts2.Core.Nodes.Screens.NRewardsScreen",
-        "MegaCrit.Sts2.Core.Nodes.Screens.PauseMenu.NPauseMenu",
-        "MegaCrit.Sts2.Core.Nodes.Screens.Settings.NSettingsScreen",
-        "MegaCrit.Sts2.Core.Nodes.Screens.Shops.",
-    ];
-
     public static bool ShouldRenderHud(NHealthBar bar, Creature creature)
     {
         if (!PartyWatchUiSettings.HudEnabled
@@ -54,67 +42,6 @@ internal static class PartyWatchHudVisibilityPolicy
             return false;
         }
 
-        var tree = bar.GetTree();
-        return tree?.Root is not null && !HasBlockingUi(tree.Root, bar);
-    }
-
-    private static bool HasBlockingUi(Node node, Node healthBar)
-    {
-        var skipCurrentNode = ReferenceEquals(node, healthBar) || IsAncestorOf(node, healthBar);
-        if (!skipCurrentNode
-            && node is CanvasItem canvasItem
-            && canvasItem.IsVisibleInTree()
-            && IsBlockingUiNode(node))
-        {
-            return true;
-        }
-
-        foreach (var child in node.GetChildren())
-        {
-            if (child is Node childNode && HasBlockingUi(childNode, healthBar))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool IsBlockingUiNode(Node node)
-    {
-        var typeName = node.GetType().FullName ?? string.Empty;
-        if (typeName == "MegaCrit.Sts2.Core.Nodes.CommonUi.NModalContainer"
-            || typeName == "MegaCrit.Sts2.Core.Nodes.Screens.Overlays.NOverlayStack")
-        {
-            return false;
-        }
-
-        if (BlockingScreenTypeFragments.Any(fragment => typeName.Contains(fragment, StringComparison.Ordinal)))
-        {
-            return true;
-        }
-
-        if (typeName.StartsWith("MegaCrit.Sts2.Core.Nodes.CommonUi.", StringComparison.Ordinal)
-            && (typeName.Contains("Modal", StringComparison.Ordinal)
-                || typeName.Contains("Popup", StringComparison.Ordinal)
-                || typeName.Contains("Overlay", StringComparison.Ordinal)))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    private static bool IsAncestorOf(Node possibleAncestor, Node node)
-    {
-        for (var current = node.GetParent(); current is not null; current = current.GetParent())
-        {
-            if (ReferenceEquals(current, possibleAncestor))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return !PartyWatchNativeCoveringScreenTracker.HasNativeCombatCoveringScreenOpen();
     }
 }

@@ -28,3 +28,11 @@ Confirm in Steam that the Party Watch `-N` label appears in combat, then tune HU
 - Live test feedback showed the original freeze behavior locked the first valid prediction at player turn start. Example: enemy attack `13`, then the player gains `5` Block, but HUD still shows `-13`.
 - Freeze now means: update live during the player turn, remember the latest displayable result, and only freeze that latest result when the player turn is ending.
 - Expected behavior after this change: enemy attack `13` displays `-13`; after gaining `5` Block it updates to `-8`; after pressing end turn it holds the last value until the next player turn starts.
+
+## Settings Entry And Covering Screen Policy
+
+- Chose the independent settings route instead of BaseLib/mod-config dependency.
+- Removed the main-menu always-visible settings panel. `NSettingsScreen` now gets a `Party Watch HUD` entry button; pressing it opens a focused Party Watch settings sub-panel with a Back button.
+- Replaced broad UI-tree scanning with `PartyWatchNativeCoveringScreenTracker`. HUD visibility now depends on basic combat/player/HUD conditions plus explicit native covering screen lifecycle.
+- Explicit covering screens include native settings, settings popup, combat pile/deck/card selection screens, deck view, rewards, map, pause, merchant inventories, and game over.
+- Those covering screen `_Ready` / `_EnterTree` / `_ExitTree` hooks call `RefreshRegisteredBars()` so HUD hides and restores immediately when the covering page opens or closes.
