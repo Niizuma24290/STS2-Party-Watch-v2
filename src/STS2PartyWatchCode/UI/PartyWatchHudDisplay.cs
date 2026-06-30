@@ -5,12 +5,12 @@ namespace STS2PartyWatch.UI;
 
 internal static class PartyWatchHudDisplay
 {
-    private const int MainFontSize = 20;
+    private const int MainFontSize = 24;
     private const int DetailFontSize = 18;
     private const int DetailShieldFontSize = 15;
     private const int DetailHeartFontSize = 22;
     private const float HealthBarRightPadding = 6f;
-    private const float HealthBarRightVerticalNudge = -24f;
+    private const float HealthBarRightVerticalNudge = -32f;
     private const float DetailVerticalGap = 20f;
 
     public static string BuildMainHudDisplay(ForecastResult result)
@@ -101,7 +101,7 @@ internal static class PartyWatchHudDisplay
 
     private static float GetMainWidth() => 72f;
 
-    private static float GetMainHeight() => 28f;
+    private static float GetMainHeight() => 34f;
 
     private static float GetDetailWidth() => 240f;
 
