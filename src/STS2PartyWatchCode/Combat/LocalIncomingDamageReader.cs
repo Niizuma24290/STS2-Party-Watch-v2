@@ -120,6 +120,16 @@ public sealed class LocalIncomingDamageReader
             return IncomingDamageRead.Unknown;
         }
 
+        if (VerifiedTurnEndPowerDamageReader.TryRead(localCreature, out _, out var turnEndPowerDamage))
+        {
+            raw += turnEndPowerDamage;
+            foundDamage = foundDamage || turnEndPowerDamage > 0;
+        }
+        else
+        {
+            return IncomingDamageRead.Unknown;
+        }
+
         if (!VerifiedFixedTurnEndHpLossReader.TryRead(localCreature.Player, out var directHpLoss))
         {
             return IncomingDamageRead.Unknown;
@@ -175,12 +185,17 @@ public sealed class LocalIncomingDamageReader
             return IncomingDamageRead.Unknown;
         }
 
-        if (handEvents.Count == 0 && !foundEnemyAttack)
+        if (!VerifiedTurnEndPowerDamageReader.TryRead(localCreature, out var powerEvents, out var powerBlockableRaw))
+        {
+            return IncomingDamageRead.Unknown;
+        }
+
+        if (handEvents.Count == 0 && powerEvents.Count == 0 && !foundEnemyAttack)
         {
             return IncomingDamageRead.Hidden;
         }
 
-        var blockableRaw = handBlockableRaw + enemyAttackEvents.Sum(e => e.Amount);
+        var blockableRaw = handBlockableRaw + powerBlockableRaw + enemyAttackEvents.Sum(e => e.Amount);
         var remainingBlock = localCreature.Block;
         if (blockableRaw > 0)
         {
@@ -216,6 +231,18 @@ public sealed class LocalIncomingDamageReader
                     handEvent.Amount,
                     handEvent.IsSingleVerifiedEvent));
             }
+        }
+
+        foreach (var powerEvent in powerEvents)
+        {
+            var hpLoss = Math.Max(0, powerEvent.Amount - remainingBlock);
+            remainingBlock = Math.Max(0, remainingBlock - powerEvent.Amount);
+            hpLossEvents.Add(new UpcomingHpLossEvent(
+                powerEvent.Source,
+                powerEvent.NativeExecutionOrder,
+                HpLossDisplayLane.Blockable,
+                hpLoss,
+                powerEvent.IsSingleVerifiedEvent));
         }
 
         foreach (var enemyEvent in enemyAttackEvents)

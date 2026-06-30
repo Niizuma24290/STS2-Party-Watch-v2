@@ -216,3 +216,43 @@
 ## 提交记录
 
 - `8958029`：修复水盆 + 惊涛预测，并收口当前单人基线。
+## 追加修补：Constrict / Disintegration 回合末 Power 自伤
+
+### 实际改动
+
+- 新增 `VerifiedTurnEndPowerDamageReader`，只读取本机玩家身上的 `ConstrictPower` 与 `DisintegrationPower`。
+- 两者均按原生证据作为 blockable `DamageProps.nonCardUnpowered` 伤害进入 `🛡` lane。
+- `LocalIncomingDamageReader` 普通路径将这两个 Power 的预测伤害加入 `RawDamage`，再由既有 `EffectiveBlock` 逻辑抵扣。
+- 有 `TungstenRod` / `BeatingRemnant` 时，这两个 Power 被插入既有逐事件 HP loss 预算流，顺序为：手牌回合末事件 -> `ConstrictPower` -> `DisintegrationPower` -> 敌方 AttackIntent。
+- 未接入 `PoisonPower`、`DoomPower`、`DemisePower` 或通用 Power 扫描器。
+
+### 原生证据
+
+- `SlitheringStrangler.ConstrictMove` 调用 `PowerCmd.Apply<ConstrictPower>(...)`。
+- `ConstrictPower.AfterSideTurnEnd` 在持有者参与回合结束时调用 `CreatureCmd.Damage(owner, Amount, DamageProps.nonCardUnpowered, owner, null)`。
+- `KnowledgeDemon` 的诅咒选择可生成 `Disintegration`；`Disintegration.OnChosen` 调用 `PowerCmd.Apply<DisintegrationPower>(...)`。
+- `DisintegrationPower.AfterSideTurnEndLate` 在持有者参与回合结束时调用同样的 `CreatureCmd.Damage(..., DamageProps.nonCardUnpowered, owner, null)`。
+- `CombatManager.EndPlayerTurnPhaseOneInternal` 顺序确认：`DoTurnEnd` 的手牌回合末事件早于后续 `AfterTurnEnd`；因此 Power 自伤应排在手牌回合末伤害之后、敌方行动之前。
+
+### 运行时验证
+
+- 尚未由 Steam 运行时验证；本轮仅完成代码接入、构建、发布、安装与文档记录。
+
+### 未验证项
+
+- `ConstrictPower` 与 `DisintegrationPower` 的中文名/敌人场景映射仍需用户在游戏内确认。
+- 两者与 `TungstenRod` / `BeatingRemnant` 同场景下的实际逐事件顺序仍需运行时回归。
+
+### 明确风险或不支持情形
+
+- `PoisonPower` 是 `DamageProps.nonCardHpLoss`，本轮不接入；如果密林花蛇实际给的是 Poison 而不是 Constrict，需要另开一个 direct HP loss 小修。
+- `DoomPower` 是致死判定，不是固定伤害数字，本轮不显示。
+- 未实现通用 Power damage 引擎。
+
+### 下一步唯一任务
+
+- 用户从 Steam 启动游戏，验证 `ConstrictPower` / `DisintegrationPower` 在玩家结束回合前会进入 HUD 总预计失血。
+
+### 提交 hash
+
+- 待提交。

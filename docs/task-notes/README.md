@@ -42,3 +42,4 @@ Phase 9：单人正式版收口
 | Phase 8 | 已完成 | 非 Block 承伤修正机制 | DiamondDiademPower 最小代码接入已构建/发布通过，并完成用户 Steam 运行时验证 | Phase 9 |
 | Phase 9 | 待验证 | 单人正式版收口 | 代码与文档收口完成，等待用户最终单人运行时回归 | Phase 10 |
 | Phase 10 | 冻结 | 多人研究 | 仅研究多人真实目标与原生 target-aware 伤害预览，证据不足前不做正式多人 HUD | 证据充分后再开启 |
+追加修补：`ConstrictPower` 与 `DisintegrationPower` 已按原生 blockable Power 自伤路径接入 `🛡` 预测；尚待用户 Steam 运行时验证。

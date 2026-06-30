@@ -210,3 +210,10 @@ RegretLoss = 当前手牌总数 × 当前手牌中的 Regret 数量
 - blockable 伤害不可证明但 direct HP loss 可证明时，总预计失血等于该可信 direct HP loss；高级明细打开时只显示 `♥ N`。
 - 需要 single-hit 粒度但只能读到聚合值的场景，不把未知 blockable 值计入总值；高级明细打开时也不显示猜测后的 `🛡`。
 - 不显示 raw damage、Block、来源明细、诊断状态或第三种正式 HUD 行。
+## Constrict / Disintegration Power damage code evidence
+
+- `SlitheringStrangler.ConstrictMove` applies `ConstrictPower`.
+- `ConstrictPower.AfterSideTurnEnd` calls `CreatureCmd.Damage(owner, Amount, DamageProps.nonCardUnpowered, owner, null)`.
+- `KnowledgeDemon` can create the `Disintegration` choice; `Disintegration.OnChosen` applies `DisintegrationPower`.
+- `DisintegrationPower.AfterSideTurnEndLate` calls `CreatureCmd.Damage(owner, Amount, DamageProps.nonCardUnpowered, owner, null)`.
+- Party Watch treats both as verified blockable `🛡` sources. This is code-confirmed and pending Steam runtime validation.

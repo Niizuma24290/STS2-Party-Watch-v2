@@ -1,3 +1,11 @@
+## 追加快照：Constrict / Disintegration Power 自伤
+
+- 本轮只接入 `ConstrictPower` 与 `DisintegrationPower` 两个玩家回合末 Power 自伤来源。
+- 两者按本地原生 IL 证据走 `DamageProps.nonCardUnpowered`，因此进入可信 blockable `🛡`，不进入 direct HP loss `♥`。
+- 有 `TungstenRod` / `BeatingRemnant` 时，事件顺序接入为：手牌回合末事件 -> `ConstrictPower` -> `DisintegrationPower` -> 敌方 AttackIntent。
+- `PoisonPower`、`DoomPower`、`DemisePower` 与通用 Power damage 引擎仍未接入。
+- 代码已构建通过；Steam 运行时验证仍待用户执行。
+
 # Project State
 
 ## 当前快照
