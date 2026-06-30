@@ -218,3 +218,14 @@ RegretLoss = 当前手牌总数 × 当前手牌中的 Regret 数量
 - `KnowledgeDemon` can create the `Disintegration` choice; `Disintegration.OnChosen` applies `DisintegrationPower`.
 - `DisintegrationPower.AfterSideTurnEndLate` calls `CreatureCmd.Damage(owner, Amount, DamageProps.nonCardUnpowered, owner, null)`.
 - Party Watch treats both as verified blockable `🛡` sources. User Steam runtime validation has confirmed the basic HUD forecast path.
+
+## IntangiblePower HP-loss result evidence
+
+- 本地 `sts2.xml` 记录 `ModifyDamageHookType.Cap` 会调用 `AbstractModel.ModifyDamageCap(...)`，并点名 `IntangiblePower` 作为 damage-capping 示例。
+- 本地 `sts2.xml` 记录 `IntangiblePower.ModifyDamageCap(...)` caps damage received at 1；同一说明写明 HP loss 逻辑由 `IntangiblePower.ModifyHpLostAfterOsty(...)` 处理，damage cap 侧的重复逻辑用于 block loss 与 targeted attack preview。
+- 本地 `sts2.xml` 记录 `Hook.ModifyHpLost(...)` 在 damage 扣除 Block 后运行 HP-loss-modification hooks；无 redirection 的 preview 调用可使用 `HpLossHookPhase.All`。
+- 用户实测规则确认：无实体会让每个独立伤害 / HP loss 事件先变为 1；Block 可抵消该 1；多段攻击按每 hit 1 计算；多个 Burn / 腐朽 / Constrict 等独立事件各自为 1。
+- 用户实测规则确认：Beckon、Bad Luck、Regret 这类 direct HP loss 也分别变为每事件 1。
+- 用户实测规则确认：与 `TungstenRod` / `BeatingRemnant` 共存时，无实体先把事件压到 1，再进入棍子减免或残余预算。
+- Party Watch 当前实现只在已有逐事件 HP loss 结果修正链中接入 `IntangiblePower`：blockable damage 仍信任原生 `AttackIntent` / `Hook.ModifyDamage` 预览；direct HP loss 使用已验证单事件粒度先按无实体压到 1，再应用 `TungstenRod` / `BeatingRemnant`。
+- 若 direct HP loss 失去单事件粒度，Party Watch 不把聚合值猜测压成 1，改为 Unknown。

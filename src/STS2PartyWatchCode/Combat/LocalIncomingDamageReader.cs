@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Cards;
+using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Models.Relics;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.ValueProps;
@@ -105,9 +106,9 @@ public sealed class LocalIncomingDamageReader
             }
         }
 
-        if (HasVerifiedHpLossRelic(localCreature.Player))
+        if (HasVerifiedHpLossResultModifier(localCreature.Player, localCreature))
         {
-            return ReadKnownWithRelicModifiers(localCreature.Player, localCreature, enemyAttackEvents, foundDamage);
+            return ReadKnownWithHpLossResultModifiers(localCreature.Player, localCreature, enemyAttackEvents, foundDamage);
         }
 
         if (TryReadHandTurnEndDamage(localCreature.Player, localCreature, out var handTurnEndDamage))
@@ -164,6 +165,19 @@ public sealed class LocalIncomingDamageReader
             return IncomingDamageRead.Unknown;
         }
 
+        if (HasActiveIntangiblePower(localCreature))
+        {
+            if (!VerifiedFixedTurnEndHpLossReader.TryReadEvents(player, out var directEvents))
+            {
+                return IncomingDamageRead.Unknown;
+            }
+
+            var modified = VerifiedHpLossResultModifier.Apply(player, localCreature, directEvents, 0);
+            return modified.State == HpLossResultModificationState.Supported && modified.DirectHpLoss > 0
+                ? IncomingDamageRead.UnknownDirect(modified.DirectHpLoss)
+                : IncomingDamageRead.Unknown;
+        }
+
         if (!VerifiedFixedTurnEndHpLossReader.TryRead(player, out var directHpLoss))
         {
             return IncomingDamageRead.Unknown;
@@ -174,7 +188,7 @@ public sealed class LocalIncomingDamageReader
             : IncomingDamageRead.Unknown;
     }
 
-    private static IncomingDamageRead ReadKnownWithRelicModifiers(
+    private static IncomingDamageRead ReadKnownWithHpLossResultModifiers(
         Player player,
         Creature localCreature,
         IReadOnlyList<BlockableFutureDamageEvent> enemyAttackEvents,
@@ -257,24 +271,35 @@ public sealed class LocalIncomingDamageReader
                 enemyEvent.IsSingleVerifiedEvent));
         }
 
-        var modified = VerifiedHpLossRelicModifier.Apply(
+        var modified = VerifiedHpLossResultModifier.Apply(
             player,
+            localCreature,
             hpLossEvents,
             ObservedHpLossBudgetTracker.GetSpent(player));
-        if (modified.State == HpLossRelicModificationState.Supported)
+        if (modified.State == HpLossResultModificationState.Supported)
         {
             return modified.BlockableHpLoss > 0 || modified.DirectHpLoss > 0
                 ? IncomingDamageRead.Known(modified.BlockableHpLoss, 0, modified.DirectHpLoss)
                 : IncomingDamageRead.Hidden;
         }
 
-        if (modified.State == HpLossRelicModificationState.UnsupportedBecauseAggregateEnemyHpLossWithTungstenRod
+        if (modified.State == HpLossResultModificationState.UnsupportedBecauseAggregateEnemyHpLossWithTungstenRod
             && modified.DirectHpLoss > 0)
         {
             return IncomingDamageRead.UnknownDirect(modified.DirectHpLoss);
         }
 
         return IncomingDamageRead.Unknown;
+    }
+
+    private static bool HasVerifiedHpLossResultModifier(Player player, Creature localCreature)
+    {
+        return HasActiveIntangiblePower(localCreature) || HasVerifiedHpLossRelic(player);
+    }
+
+    private static bool HasActiveIntangiblePower(Creature localCreature)
+    {
+        return localCreature.GetPower<IntangiblePower>()?.Amount > 0;
     }
 
     private static bool HasVerifiedHpLossRelic(Player player)

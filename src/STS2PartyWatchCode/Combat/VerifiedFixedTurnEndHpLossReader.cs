@@ -13,6 +13,19 @@ internal static class VerifiedFixedTurnEndHpLossReader
     {
         hpLoss = 0;
 
+        if (!TryReadEvents(player, out var events))
+        {
+            return false;
+        }
+
+        hpLoss = events.Sum(e => e.VerifiedHpLoss);
+        return true;
+    }
+
+    public static bool TryReadEvents(Player player, out List<UpcomingHpLossEvent> events)
+    {
+        events = new List<UpcomingHpLossEvent>();
+
         try
         {
             var handPile = CardPile.Get(PileType.Hand, player);
@@ -26,7 +39,7 @@ internal static class VerifiedFixedTurnEndHpLossReader
             {
                 if (TryReadEvent(handPile.Cards[i], handCount, i, out var hpLossEvent))
                 {
-                    hpLoss += hpLossEvent.VerifiedHpLoss;
+                    events.Add(hpLossEvent);
                 }
             }
 
@@ -34,7 +47,7 @@ internal static class VerifiedFixedTurnEndHpLossReader
         }
         catch
         {
-            hpLoss = 0;
+            events.Clear();
             return false;
         }
     }

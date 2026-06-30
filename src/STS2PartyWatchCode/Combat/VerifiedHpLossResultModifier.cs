@@ -1,25 +1,29 @@
+using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Models.Relics;
 
 namespace STS2PartyWatch.Combat;
 
-internal static class VerifiedHpLossRelicModifier
+internal static class VerifiedHpLossResultModifier
 {
-    public static HpLossRelicModificationResult Apply(
+    public static HpLossResultModificationResult Apply(
         Player player,
+        Creature localCreature,
         IReadOnlyList<UpcomingHpLossEvent> events,
         int observedDamageReceivedThisTurn)
     {
         try
         {
+            var hasIntangible = localCreature.GetPower<IntangiblePower>()?.Amount > 0;
             var relics = player.Relics
                 .Where(relic => !relic.IsMelted && (relic is TungstenRod || relic is BeatingRemnant))
                 .ToList();
 
-            if (relics.Count == 0)
+            if (!hasIntangible && relics.Count == 0)
             {
-                return HpLossRelicModificationResult.Supported(
+                return HpLossResultModificationResult.Supported(
                     events.Where(e => e.DisplayLane == HpLossDisplayLane.Blockable).Sum(e => Math.Max(0, e.VerifiedHpLoss)),
                     events.Where(e => e.DisplayLane == HpLossDisplayLane.DirectHpLoss).Sum(e => Math.Max(0, e.VerifiedHpLoss)));
             }
@@ -32,14 +36,27 @@ internal static class VerifiedHpLossRelicModifier
             {
                 decimal amount = Math.Max(0, hpLossEvent.VerifiedHpLoss);
 
+                if (hasIntangible && hpLossEvent.DisplayLane == HpLossDisplayLane.DirectHpLoss && amount > decimal.Zero)
+                {
+                    if (!hpLossEvent.IsSingleVerifiedEvent)
+                    {
+                        return HpLossResultModificationResult.Unsupported(
+                            HpLossResultModificationState.UnsupportedBecauseAggregateDirectHpLossWithIntangible,
+                            blockable,
+                            direct);
+                    }
+
+                    amount = decimal.One;
+                }
+
                 foreach (var relic in relics)
                 {
                     if (relic is TungstenRod tungstenRod)
                     {
                         if (!hpLossEvent.IsSingleVerifiedEvent && amount > 0)
                         {
-                            return HpLossRelicModificationResult.Unsupported(
-                                HpLossRelicModificationState.UnsupportedBecauseAggregateEnemyHpLossWithTungstenRod,
+                            return HpLossResultModificationResult.Unsupported(
+                                HpLossResultModificationState.UnsupportedBecauseAggregateEnemyHpLossWithTungstenRod,
                                 blockable,
                                 direct);
                         }
@@ -54,8 +71,8 @@ internal static class VerifiedHpLossRelicModifier
 
                 if (amount < decimal.Zero)
                 {
-                    return HpLossRelicModificationResult.Unsupported(
-                        HpLossRelicModificationState.UnsupportedBecauseInvalidRemainingBudget,
+                    return HpLossResultModificationResult.Unsupported(
+                        HpLossResultModificationState.UnsupportedBecauseInvalidRemainingBudget,
                         blockable,
                         direct);
                 }
@@ -73,12 +90,12 @@ internal static class VerifiedHpLossRelicModifier
                 }
             }
 
-            return HpLossRelicModificationResult.Supported(blockable, direct);
+            return HpLossResultModificationResult.Supported(blockable, direct);
         }
         catch
         {
-            return HpLossRelicModificationResult.Unsupported(
-                HpLossRelicModificationState.UnsupportedBecauseEventGranularityUnknown,
+            return HpLossResultModificationResult.Unsupported(
+                HpLossResultModificationState.UnsupportedBecauseEventGranularityUnknown,
                 0,
                 0);
         }
@@ -97,25 +114,26 @@ internal static class VerifiedHpLossRelicModifier
     }
 }
 
-internal readonly record struct HpLossRelicModificationResult(
-    HpLossRelicModificationState State,
+internal readonly record struct HpLossResultModificationResult(
+    HpLossResultModificationState State,
     int BlockableHpLoss,
     int DirectHpLoss)
 {
-    public static HpLossRelicModificationResult Supported(int blockableHpLoss, int directHpLoss) =>
-        new(HpLossRelicModificationState.Supported, Math.Max(0, blockableHpLoss), Math.Max(0, directHpLoss));
+    public static HpLossResultModificationResult Supported(int blockableHpLoss, int directHpLoss) =>
+        new(HpLossResultModificationState.Supported, Math.Max(0, blockableHpLoss), Math.Max(0, directHpLoss));
 
-    public static HpLossRelicModificationResult Unsupported(
-        HpLossRelicModificationState state,
+    public static HpLossResultModificationResult Unsupported(
+        HpLossResultModificationState state,
         int blockableHpLoss,
         int directHpLoss) =>
         new(state, Math.Max(0, blockableHpLoss), Math.Max(0, directHpLoss));
 }
 
-internal enum HpLossRelicModificationState
+internal enum HpLossResultModificationState
 {
     Supported,
     UnsupportedBecauseAggregateEnemyHpLossWithTungstenRod,
+    UnsupportedBecauseAggregateDirectHpLossWithIntangible,
     UnsupportedBecauseEventGranularityUnknown,
     UnsupportedBecauseEventOrderUnknown,
     UnsupportedBecauseInvalidRemainingBudget

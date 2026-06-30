@@ -258,3 +258,54 @@
 
 - `988ecb4`
 - 验证收口提交：`3680f58`
+
+## 追加修补：IntangiblePower / 无实体
+
+### 实际改动
+
+- 将原 `VerifiedHpLossRelicModifier` 收敛为 `VerifiedHpLossResultModifier`，使同一逐事件 HP loss 结果链可同时处理 `IntangiblePower`、`TungstenRod` 与 `BeatingRemnant`。
+- `LocalIncomingDamageReader` 在本机玩家拥有 `IntangiblePower` 时进入逐事件 HP loss 预测路径。
+- `VerifiedFixedTurnEndHpLossReader` 新增事件列表读取入口，保留 Beckon / Bad Luck / Regret 的单事件粒度。
+- 无实体只在 `DirectHpLoss` lane 中对已验证单事件应用 `>0 -> 1`；blockable lane 继续信任原生 `AttackIntent` / `Hook.ModifyDamage` 预览，避免多段或聚合 blockable 伤害被二次压成 1。
+- 无实体修正顺序排在 `TungstenRod` 与 `BeatingRemnant` 前。
+- 没有修改 HUD 显示格式、高级明细开关、CombatState、命令队列、RNG、存档、网络或游戏文件。
+
+### 原生证据
+
+- 本地 `sts2.xml`：`ModifyDamageHookType.Cap` 是 damage-capping hook，示例为 `IntangiblePower`。
+- 本地 `sts2.xml`：`IntangiblePower.ModifyDamageCap(...)` 将收到的 damage cap 到 1；同一说明写明 HP loss 逻辑由 `IntangiblePower.ModifyHpLostAfterOsty(...)` 处理。
+- 本地 `sts2.xml`：`Hook.ModifyHpLost(...)` 在 damage 扣除 Block 后运行 HP-loss-modification hooks。
+- 用户实测规则：无实体按每个独立事件先变 1；Block 可以抵消该 1；多段攻击按每 hit 1；direct HP loss 每张 Beckon / Bad Luck / Regret 各自变 1；无实体先于 `TungstenRod` 与 `BeatingRemnant`。
+
+### 运行时验证
+
+- 本轮 Codex 未启动 Steam 游戏；当前为代码接入、构建、发布与安装验证。
+- 用户已提供实际机制规则，用于确定本轮实现顺序。
+
+### 未验证项
+
+- Steam 运行时尚未验证本轮新 DLL。
+- 无实体 + 多段攻击 + Block 的 HUD 结果尚未由本轮 Steam 复验。
+- 无实体 + Beckon / Bad Luck / Regret 的 HUD 结果尚未由本轮 Steam 复验。
+- 无实体 + `TungstenRod` / `BeatingRemnant` 组合尚未由本轮 Steam 复验。
+
+### 明确风险或不支持情形
+
+- 若某个 direct HP loss 来源不能证明单事件粒度，不把聚合值猜测压成 1。
+- 本轮不接入 BufferPower、PoisonPower、DoomPower、DemisePower 或通用 HP loss 引擎。
+- blockable damage 仍依赖原生 `AttackIntent` / `Hook.ModifyDamage` 预览已处理无实体；本轮不新增第二套 blockable cap 公式。
+
+### 下一步唯一任务
+
+- 用户从 Steam 运行时验证无实体与 Block、多段攻击、direct HP loss、Tungsten Rod / Beating Remnant 的组合。
+
+### 构建与安装
+
+- `C:\sts2\dotnet\dotnet.exe build .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore` 通过，0 warning / 0 error。
+- `C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore` 通过。
+- `git diff --check` 通过，仅输出既有 LF/CRLF 提示。
+- `powershell -ExecutionPolicy Bypass -File .\scripts\Install-LocalMod.ps1` 首次因 Program Files 写入权限失败；提升权限重跑后安装成功到 `C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\mods\sts2-party-watch-v2`。
+
+### 提交 hash
+
+- 未提交。

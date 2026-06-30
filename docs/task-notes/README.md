@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-Phase 1A 已完成。Phase 1B 已完成。Phase 5 已完成：攻击 Intent、Burn/DamageVar、第一批 EffectiveBlock 候选均已进入 `🛡 -N` 并完成 Steam 运行时回归验证。Phase 6 已完成：Beckon / Bad Luck / Regret 已进入 `♥ -N` 并完成 Steam 运行时联合验证。Phase 7 已按正常游戏范围收口：TungstenRod 与 BeatingRemnant 已接入，复数棍子控制台无效状态不作为正式行为依据。Phase 8 已完成 DiamondDiademPower 最小代码接入并通过用户 Steam 运行时验证。Phase 9 已完成代码、文档与用户 Steam 运行时收口；本轮追加水盆 + 惊涛、Constrict / Disintegration Power 自伤修补均已验证通过。
+Phase 1A 已完成。Phase 1B 已完成。Phase 5 已完成：攻击 Intent、Burn/DamageVar、第一批 EffectiveBlock 候选均已进入 `🛡 -N` 并完成 Steam 运行时回归验证。Phase 6 已完成：Beckon / Bad Luck / Regret 已进入 `♥ -N` 并完成 Steam 运行时联合验证。Phase 7 已按正常游戏范围收口：TungstenRod 与 BeatingRemnant 已接入，复数棍子控制台无效状态不作为正式行为依据。Phase 8 已完成 DiamondDiademPower 最小代码接入并通过用户 Steam 运行时验证。Phase 9 已完成代码、文档与用户 Steam 运行时收口；本轮追加水盆 + 惊涛、Constrict / Disintegration Power 自伤修补均已验证通过。当前追加 IntangiblePower / 无实体 HP loss 结果修补已完成代码接入、构建、发布和安装，等待用户 Steam 运行时验证。
 
 ## 当前唯一任务
 
@@ -43,3 +43,5 @@ Phase 9：单人正式版收口
 | Phase 9 | 已完成 | 单人正式版收口 | 代码、文档与用户 Steam 运行时回归均已收口 | Phase 10 |
 | Phase 10 | 冻结 | 多人研究 | 仅研究多人真实目标与原生 target-aware 伤害预览，证据不足前不做正式多人 HUD | 证据充分后再开启 |
 追加修补：`ConstrictPower` 与 `DisintegrationPower` 已按原生 blockable Power 自伤路径接入 `🛡` 预测，并已通过用户 Steam 运行时验证。
+
+追加修补：`IntangiblePower` 已按每个已验证 direct HP loss 事件先变为 1、再进入 `TungstenRod` / `BeatingRemnant` 的顺序接入；blockable 伤害继续信任原生预览；最新 DLL 已安装，等待用户 Steam 运行时验证。
