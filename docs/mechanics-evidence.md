@@ -78,7 +78,7 @@ EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock
 | 覆甲 | 是 | `PlatingPower.BeforeSideTurnEndEarly` 给 Block，注释说明早于回合末伤害 | `localCreature.GetPower<PlatingPower>()?.Amount` 或等价只读 power 入口 | Phase 5C 已验证 |
 | 奥利哈刚 | 是 | 当前 Block 为 0 时在 very early 标记，随后给 Block；检查早于覆甲 | `Orichalcum` 持有状态 + `DynamicVars.Block` + 当前 Block 条件 | Phase 5C 已验证 |
 | 假奥利哈刚 | 是 | 逻辑同奥利哈刚，数值为 3 | `FakeOrichalcum` 持有状态 + `DynamicVars.Block` + 当前 Block 条件 | Phase 5C 已验证 |
-| 波纹水盆 | 是 | 本回合未打出 Attack 时，`BeforeSideTurnEnd` 给 Block；若 `StampedePower` 将在 `AutoPostPlay` 阶段先自动打出 Attack，则水盆不会给 Block | `RippleBasin` 持有状态 + 当前回合 `CardPlaysFinished` 中是否有本机 Attack + 窄范围 pending `StampedePower` Attack 判断 | Phase 5C 已验证基础水盆；水盆 + 惊涛组合待 Steam 验证 |
+| 波纹水盆 | 是 | 本回合未打出 Attack 时，`BeforeSideTurnEnd` 给 Block；若 `StampedePower` 将在 `AutoPostPlay` 阶段先自动打出 Attack，则水盆不会给 Block | `RippleBasin` 持有状态 + 当前回合 `CardPlaysFinished` 中是否有本机 Attack + 窄范围 pending `StampedePower` Attack 判断 | Phase 5C 已验证基础水盆；水盆 + 惊涛组合已通过用户 Steam 验证 |
 | 斗篷扣 | 是 | `BeforeSideTurnEnd` 按手牌数给 Block | `CloakClasp` 持有状态 + `PileType.Hand.GetPile(player).Cards.Count` | Phase 5C 已验证 |
 | 钨钢棍 | 否，本轮只记录 | `ModifyHpLostAfterOsty` 减 HP loss，不是 Block | `TungstenRod.ModifyHpLostAfterOsty` | 后续补足 |
 | 律动残余 | 否，本轮只记录 | 限制本回合 HP loss 上限，不是 Block | `BeatingRemnant.ModifyHpLostAfterOsty` + `DamageReceivedThisTurn` | 后续补足 |
@@ -92,6 +92,7 @@ EffectiveBlock = CurrentBlock + VerifiedPreAttackBlock
 - 覆甲使用 `localCreature.GetPower<PlatingPower>()?.Amount`。
 - 奥利哈刚和假奥利哈刚仅在 `Creature.Block == 0` 时计入各自 `BlockVar`。
 - 波纹水盆使用 `CombatManager.Instance.History.CardPlaysFinished` 判断本回合本机玩家是否已打出 Attack；并额外按原生时序处理 pending `StampedePower`：`AutoPostPlay` 阶段会先于 `RippleBasin.BeforeSideTurnEnd`，若惊涛持有者手牌中存在非 `Unplayable` Attack，则预测其会先自动打出 Attack，水盆不再计入预期 Block。
+- 用户 Steam 运行时已验证水盆 + 惊涛 + 手牌 Attack 场景：HUD 不再把水盆 4 Block 加入预期，符合原生结算顺序。
 - 斗篷扣使用 `CardPile.Get(PileType.Hand, player).Cards.Count * BlockVar`。
 - 任一读取失败会返回 Unknown 并隐藏 HUD，不显示猜测值。
 - 未加入通用 Power / Relic / Orb 扫描器；未修改 raw 伤害、Burn 分类或 HUD 文本。

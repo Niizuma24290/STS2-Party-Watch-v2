@@ -2,7 +2,7 @@
 
 ## 状态
 
-合并 HUD 显示改造已完成代码接入；等待用户 Steam 运行时验证。
+合并 HUD 显示改造已完成代码接入；本轮水盆 + 惊涛、Constrict / Disintegration Power 自伤修补均已通过用户 Steam 运行时验证。
 
 ## 追加修补：水盆 + 惊涛
 
@@ -19,11 +19,11 @@
 
 ### 运行时验证
 
-- 尚未由 Steam 运行时验证；本轮仅完成代码修复、构建、发布、安装与文档记录。
+- 已由用户完成 Steam 运行时验证：水盆 + 惊涛 + 手牌 Attack 场景下，HUD 不再把水盆 4 Block 加入预期，结果符合原生结算顺序。
 
 ### 未验证项
 
-- “惊涛”中文名与 `StampedePower` 的运行时映射仍沿用 Phase 8 的证据与用户语境，待本轮游戏内确认。
+- “惊涛”中文名与 `StampedePower` 的运行时映射已在本轮用户 Steam 验证语境中确认。
 - 惊涛多层、多张 Attack、无合法目标或其他自动打牌失败边界未扩展模拟；本轮只按原生可读的窄条件判断“会有至少一张非 `Unplayable` Attack 被自动打出”。
 
 ### 明确风险或不支持情形
@@ -33,7 +33,7 @@
 
 ### 下一步唯一任务
 
-- 用户从 Steam 启动游戏，验证水盆 + 惊涛 + 手牌 Attack 场景下 HUD 不再把水盆 4 Block 加入预期。
+- 水盆 + 惊涛修补已收口；下一步仍只处理当前排队中的 Constrict / Disintegration Power 自伤运行时验证。
 
 ### 提交 hash
 
@@ -216,6 +216,7 @@
 ## 提交记录
 
 - `8958029`：修复水盆 + 惊涛预测，并收口当前单人基线。
+- 待提交：记录水盆 + 惊涛 Steam 运行时验证通过。
 ## 追加修补：Constrict / Disintegration 回合末 Power 自伤
 
 ### 实际改动
@@ -236,12 +237,12 @@
 
 ### 运行时验证
 
-- 尚未由 Steam 运行时验证；本轮仅完成代码接入、构建、发布、安装与文档记录。
+- 已由用户完成 Steam 运行时验证：`ConstrictPower` / `DisintegrationPower` 在玩家结束回合前进入 HUD 总预计失血，结果符合原生 blockable Power 自伤路径。
 
 ### 未验证项
 
-- `ConstrictPower` 与 `DisintegrationPower` 的中文名/敌人场景映射仍需用户在游戏内确认。
-- 两者与 `TungstenRod` / `BeatingRemnant` 同场景下的实际逐事件顺序仍需运行时回归。
+- `ConstrictPower` 与 `DisintegrationPower` 的基础 HUD 预测已完成用户 Steam 运行时验证。
+- 两者与 `TungstenRod` / `BeatingRemnant` 同场景下的实际逐事件顺序未单独运行时回归。
 
 ### 明确风险或不支持情形
 
@@ -251,7 +252,7 @@
 
 ### 下一步唯一任务
 
-- 用户从 Steam 启动游戏，验证 `ConstrictPower` / `DisintegrationPower` 在玩家结束回合前会进入 HUD 总预计失血。
+- 本轮 Constrict / Disintegration Power 自伤修补已收口；下一步仍保持 Phase 10 冻结，只在后续有新明确问题时单独开小任务。
 
 ### 提交 hash
 

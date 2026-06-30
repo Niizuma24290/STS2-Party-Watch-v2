@@ -13,7 +13,7 @@
 - 任务登记文件夹：`docs/task-notes/`
 - 当前唯一任务：Phase 9：单人正式版收口
 - 当前分支：`main`
-- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入与 Steam 运行时验证；Phase 6B 已按 shipped 代码机制接入 Regret；Phase 6C 已完成 Beckon / Bad Luck / Regret 的 Steam 运行时联合验证；Phase 7 已按正常游戏范围收口：TungstenRod 与 BeatingRemnant 已接入，复数棍子控制台无效状态不作为正式行为依据；Phase 8 已完成 DiamondDiademPower 最小接入并通过用户 Steam 运行时验证；Phase 9 合并 HUD 显示改造已完成代码接入，本轮追加水盆 + 惊涛最小修补，等待用户 Steam 运行时验证。
+- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入与 Steam 运行时验证；Phase 6B 已按 shipped 代码机制接入 Regret；Phase 6C 已完成 Beckon / Bad Luck / Regret 的 Steam 运行时联合验证；Phase 7 已按正常游戏范围收口：TungstenRod 与 BeatingRemnant 已接入，复数棍子控制台无效状态不作为正式行为依据；Phase 8 已完成 DiamondDiademPower 最小接入并通过用户 Steam 运行时验证；Phase 9 合并 HUD 显示改造已完成代码接入，本轮追加水盆 + 惊涛最小修补并通过用户 Steam 运行时验证。
 - 约束：不提交 DLL、PDB、PCK、logs、publish 输出、NuGet 缓存或游戏目录文件。
 
 ## Phase 1A 已完成
@@ -147,7 +147,7 @@
 - 可信来源明细 `🛡 OutDamage` / `♥ DirectHpLoss` 已收为 UI 层高级开关，默认关闭；尚未接入正式设置页或外部配置文件。
 - 合并总值只由已有可信 `ForecastResult.OutDamage` 与 `ForecastResult.DirectHpLoss` 相加，不重新读取游戏状态，不改机制计算。
 - 已修复 HP loss relic 路径的 blockable hand damage 限制：有 Tungsten Rod / Beating Remnant 时，不再只允许 Burn；已通过 `CardTurnEndDamageInspector` 证明会造成 blockable `DamageVar` 的手牌回合末伤害也能进入逐事件修正。
-- 已追加修复波纹水盆 + 惊涛：`VerifiedPreAttackBlockReader` 在水盆分支中考虑 pending `StampedePower` 自动打出的非 `Unplayable` Attack，避免错误预加水盆 Block；等待用户 Steam 运行时验证。
+- 已追加修复波纹水盆 + 惊涛：`VerifiedPreAttackBlockReader` 在水盆分支中考虑 pending `StampedePower` 自动打出的非 `Unplayable` Attack，避免错误预加水盆 Block；用户 Steam 运行时验证已通过。
 - Unknown 或 0 输出隐藏，不显示猜测值。
 - 已更新 `docs/architecture.md`，记录当前生产职责边界：combat reader 读机制，forecast 组合数值，patch 只负责 UI label。
 - 已更新 `docs/task-notes/phase-9-singleplayer-validation.md`，整理单人回归矩阵、已知限制和最终验证入口。
