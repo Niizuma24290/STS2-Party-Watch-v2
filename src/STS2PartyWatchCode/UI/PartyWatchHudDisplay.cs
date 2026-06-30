@@ -7,7 +7,7 @@ internal static class PartyWatchHudDisplay
 {
     private const int MainFontSize = 26;
     private const float HealthBarRightPadding = 6f;
-    private const float HealthBarRightVerticalNudge = -8f;
+    private const float HealthBarRightVerticalNudge = -18f;
 
     public static string BuildHudDisplay(ForecastResult result)
     {
