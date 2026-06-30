@@ -2,14 +2,17 @@ using System;
 using System.Reflection;
 using Godot;
 using HarmonyLib;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models.Relics;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using STS2PartyWatch.Combat;
 using STS2PartyWatch.Forecast;
+using STS2PartyWatch.UI;
 
 namespace STS2PartyWatch.Patches;
 
@@ -17,15 +20,15 @@ namespace STS2PartyWatch.Patches;
 internal static class ForecastRefreshPatch
 {
     private const string LabelName = "STS2PartyWatchForecastLabel";
-    private const float RightPadding = 42f;
-    private static readonly bool UseCompactHudLayout = false;
-    private static readonly bool ShowHudBreakdownDetails = false;
-    private static readonly float HudLabelWidth = ShowHudBreakdownDetails ? 240f : 96f;
-    private static readonly float HudLabelHeight = ShowHudBreakdownDetails ? 84f : 42f;
     private static readonly FieldInfo? CreatureField = typeof(NHealthBar).GetField("_creature", BindingFlags.Instance | BindingFlags.NonPublic);
     private static readonly LocalIncomingDamageReader Reader = new();
     private static readonly LocalDamageForecast Forecast = new();
     private static readonly List<WeakReference<NHealthBar>> RegisteredBars = new();
+
+    static ForecastRefreshPatch()
+    {
+        PartyWatchUiSettings.Changed += RefreshRegisteredBars;
+    }
 
     [HarmonyPostfix]
     [HarmonyPatch(nameof(NHealthBar.SetCreature))]
@@ -64,63 +67,30 @@ internal static class ForecastRefreshPatch
             return;
         }
 
+        PartyWatchHudDisplay.ApplyHudStyle(label);
         Reposition(bar, label, containerSize);
         ObservedHpLossBudgetTracker.Observe(creature);
 
-        var result = Forecast.Calculate(Reader.ReadForLocalCreature(creature));
-        if (result.State != ForecastResultState.KnownDamage || (result.OutDamage <= 0 && result.DirectHpLoss <= 0))
+        if (!PartyWatchHudVisibilityPolicy.ShouldRenderHud(bar, creature))
         {
-            label.Text = string.Empty;
-            label.Hide();
+            PartyWatchHudSnapshotStore.Clear();
+            Hide(label);
             return;
         }
 
-        label.Text = BuildForecastText(result);
+        var result = PartyWatchHudSnapshotStore.TryGetCommitted(creature, out var committed)
+            ? committed
+            : PartyWatchHudSnapshotStore.ResolveDisplayResult(
+                creature,
+                Forecast.Calculate(Reader.ReadForLocalCreature(creature)));
+        if (result.State != ForecastResultState.KnownDamage || (result.OutDamage <= 0 && result.DirectHpLoss <= 0))
+        {
+            Hide(label);
+            return;
+        }
+
+        label.Text = PartyWatchHudDisplay.BuildHudDisplay(result);
         label.Show();
-    }
-
-    private static string BuildForecastText(ForecastResult result)
-    {
-        var blockablePrediction = result.OutDamage;
-        var directHpLossPrediction = result.DirectHpLoss;
-        var displayTotalPredictedHpLoss = blockablePrediction + directHpLossPrediction;
-        if (displayTotalPredictedHpLoss <= 0)
-        {
-            return string.Empty;
-        }
-
-        if (!ShowHudBreakdownDetails)
-        {
-            return $"-{displayTotalPredictedHpLoss}";
-        }
-
-        var details = BuildForecastDetails(blockablePrediction, directHpLossPrediction);
-        if (UseCompactHudLayout)
-        {
-            return string.IsNullOrEmpty(details)
-                ? $"-{displayTotalPredictedHpLoss}"
-                : $"-{displayTotalPredictedHpLoss}  {details}";
-        }
-
-        return string.IsNullOrEmpty(details)
-            ? $"-{displayTotalPredictedHpLoss}"
-            : $"-{displayTotalPredictedHpLoss}\n{details}";
-    }
-
-    private static string BuildForecastDetails(int blockablePrediction, int directHpLossPrediction)
-    {
-        var details = new List<string>(2);
-        if (blockablePrediction > 0)
-        {
-            details.Add($"🛡 {blockablePrediction}");
-        }
-
-        if (directHpLossPrediction > 0)
-        {
-            details.Add($"♥ {directHpLossPrediction}");
-        }
-
-        return string.Join("   ", details);
     }
 
     private static bool TryGetLocalCreature(NHealthBar bar, out Creature? creature)
@@ -147,7 +117,7 @@ internal static class ForecastRefreshPatch
         return CreatureField?.GetValue(bar) as Creature;
     }
 
-    private static Label? GetOrCreateLabel(NHealthBar bar)
+    private static RichTextLabel? GetOrCreateLabel(NHealthBar bar)
     {
         var parent = GetLabelParent(bar);
         if (parent is null)
@@ -155,27 +125,21 @@ internal static class ForecastRefreshPatch
             return null;
         }
 
-        var existing = parent.GetNodeOrNull<Label>(LabelName);
+        var existing = parent.GetNodeOrNull<RichTextLabel>(LabelName);
         if (existing is not null)
         {
             return existing;
         }
 
-        var label = new Label
+        var label = new RichTextLabel
         {
             Name = LabelName,
             MouseFilter = Control.MouseFilterEnum.Ignore,
-            CustomMinimumSize = new Vector2(HudLabelWidth, HudLabelHeight),
-            Size = new Vector2(HudLabelWidth, HudLabelHeight),
             ZIndex = 50,
             Text = string.Empty,
             Visible = false,
         };
-        label.AddThemeFontSizeOverride("font_size", 30);
-        label.AddThemeColorOverride("font_color", Colors.White);
-        label.AddThemeColorOverride("font_shadow_color", Colors.Black);
-        label.AddThemeConstantOverride("shadow_offset_x", 2);
-        label.AddThemeConstantOverride("shadow_offset_y", 2);
+        PartyWatchHudDisplay.ApplyHudStyle(label);
 
         parent.AddChild(label);
         return label;
@@ -186,7 +150,7 @@ internal static class ForecastRefreshPatch
         return bar.HpBarContainer?.GetParent() as Control ?? bar;
     }
 
-    private static void Reposition(NHealthBar bar, Label label, Vector2? containerSize)
+    private static void Reposition(NHealthBar bar, RichTextLabel label, Vector2? containerSize)
     {
         var container = bar.HpBarContainer;
         if (container is null)
@@ -194,20 +158,22 @@ internal static class ForecastRefreshPatch
             return;
         }
 
-        var size = containerSize ?? container.Size;
-        label.Position = new Vector2(
-            container.Position.X + size.X + RightPadding,
-            container.Position.Y + MathF.Max(0f, (size.Y - label.Size.Y) * 0.5f));
+        PartyWatchHudDisplay.ApplyHudPosition(container, label, containerSize);
     }
 
     private static void HideExisting(NHealthBar bar)
     {
-        var existing = GetLabelParent(bar)?.GetNodeOrNull<Label>(LabelName);
+        var existing = GetLabelParent(bar)?.GetNodeOrNull<RichTextLabel>(LabelName);
         if (existing is not null)
         {
-            existing.Text = string.Empty;
-            existing.Hide();
+            Hide(existing);
         }
+    }
+
+    private static void Hide(RichTextLabel label)
+    {
+        label.Text = string.Empty;
+        label.Hide();
     }
 
     private static void RegisterBar(NHealthBar bar)
@@ -304,5 +270,103 @@ internal static class ForecastBeatingRemnantBudgetPatch
 
         ObservedHpLossBudgetTracker.ResetWindow(owner);
         ForecastRefreshPatch.RefreshRegisteredBars();
+    }
+}
+
+[HarmonyPatch(typeof(Hook))]
+internal static class ForecastTurnLifecyclePatch
+{
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(Hook.BeforeSideTurnStart))]
+    private static void BeforeSideTurnStartPostfix(
+        ICombatState combatState,
+        CombatSide side,
+        IReadOnlyList<Creature> participants)
+    {
+        if (!IsPlayerSide(side)
+            || !TryGetLocalParticipant(combatState, participants, out var creature)
+            || creature is null)
+        {
+            return;
+        }
+
+        var player = creature.Player;
+        if (player is null)
+        {
+            return;
+        }
+
+        PartyWatchHudSnapshotStore.OnPlayerSideTurnStarted(player, creature);
+        ForecastRefreshPatch.RefreshRegisteredBars();
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(Hook.BeforeTurnEnd))]
+    private static void BeforeTurnEndPostfix(
+        ICombatState combatState,
+        CombatSide side,
+        IEnumerable<Creature> participants)
+    {
+        if (!IsPlayerSide(side)
+            || !TryGetLocalParticipant(combatState, participants, out var creature)
+            || creature is null)
+        {
+            return;
+        }
+
+        var player = creature.Player;
+        if (player is null)
+        {
+            return;
+        }
+
+        PartyWatchHudSnapshotStore.OnPlayerTurnEnding(player, creature);
+        ForecastRefreshPatch.RefreshRegisteredBars();
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(nameof(Hook.AfterCombatEnd))]
+    private static void AfterCombatEndPostfix()
+    {
+        PartyWatchHudSnapshotStore.Clear();
+        ForecastRefreshPatch.RefreshRegisteredBars();
+    }
+
+    private static bool TryGetLocalParticipant(
+        ICombatState combatState,
+        IEnumerable<Creature> participants,
+        out Creature? creature)
+    {
+        creature = null;
+        try
+        {
+            var localPlayer = LocalContext.GetMe(combatState);
+            var localCreature = localPlayer?.Creature;
+            if (localPlayer is null || localCreature is null)
+            {
+                return false;
+            }
+
+            foreach (var participant in participants)
+            {
+                if (ReferenceEquals(participant, localCreature)
+                    || participant.Player?.NetId == localPlayer.NetId)
+                {
+                    creature = participant;
+                    return participant.Player is not null;
+                }
+            }
+        }
+        catch
+        {
+            return false;
+        }
+
+        return false;
+    }
+
+    private static bool IsPlayerSide(CombatSide side)
+    {
+        return side.ToString().Contains("Player", StringComparison.OrdinalIgnoreCase);
     }
 }
