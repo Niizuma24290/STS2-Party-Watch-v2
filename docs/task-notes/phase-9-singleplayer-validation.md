@@ -308,3 +308,34 @@
 ### 提交 hash
 
 - `ea4cabc`
+
+## 追加修补：TungstenRod / BeatingRemnant 预测顺序
+
+### 实际改动
+
+- `VerifiedHpLossResultModifier` 在读取已验证 HP loss 结果修正遗物时，固定将 `TungstenRod` 排在 `BeatingRemnant` 前。
+- 预测链现在按“棍子先减 HP loss、心脏再按剩余预算 cap”的顺序处理这两个遗物。
+- 没有修改 HUD 显示格式、高级明细开关、CombatState、命令队列、RNG、存档、网络或游戏文件。
+
+### 运行时验证
+
+- 本轮 Codex 未启动 Steam 游戏；当前为代码接入、构建、发布与安装验证。
+- 需要用户从 Steam 启动游戏后验证 `TungstenRod` + `BeatingRemnant` + 单段大于 20 伤害的实际 HUD 和 HP 变化。
+
+### 未验证项
+
+- 原生真实结算顺序仍需运行时确认；本轮按用户要求调整 Party Watch 预测顺序。
+- 双 `TungstenRod` 仍属于控制台制造的非正常遗物状态，不作为正式支持目标。
+
+### 明确风险或不支持情形
+
+- 若原生真实结算实际为 `BeatingRemnant` 先于 `TungstenRod`，本轮 HUD 会高估 1 点承伤。
+- 本轮只改变 `TungstenRod` / `BeatingRemnant` 两个已验证 HP loss 结果修正遗物之间的预测顺序，不扩展其他遗物或 Power。
+
+### 下一步唯一任务
+
+- 用户执行 Steam 运行时验证：确认心脏 + 单棍子、当前回合未受伤、单段大于 20 伤害时 HUD 是否显示 `-20` 且实际 HP 下降是否匹配。
+
+### 提交 hash
+
+- 本轮最终提交 hash 见最终汇报。

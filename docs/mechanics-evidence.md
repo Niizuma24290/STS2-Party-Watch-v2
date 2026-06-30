@@ -229,3 +229,9 @@ RegretLoss = 当前手牌总数 × 当前手牌中的 Regret 数量
 - 用户实测规则确认：与 `TungstenRod` / `BeatingRemnant` 共存时，无实体先把事件压到 1，再进入棍子减免或残余预算。
 - Party Watch 当前实现只在已有逐事件 HP loss 结果修正链中接入 `IntangiblePower`：blockable damage 仍信任原生 `AttackIntent` / `Hook.ModifyDamage` 预览；direct HP loss 使用已验证单事件粒度先按无实体压到 1，再应用 `TungstenRod` / `BeatingRemnant`。
 - 若 direct HP loss 失去单事件粒度，Party Watch 不把聚合值猜测压成 1，改为 Unknown。
+
+## TungstenRod / BeatingRemnant forecast order
+
+- Party Watch 的 HP loss 结果修正预测顺序固定为：`IntangiblePower` -> `TungstenRod` -> `BeatingRemnant`。
+- 本轮仅调整 Party Watch 预测顺序，让 `TungstenRod` 早于 `BeatingRemnant`；真实游戏原生结算顺序仍需 Steam 运行时验证。
+- 若未来总 HP loss 大于心脏剩余预算，HUD 将先应用棍子减免，再用心脏剩余预算封顶。

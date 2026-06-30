@@ -1,3 +1,10 @@
+## 追加快照：TungstenRod / BeatingRemnant 预测顺序
+
+- 本轮只调整 Party Watch 的 HP loss 结果修正预测顺序：`TungstenRod` 固定早于 `BeatingRemnant`。
+- 目的：当心脏与棍子共存且未来总 HP loss 大于心脏预算时，HUD 预测先应用棍子减免，再由心脏按剩余预算封顶。
+- 本轮不修改真实游戏结算、不扩展新机制、不改变 HUD 显示格式。
+- Steam 运行时尚未验证；需要用户确认单棍子 + 心脏 + 当前回合未受伤 + 单段大于 20 伤害时，HUD 与实际 HP 下降是否一致。
+
 ## 追加快照：IntangiblePower / 无实体
 
 - 本轮只接入 `IntangiblePower` 对已验证 direct HP loss 与 HP loss 结果链的影响。
@@ -21,7 +28,7 @@
 - 任务登记文件夹：`docs/task-notes/`
 - 当前唯一任务：Phase 9：单人正式版收口
 - 当前分支：`main`
-- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入与 Steam 运行时验证；Phase 6B 已按 shipped 代码机制接入 Regret；Phase 6C 已完成 Beckon / Bad Luck / Regret 的 Steam 运行时联合验证；Phase 7 已按正常游戏范围收口：TungstenRod 与 BeatingRemnant 已接入，复数棍子控制台无效状态不作为正式行为依据；Phase 8 已完成 DiamondDiademPower 最小接入并通过用户 Steam 运行时验证；Phase 9 合并 HUD 显示改造、水盆 + 惊涛修补、Constrict / Disintegration Power 自伤修补、IntangiblePower / 无实体 HP loss 结果修补均已完成代码、文档与用户 Steam 运行时收口。
+- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入与 Steam 运行时验证；Phase 6B 已按 shipped 代码机制接入 Regret；Phase 6C 已完成 Beckon / Bad Luck / Regret 的 Steam 运行时联合验证；Phase 7 已按正常游戏范围收口：TungstenRod 与 BeatingRemnant 已接入，复数棍子控制台无效状态不作为正式行为依据；Phase 8 已完成 DiamondDiademPower 最小接入并通过用户 Steam 运行时验证；Phase 9 合并 HUD 显示改造、水盆 + 惊涛修补、Constrict / Disintegration Power 自伤修补、IntangiblePower / 无实体 HP loss 结果修补均已完成代码、文档与用户 Steam 运行时收口；本轮追加 TungstenRod 早于 BeatingRemnant 的预测顺序调整，等待用户 Steam 运行时验证。
 - 约束：不提交 DLL、PDB、PCK、logs、publish 输出、NuGet 缓存或游戏目录文件。
 
 ## Phase 1A 已完成
