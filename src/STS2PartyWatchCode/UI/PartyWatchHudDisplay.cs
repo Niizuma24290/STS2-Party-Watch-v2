@@ -5,7 +5,7 @@ namespace STS2PartyWatch.UI;
 
 internal static class PartyWatchHudDisplay
 {
-    private const int MainFontSize = 32;
+    private const int MainFontSize = 26;
 
     public static string BuildHudDisplay(ForecastResult result)
     {

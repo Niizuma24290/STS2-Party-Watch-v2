@@ -10,7 +10,7 @@ internal static class PartyWatchUiSettings
     private static bool _showBreakdownDetails;
     private static bool _freezeHudWithinPlayerTurn = true;
     private static PartyWatchHudAnchor _hudAnchor = PartyWatchHudAnchor.HealthBarRight;
-    private static float _offsetX = 24f;
+    private static float _offsetX = -32f;
     private static float _offsetY;
     private static Color _totalLossColor = Colors.White;
     private static Color _blockableDetailColor = new(0.55f, 0.85f, 1f);
@@ -58,7 +58,7 @@ internal static class PartyWatchUiSettings
         _showBreakdownDetails = false;
         _freezeHudWithinPlayerTurn = true;
         _hudAnchor = PartyWatchHudAnchor.HealthBarRight;
-        _offsetX = 24f;
+        _offsetX = -32f;
         _offsetY = 0f;
         _totalLossColor = Colors.White;
         _blockableDetailColor = new Color(0.55f, 0.85f, 1f);
