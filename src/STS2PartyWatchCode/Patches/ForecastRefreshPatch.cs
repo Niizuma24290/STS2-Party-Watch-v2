@@ -19,7 +19,8 @@ namespace STS2PartyWatch.Patches;
 [HarmonyPatch(typeof(NHealthBar))]
 internal static class ForecastRefreshPatch
 {
-    private const string LabelName = "STS2PartyWatchForecastLabel";
+    private const string MainLabelName = "STS2PartyWatchForecastLabel";
+    private const string DetailLabelName = "STS2PartyWatchForecastDetailsLabel";
     private static readonly FieldInfo? CreatureField = typeof(NHealthBar).GetField("_creature", BindingFlags.Instance | BindingFlags.NonPublic);
     private static readonly LocalIncomingDamageReader Reader = new();
     private static readonly LocalDamageForecast Forecast = new();
@@ -61,20 +62,22 @@ internal static class ForecastRefreshPatch
 
         RegisterBar(bar);
 
-        var label = GetOrCreateLabel(bar);
-        if (label is null)
+        var mainLabel = GetOrCreateMainLabel(bar);
+        var detailLabel = GetOrCreateDetailLabel(bar);
+        if (mainLabel is null || detailLabel is null)
         {
             return;
         }
 
-        PartyWatchHudDisplay.ApplyHudStyle(label);
-        Reposition(bar, label, containerSize);
+        PartyWatchHudDisplay.ApplyMainHudStyle(mainLabel);
+        PartyWatchHudDisplay.ApplyDetailHudStyle(detailLabel);
+        Reposition(bar, mainLabel, detailLabel, containerSize);
         ObservedHpLossBudgetTracker.Observe(creature);
 
         if (!PartyWatchHudVisibilityPolicy.ShouldRenderHud(bar, creature))
         {
             PartyWatchHudSnapshotStore.Clear();
-            Hide(label);
+            Hide(mainLabel, detailLabel);
             return;
         }
 
@@ -85,12 +88,22 @@ internal static class ForecastRefreshPatch
                 Forecast.Calculate(Reader.ReadForLocalCreature(creature)));
         if (result.State != ForecastResultState.KnownDamage || (result.OutDamage <= 0 && result.DirectHpLoss <= 0))
         {
-            Hide(label);
+            Hide(mainLabel, detailLabel);
             return;
         }
 
-        label.Text = PartyWatchHudDisplay.BuildHudDisplay(result);
-        label.Show();
+        mainLabel.Text = PartyWatchHudDisplay.BuildMainHudDisplay(result);
+        mainLabel.Show();
+
+        var details = PartyWatchHudDisplay.BuildHudDetails(result);
+        if (string.IsNullOrEmpty(details))
+        {
+            Hide(detailLabel);
+            return;
+        }
+
+        detailLabel.Text = details;
+        detailLabel.Show();
     }
 
     private static bool TryGetLocalCreature(NHealthBar bar, out Creature? creature)
@@ -117,7 +130,7 @@ internal static class ForecastRefreshPatch
         return CreatureField?.GetValue(bar) as Creature;
     }
 
-    private static RichTextLabel? GetOrCreateLabel(NHealthBar bar)
+    private static Label? GetOrCreateMainLabel(NHealthBar bar)
     {
         var parent = GetLabelParent(bar);
         if (parent is null)
@@ -125,7 +138,42 @@ internal static class ForecastRefreshPatch
             return null;
         }
 
-        var existing = parent.GetNodeOrNull<RichTextLabel>(LabelName);
+        var existing = parent.GetNodeOrNull<Label>(MainLabelName);
+        if (existing is not null)
+        {
+            return existing;
+        }
+
+        var stale = parent.GetNodeOrNull<Control>(MainLabelName);
+        if (stale is not null)
+        {
+            stale.Name = $"{MainLabelName}Stale";
+            stale.QueueFree();
+        }
+
+        var label = new Label
+        {
+            Name = MainLabelName,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+            ZIndex = 50,
+            Text = string.Empty,
+            Visible = false,
+        };
+        PartyWatchHudDisplay.ApplyMainHudStyle(label);
+
+        parent.AddChild(label);
+        return label;
+    }
+
+    private static RichTextLabel? GetOrCreateDetailLabel(NHealthBar bar)
+    {
+        var parent = GetLabelParent(bar);
+        if (parent is null)
+        {
+            return null;
+        }
+
+        var existing = parent.GetNodeOrNull<RichTextLabel>(DetailLabelName);
         if (existing is not null)
         {
             return existing;
@@ -133,13 +181,13 @@ internal static class ForecastRefreshPatch
 
         var label = new RichTextLabel
         {
-            Name = LabelName,
+            Name = DetailLabelName,
             MouseFilter = Control.MouseFilterEnum.Ignore,
             ZIndex = 50,
             Text = string.Empty,
             Visible = false,
         };
-        PartyWatchHudDisplay.ApplyHudStyle(label);
+        PartyWatchHudDisplay.ApplyDetailHudStyle(label);
 
         parent.AddChild(label);
         return label;
@@ -150,7 +198,7 @@ internal static class ForecastRefreshPatch
         return bar.HpBarContainer?.GetParent() as Control ?? bar;
     }
 
-    private static void Reposition(NHealthBar bar, RichTextLabel label, Vector2? containerSize)
+    private static void Reposition(NHealthBar bar, Label mainLabel, RichTextLabel detailLabel, Vector2? containerSize)
     {
         var container = bar.HpBarContainer;
         if (container is null)
@@ -158,21 +206,48 @@ internal static class ForecastRefreshPatch
             return;
         }
 
-        PartyWatchHudDisplay.ApplyHudPosition(container, label, containerSize);
+        PartyWatchHudDisplay.ApplyHudPosition(container, mainLabel, detailLabel, containerSize);
     }
 
     private static void HideExisting(NHealthBar bar)
     {
-        var existing = GetLabelParent(bar)?.GetNodeOrNull<RichTextLabel>(LabelName);
-        if (existing is not null)
+        var parent = GetLabelParent(bar);
+        var mainLabel = parent?.GetNodeOrNull<Label>(MainLabelName);
+        var staleMainLabel = parent?.GetNodeOrNull<Control>(MainLabelName);
+        var detailLabel = parent?.GetNodeOrNull<RichTextLabel>(DetailLabelName);
+        if (mainLabel is not null)
         {
-            Hide(existing);
+            Hide(mainLabel);
+        }
+        else if (staleMainLabel is not null)
+        {
+            staleMainLabel.Name = $"{MainLabelName}Stale";
+            staleMainLabel.QueueFree();
+        }
+
+        if (detailLabel is not null)
+        {
+            Hide(detailLabel);
         }
     }
 
-    private static void Hide(RichTextLabel label)
+    private static void Hide(Label mainLabel, RichTextLabel detailLabel)
     {
-        label.Text = string.Empty;
+        Hide(mainLabel);
+        Hide(detailLabel);
+    }
+
+    private static void Hide(Control label)
+    {
+        if (label is Label simpleLabel)
+        {
+            simpleLabel.Text = string.Empty;
+        }
+        else if (label is RichTextLabel richTextLabel)
+        {
+            richTextLabel.Text = string.Empty;
+        }
+
         label.Hide();
     }
 

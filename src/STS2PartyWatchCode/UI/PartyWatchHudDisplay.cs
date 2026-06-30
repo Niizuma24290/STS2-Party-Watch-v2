@@ -5,41 +5,34 @@ namespace STS2PartyWatch.UI;
 
 internal static class PartyWatchHudDisplay
 {
-    private const int MainFontSize = 26;
+    private const int MainFontSize = 20;
     private const int DetailFontSize = 18;
     private const int DetailShieldFontSize = 15;
     private const int DetailHeartFontSize = 22;
     private const float HealthBarRightPadding = 6f;
     private const float HealthBarRightVerticalNudge = -24f;
+    private const float DetailVerticalGap = 20f;
 
-    public static string BuildHudDisplay(ForecastResult result)
+    public static string BuildMainHudDisplay(ForecastResult result)
     {
         var total = result.OutDamage + result.DirectHpLoss;
-        if (total <= 0)
-        {
-            return string.Empty;
-        }
-
-        if (!PartyWatchUiSettings.ShowBreakdownDetails)
-        {
-            return $"-{total}";
-        }
-
-        var details = BuildForecastDetails(result.OutDamage, result.DirectHpLoss);
-        return string.IsNullOrEmpty(details)
-            ? $"-{total}"
-            : $"[color={ToHtml(PartyWatchUiSettings.TotalLossColor)}]-{total}[/color]\n{details}";
+        return total <= 0 ? string.Empty : $"-{total}";
     }
 
-    public static void ApplyHudStyle(RichTextLabel label)
+    public static string BuildHudDetails(ForecastResult result)
     {
-        var showDetails = PartyWatchUiSettings.ShowBreakdownDetails;
+        return PartyWatchUiSettings.ShowBreakdownDetails
+            ? BuildForecastDetails(result.OutDamage, result.DirectHpLoss)
+            : string.Empty;
+    }
+
+    public static void ApplyMainHudStyle(Label label)
+    {
         label.MouseFilter = Control.MouseFilterEnum.Ignore;
-        label.BbcodeEnabled = true;
-        label.ScrollActive = false;
-        label.AutowrapMode = TextServer.AutowrapMode.Off;
-        label.CustomMinimumSize = new Vector2(GetWidth(showDetails), GetHeight(showDetails));
+        label.CustomMinimumSize = new Vector2(GetMainWidth(), GetMainHeight());
         label.Size = label.CustomMinimumSize;
+        label.HorizontalAlignment = HorizontalAlignment.Left;
+        label.VerticalAlignment = VerticalAlignment.Center;
         label.AddThemeFontSizeOverride("font_size", MainFontSize);
         label.AddThemeColorOverride("font_color", PartyWatchUiSettings.TotalLossColor);
         label.AddThemeColorOverride("font_shadow_color", Colors.Black);
@@ -47,10 +40,24 @@ internal static class PartyWatchHudDisplay
         label.AddThemeConstantOverride("shadow_offset_y", 2);
     }
 
-    public static void ApplyHudPosition(Control healthBar, Control label, Vector2? containerSize)
+    public static void ApplyDetailHudStyle(RichTextLabel label)
+    {
+        label.MouseFilter = Control.MouseFilterEnum.Ignore;
+        label.BbcodeEnabled = true;
+        label.ScrollActive = false;
+        label.AutowrapMode = TextServer.AutowrapMode.Off;
+        label.CustomMinimumSize = new Vector2(GetDetailWidth(), GetDetailHeight());
+        label.Size = label.CustomMinimumSize;
+        label.AddThemeFontSizeOverride("font_size", DetailFontSize);
+        label.AddThemeColorOverride("font_shadow_color", Colors.Black);
+        label.AddThemeConstantOverride("shadow_offset_x", 2);
+        label.AddThemeConstantOverride("shadow_offset_y", 2);
+    }
+
+    public static void ApplyHudPosition(Control healthBar, Control mainLabel, Control? detailLabel, Vector2? containerSize)
     {
         var size = containerSize ?? healthBar.Size;
-        var labelSize = label.Size;
+        var labelSize = mainLabel.Size;
         var position = PartyWatchUiSettings.HudAnchor switch
         {
             PartyWatchHudAnchor.HealthBarLeft => new Vector2(
@@ -68,7 +75,12 @@ internal static class PartyWatchHudDisplay
         };
 
         position += new Vector2(PartyWatchUiSettings.OffsetX, PartyWatchUiSettings.OffsetY);
-        label.Position = new Vector2(MathF.Max(0f, position.X), MathF.Max(0f, position.Y));
+        mainLabel.Position = new Vector2(MathF.Max(0f, position.X), MathF.Max(0f, position.Y));
+
+        if (detailLabel is not null)
+        {
+            detailLabel.Position = new Vector2(mainLabel.Position.X, mainLabel.Position.Y + DetailVerticalGap);
+        }
     }
 
     private static string BuildForecastDetails(int blockablePrediction, int directHpLossPrediction)
@@ -87,9 +99,13 @@ internal static class PartyWatchHudDisplay
         return string.Join("   ", details);
     }
 
-    private static float GetWidth(bool showDetails) => showDetails ? 240f : 84f;
+    private static float GetMainWidth() => 72f;
 
-    private static float GetHeight(bool showDetails) => showDetails ? 68f : 36f;
+    private static float GetMainHeight() => 28f;
+
+    private static float GetDetailWidth() => 240f;
+
+    private static float GetDetailHeight() => 28f;
 
     private static string ToHtml(Color color)
     {
