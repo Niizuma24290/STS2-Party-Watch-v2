@@ -217,4 +217,4 @@ RegretLoss = 当前手牌总数 × 当前手牌中的 Regret 数量
 - `ConstrictPower.AfterSideTurnEnd` calls `CreatureCmd.Damage(owner, Amount, DamageProps.nonCardUnpowered, owner, null)`.
 - `KnowledgeDemon` can create the `Disintegration` choice; `Disintegration.OnChosen` applies `DisintegrationPower`.
 - `DisintegrationPower.AfterSideTurnEndLate` calls `CreatureCmd.Damage(owner, Amount, DamageProps.nonCardUnpowered, owner, null)`.
-- Party Watch treats both as verified blockable `🛡` sources. This is code-confirmed and pending Steam runtime validation.
+- Party Watch treats both as verified blockable `🛡` sources. User Steam runtime validation has confirmed the basic HUD forecast path.
