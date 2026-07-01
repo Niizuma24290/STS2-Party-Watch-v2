@@ -12,7 +12,6 @@ internal static class PartyWatchHudDisplay
     private const float HealthBarRightPadding = 6f;
     private const float HealthBarRightVerticalNudge = -40f;
     private const float DetailHorizontalGap = 48f;
-    private const float GuideThickness = 1f;
 
     public static string BuildMainHudDisplay(ForecastResult result)
     {
@@ -84,31 +83,6 @@ internal static class PartyWatchHudDisplay
                 mainLabel.Position.X + DetailHorizontalGap,
                 mainLabel.Position.Y + ((mainLabel.Size.Y - detailLabel.Size.Y) * 0.5f));
         }
-    }
-
-    public static void ApplyAlignmentGuide(
-        Control healthBar,
-        Control mainLabel,
-        ColorRect barCenterGuide,
-        ColorRect hudCenterGuide,
-        Vector2? containerSize)
-    {
-        var size = containerSize ?? healthBar.Size;
-        barCenterGuide.MouseFilter = Control.MouseFilterEnum.Ignore;
-        barCenterGuide.Color = new Color(0f, 1f, 1f, 0.85f);
-        barCenterGuide.Position = new Vector2(
-            healthBar.Position.X,
-            healthBar.Position.Y + (size.Y * 0.5f) - (GuideThickness * 0.5f));
-        barCenterGuide.Size = new Vector2(size.X + HealthBarRightPadding + mainLabel.Size.X, GuideThickness);
-        barCenterGuide.ZIndex = 80;
-
-        hudCenterGuide.MouseFilter = Control.MouseFilterEnum.Ignore;
-        hudCenterGuide.Color = new Color(1f, 0f, 1f, 0.85f);
-        hudCenterGuide.Position = new Vector2(
-            mainLabel.Position.X,
-            mainLabel.Position.Y + (mainLabel.Size.Y * 0.5f) - (GuideThickness * 0.5f));
-        hudCenterGuide.Size = new Vector2(mainLabel.Size.X, GuideThickness);
-        hudCenterGuide.ZIndex = 81;
     }
 
     private static string BuildForecastDetails(int blockablePrediction, int directHpLossPrediction)

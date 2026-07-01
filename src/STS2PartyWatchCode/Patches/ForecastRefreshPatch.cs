@@ -21,9 +21,6 @@ internal static class ForecastRefreshPatch
 {
     private const string MainLabelName = "STS2PartyWatchForecastLabel";
     private const string DetailLabelName = "STS2PartyWatchForecastDetailsLabel";
-    private const string BarCenterGuideName = "STS2PartyWatchBarCenterGuide";
-    private const string HudCenterGuideName = "STS2PartyWatchHudCenterGuide";
-    private const bool ShowAlignmentGuide = false;
     private static readonly FieldInfo? CreatureField = typeof(NHealthBar).GetField("_creature", BindingFlags.Instance | BindingFlags.NonPublic);
     private static readonly LocalIncomingDamageReader Reader = new();
     private static readonly LocalDamageForecast Forecast = new();
@@ -67,22 +64,20 @@ internal static class ForecastRefreshPatch
 
         var mainLabel = GetOrCreateMainLabel(bar);
         var detailLabel = GetOrCreateDetailLabel(bar);
-        var barCenterGuide = GetOrCreateGuide(bar, BarCenterGuideName);
-        var hudCenterGuide = GetOrCreateGuide(bar, HudCenterGuideName);
-        if (mainLabel is null || detailLabel is null || barCenterGuide is null || hudCenterGuide is null)
+        if (mainLabel is null || detailLabel is null)
         {
             return;
         }
 
         PartyWatchHudDisplay.ApplyMainHudStyle(mainLabel);
         PartyWatchHudDisplay.ApplyDetailHudStyle(detailLabel);
-        Reposition(bar, mainLabel, detailLabel, barCenterGuide, hudCenterGuide, containerSize);
+        Reposition(bar, mainLabel, detailLabel, containerSize);
         ObservedHpLossBudgetTracker.Observe(creature);
 
         if (!PartyWatchHudVisibilityPolicy.ShouldRenderHud(bar, creature))
         {
             PartyWatchHudSnapshotStore.Clear();
-            Hide(mainLabel, detailLabel, barCenterGuide, hudCenterGuide);
+            Hide(mainLabel, detailLabel);
             return;
         }
 
@@ -93,13 +88,12 @@ internal static class ForecastRefreshPatch
                 Forecast.Calculate(Reader.ReadForLocalCreature(creature)));
         if (result.State != ForecastResultState.KnownDamage || (result.OutDamage <= 0 && result.DirectHpLoss <= 0))
         {
-            Hide(mainLabel, detailLabel, barCenterGuide, hudCenterGuide);
+            Hide(mainLabel, detailLabel);
             return;
         }
 
         mainLabel.Text = PartyWatchHudDisplay.BuildMainHudDisplay(result);
         mainLabel.Show();
-        ShowGuide(barCenterGuide, hudCenterGuide);
 
         var details = PartyWatchHudDisplay.BuildHudDetails(result);
         if (string.IsNullOrEmpty(details))
@@ -199,42 +193,12 @@ internal static class ForecastRefreshPatch
         return label;
     }
 
-    private static ColorRect? GetOrCreateGuide(NHealthBar bar, string name)
-    {
-        var parent = GetLabelParent(bar);
-        if (parent is null)
-        {
-            return null;
-        }
-
-        var existing = parent.GetNodeOrNull<ColorRect>(name);
-        if (existing is not null)
-        {
-            return existing;
-        }
-
-        var guide = new ColorRect
-        {
-            Name = name,
-            MouseFilter = Control.MouseFilterEnum.Ignore,
-            Visible = false,
-        };
-        parent.AddChild(guide);
-        return guide;
-    }
-
     private static Control? GetLabelParent(NHealthBar bar)
     {
         return bar.HpBarContainer?.GetParent() as Control ?? bar;
     }
 
-    private static void Reposition(
-        NHealthBar bar,
-        Label mainLabel,
-        RichTextLabel detailLabel,
-        ColorRect barCenterGuide,
-        ColorRect hudCenterGuide,
-        Vector2? containerSize)
+    private static void Reposition(NHealthBar bar, Label mainLabel, RichTextLabel detailLabel, Vector2? containerSize)
     {
         var container = bar.HpBarContainer;
         if (container is null)
@@ -243,7 +207,6 @@ internal static class ForecastRefreshPatch
         }
 
         PartyWatchHudDisplay.ApplyHudPosition(container, mainLabel, detailLabel, containerSize);
-        PartyWatchHudDisplay.ApplyAlignmentGuide(container, mainLabel, barCenterGuide, hudCenterGuide, containerSize);
     }
 
     private static void HideExisting(NHealthBar bar)
@@ -252,8 +215,6 @@ internal static class ForecastRefreshPatch
         var mainLabel = parent?.GetNodeOrNull<Label>(MainLabelName);
         var staleMainLabel = parent?.GetNodeOrNull<Control>(MainLabelName);
         var detailLabel = parent?.GetNodeOrNull<RichTextLabel>(DetailLabelName);
-        var barCenterGuide = parent?.GetNodeOrNull<ColorRect>(BarCenterGuideName);
-        var hudCenterGuide = parent?.GetNodeOrNull<ColorRect>(HudCenterGuideName);
         if (mainLabel is not null)
         {
             Hide(mainLabel);
@@ -268,30 +229,12 @@ internal static class ForecastRefreshPatch
         {
             Hide(detailLabel);
         }
-
-        if (barCenterGuide is not null)
-        {
-            Hide(barCenterGuide);
-        }
-
-        if (hudCenterGuide is not null)
-        {
-            Hide(hudCenterGuide);
-        }
     }
 
-    private static void ShowGuide(ColorRect barCenterGuide, ColorRect hudCenterGuide)
-    {
-        barCenterGuide.Visible = ShowAlignmentGuide;
-        hudCenterGuide.Visible = ShowAlignmentGuide;
-    }
-
-    private static void Hide(Label mainLabel, RichTextLabel detailLabel, ColorRect barCenterGuide, ColorRect hudCenterGuide)
+    private static void Hide(Label mainLabel, RichTextLabel detailLabel)
     {
         Hide(mainLabel);
         Hide(detailLabel);
-        Hide(barCenterGuide);
-        Hide(hudCenterGuide);
     }
 
     private static void Hide(Control label)
