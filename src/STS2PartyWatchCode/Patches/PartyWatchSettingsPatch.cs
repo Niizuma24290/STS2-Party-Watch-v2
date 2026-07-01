@@ -1,81 +1,69 @@
-using System.Reflection;
 using Godot;
 using HarmonyLib;
-using MegaCrit.Sts2.Core.Nodes.Screens.Settings;
+using MegaCrit.Sts2.Core.Modding;
+using MegaCrit.Sts2.Core.Nodes.Screens.ModdingScreen;
 using STS2PartyWatch.UI;
 
 namespace STS2PartyWatch.Patches;
 
-[HarmonyPatch(typeof(NSettingsScreen))]
-internal static class PartyWatchSettingsPatch
+[HarmonyPatch(typeof(NModInfoContainer))]
+internal static class PartyWatchModdingSettingsPatch
 {
+    private const string ModId = "sts2-party-watch-v2";
     private const string EntryButtonName = "STS2PartyWatchSettingsEntryButton";
     private const string PanelName = "STS2PartyWatchSettingsPanel";
-    private static readonly FieldInfo? ModdingButtonField =
-        typeof(NSettingsScreen).GetField("_moddingScreenButton", BindingFlags.Instance | BindingFlags.NonPublic);
 
     [HarmonyPostfix]
-    [HarmonyPatch("_Ready")]
-    private static void ReadyPostfix(NSettingsScreen __instance)
+    [HarmonyPatch(nameof(NModInfoContainer.Fill))]
+    private static void FillPostfix(NModInfoContainer __instance, Mod mod)
     {
-        AddSettingsEntry(__instance);
-        ForecastRefreshPatch.RefreshRegisteredBars();
+        UpdateSettingsEntry(__instance, mod.manifest?.id == ModId);
     }
 
-    [HarmonyPostfix]
-    [HarmonyPatch("OnSubmenuShown")]
-    private static void OnSubmenuShownPostfix()
+    private static void UpdateSettingsEntry(NModInfoContainer container, bool isPartyWatch)
     {
-        ForecastRefreshPatch.RefreshRegisteredBars();
-    }
-
-    [HarmonyPostfix]
-    [HarmonyPatch("OnSubmenuHidden")]
-    private static void OnSubmenuHiddenPostfix()
-    {
-        ForecastRefreshPatch.RefreshRegisteredBars();
-    }
-
-    private static void AddSettingsEntry(NSettingsScreen screen)
-    {
-        if (screen.GetNodeOrNull<PanelContainer>(PanelName) is not null)
+        var panel = container.GetNodeOrNull<PanelContainer>(PanelName);
+        var entry = container.GetNodeOrNull<Button>(EntryButtonName);
+        if (!isPartyWatch)
         {
+            panel?.Hide();
+            entry?.Hide();
             return;
         }
 
-        var panel = BuildSettingsPanel(screen);
-        screen.AddChild(panel);
-
-        var entry = new Button
+        if (panel is null)
         {
-            Name = EntryButtonName,
-            Text = "Party Watch HUD",
-            MouseFilter = Control.MouseFilterEnum.Stop,
-            CustomMinimumSize = new Vector2(280f, 56f)
-        };
-        entry.Pressed += () =>
-        {
-            screen.GetNodeOrNull<PanelContainer>(PanelName)?.Show();
-            ForecastRefreshPatch.RefreshRegisteredBars();
-        };
-
-        var nativeButton = ModdingButtonField?.GetValue(screen) as Control;
-        var nativeParent = nativeButton?.GetParent() as Control;
-        if (nativeParent is not null && nativeParent.GetNodeOrNull<Button>(EntryButtonName) is null)
-        {
-            nativeParent.AddChild(entry);
-            return;
+            panel = BuildSettingsPanel();
+            container.AddChild(panel);
         }
 
-        entry.SetAnchorsPreset(Control.LayoutPreset.TopRight);
-        entry.OffsetLeft = -360f;
-        entry.OffsetTop = 92f;
-        entry.OffsetRight = -64f;
-        entry.OffsetBottom = 154f;
-        screen.AddChild(entry);
+        if (entry is null)
+        {
+            entry = new Button
+            {
+                Name = EntryButtonName,
+                Text = "Party Watch HUD",
+                MouseFilter = Control.MouseFilterEnum.Stop,
+                CustomMinimumSize = new Vector2(280f, 56f)
+            };
+            entry.SetAnchorsPreset(Control.LayoutPreset.BottomRight);
+            entry.OffsetLeft = -360f;
+            entry.OffsetTop = -92f;
+            entry.OffsetRight = -40f;
+            entry.OffsetBottom = -32f;
+            entry.Pressed += () =>
+            {
+                container.GetNodeOrNull<PanelContainer>(PanelName)?.Show();
+                ForecastRefreshPatch.RefreshRegisteredBars();
+            };
+            container.AddChild(entry);
+        }
+
+        panel.Hide();
+        entry.Show();
     }
 
-    private static PanelContainer BuildSettingsPanel(NSettingsScreen screen)
+    private static PanelContainer BuildSettingsPanel()
     {
         var panel = new PanelContainer
         {
@@ -84,15 +72,15 @@ internal static class PartyWatchSettingsPatch
             ZIndex = 200,
             Visible = false
         };
-        panel.SetAnchorsPreset(Control.LayoutPreset.Center);
-        panel.OffsetLeft = -300f;
-        panel.OffsetTop = -390f;
-        panel.OffsetRight = 300f;
-        panel.OffsetBottom = 390f;
+        panel.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        panel.OffsetLeft = 20f;
+        panel.OffsetTop = 20f;
+        panel.OffsetRight = -20f;
+        panel.OffsetBottom = -20f;
 
         var content = new VBoxContainer
         {
-            CustomMinimumSize = new Vector2(560f, 720f)
+            CustomMinimumSize = new Vector2(560f, 680f)
         };
         content.AddThemeConstantOverride("separation", 10);
 
@@ -149,10 +137,11 @@ internal static class PartyWatchSettingsPatch
         reset.Pressed += () =>
         {
             PartyWatchUiSettings.ResetDefaults();
-            screen.RemoveChild(panel);
+            var parent = panel.GetParent();
+            parent.RemoveChild(panel);
             panel.QueueFree();
-            var replacement = BuildSettingsPanel(screen);
-            screen.AddChild(replacement);
+            var replacement = BuildSettingsPanel();
+            parent.AddChild(replacement);
             replacement.Show();
         };
         content.AddChild(reset);
