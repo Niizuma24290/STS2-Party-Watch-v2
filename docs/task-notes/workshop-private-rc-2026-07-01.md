@@ -73,3 +73,24 @@ Do not run this command during Git synchronization.
 ## Next Step
 
 准备 Workshop 封面、tags 与私密上传测试。
+
+## Actual Workshop Update Notes
+
+- Current Workshop item: `3755598583`
+- Current title: `Damage Forecast / 伤害预测`
+- Current visibility remains `private`.
+- Description now includes first-person future multiplayer plans, including top-left party HP bar forecasts, teammate warnings before turn resolution, SL context, and the Bad Luck / 13 HP joke.
+- Description ends with one `GitHub` link:
+  - `[Niizuma24290/STS2-Party-Watch-v2](https://github.com/Niizuma24290/STS2-Party-Watch-v2)`
+- Description was restructured to lead with the player-facing hook and split `Current features` / `Known gaps` / `Future plans`.
+- Removed the limiting words `several` and `部分` from the relic / power modifier feature line.
+- Uploaded commit `ed50d7b` (`fix: reuse local HUD forecast in multiplayer`) to the same Workshop item `3755598583`.
+- The uploaded DLL hash matched the freshly published DLL hash: `FD89D7F7EE28DD9F7A0C116E6CD33780BD08DE01AC1EA4460B80CAF227D1C5E4`.
+- `workshop.json` change note for this update: `Reuse local HUD forecast in multiplayer.`
+- The Workshop description now says the current release supports the local player's HUD in multiplayer battles, while teammate top-left party HP forecasts remain a future plan.
+- Multiplayer runtime screenshot confirmed the local player's `-6` Party Watch HUD appears under the local character health bar. The teammate row's blue shield value in the top-left party UI is treated as native multiplayer Block/status display, not Party Watch teammate prediction.
+- Teammate top-left forecasts, teammate HUD, and shared party HUD remain frozen future `FormalMultiplayerHud` work.
+- Replaced the main Workshop cover image with a new user-provided damage forecast diagram, resized to `900x900` PNG (`957,915` bytes), then uploaded to the same item.
+- Two user-provided gameplay screenshots were compressed and uploaded as Workshop preview images:
+  - `previews\forecast-total-example.jpg`
+  - `previews\forecast-details-example.jpg`

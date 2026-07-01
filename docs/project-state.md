@@ -1,3 +1,17 @@
+## 追加快照：多人战斗默认复用本机单人 HUD
+
+- 方向已确认：当前已有 HUD 明确定义为 `LocalSinglePlayerHud`，服务本机玩家。
+- `LocalSinglePlayerHud` 默认应同时在单人战斗和多人战斗中开启。
+- 多人战斗中只显示一份本机 HUD，锚点来自本机角色 / 本机玩家血条，默认位于本机血条下方。
+- 本轮不实现 `FormalMultiplayerHud`：不显示队友 HUD、不创建共享队伍 HUD、不发送网络消息、不改网络状态、不猜测多人目标。
+- 当前设置字段为 `ShowLocalHudInMultiplayer = true`；关闭它只影响多人战斗，单人 HUD 不受影响。
+- 多人预测保持保守：目标或伤害不可信时，允许本机 HUD 节点按本机锚点存在，但隐藏数字，不显示猜测的 `-N`。
+- 本方向对应提交：`90fece2 feat: support local HUD in multiplayer battles`。
+- 运行时确认：Workshop 订阅版多人战斗中，本机角色血条下方已显示本机 `-6`，本机显示链路可收口。
+- 运行时澄清：截图左上角队友行的蓝盾 `6` 是游戏原生多人队友状态 / Block 显示，不作为 Party Watch 的队友预测 HUD。
+- 冻结事项：队友顶栏预测、队友 HUD、共享队伍 HUD 仍属于未来 `FormalMultiplayerHud`，当前版本不实现、不宣传为已支持。
+- 追加修复提交：`ed50d7b fix: reuse local HUD forecast in multiplayer`。
+
 ## 追加快照：Phase 9B Poison 结算与敌人行动前存活预览
 
 - 本轮新增窄范围 `EnemyPreActionSurvivalPreview` / `PoisonTickPreview`，只预览敌方行动前 Poison tick 是否会让单个 enemy instance 无法执行当前 Attack Intent。
