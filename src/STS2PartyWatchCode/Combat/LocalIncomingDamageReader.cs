@@ -70,28 +70,52 @@ public sealed class LocalIncomingDamageReader
         var foundDamage = false;
         var enemyAttackEvents = new List<BlockableFutureDamageEvent>();
         var enemyAttackOrder = 0;
+        var enemySnapshotIndex = 0;
 
         foreach (var enemy in combatState.Enemies)
         {
+            var snapshotIndex = enemySnapshotIndex++;
             if (enemy is null || !enemy.IsAlive || enemy.Monster?.NextMove?.Intents is null)
             {
                 continue;
             }
 
-            foreach (var intent in enemy.Monster.NextMove.Intents)
+            var attackIntents = enemy.Monster.NextMove.Intents.OfType<AttackIntent>().ToArray();
+            if (attackIntents.Length == 0)
             {
-                if (intent is not AttackIntent attackIntent)
-                {
-                    continue;
-                }
+                continue;
+            }
 
+            var enemyIntentContribution = 0;
+            var intentTotals = new int[attackIntents.Length];
+            for (var i = 0; i < attackIntents.Length; i++)
+            {
+                intentTotals[i] = attackIntents[i].GetTotalDamage(new[] { localCreature }, enemy);
+                enemyIntentContribution += intentTotals[i];
+            }
+
+            var survivalPreview = EnemyPreActionSurvivalPreview.Preview(enemy, snapshotIndex, enemyIntentContribution);
+            if (!survivalPreview.Supported)
+            {
+                return ReadKnownWithUnsupportedEnemyDamage(localCreature);
+            }
+
+            if (!survivalPreview.WillExecuteCurrentIntent)
+            {
+                continue;
+            }
+
+            for (var i = 0; i < attackIntents.Length; i++)
+            {
                 foundDamage = true;
-                var totalDamage = attackIntent.GetTotalDamage(new[] { localCreature }, enemy);
+                var attackIntent = attackIntents[i];
+                var totalDamage = intentTotals[i];
                 var attackEvents = ReadEnemyAttackEvents(
                     localCreature.Player,
                     attackIntent,
                     localCreature,
                     enemy,
+                    survivalPreview.State.Identity,
                     enemyAttackOrder,
                     totalDamage,
                     out var modificationState);
@@ -312,6 +336,7 @@ public sealed class LocalIncomingDamageReader
         AttackIntent attackIntent,
         Creature localCreature,
         Creature enemy,
+        EnemyInstanceIdentity enemyIdentity,
         int enemyAttackOrder,
         int totalDamage,
         out EnemyDamageModificationState modificationState)
@@ -340,7 +365,7 @@ public sealed class LocalIncomingDamageReader
                     }
 
                     events.Add(new BlockableFutureDamageEvent(
-                        $"EnemyAttackIntent[{enemyAttackOrder}:{i}]",
+                        $"EnemyAttackIntent[{enemyIdentity.StableIdentity}:{enemyIdentity.SnapshotIndex}:{enemyAttackOrder}:{i}]",
                         orderBase + i,
                         modified.Amount,
                         true));
@@ -365,7 +390,7 @@ public sealed class LocalIncomingDamageReader
         }
 
         events.Add(new BlockableFutureDamageEvent(
-            $"EnemyAttackIntent[{enemyAttackOrder}]",
+            $"EnemyAttackIntent[{enemyIdentity.StableIdentity}:{enemyIdentity.SnapshotIndex}:{enemyAttackOrder}]",
             orderBase,
             aggregateModified.Amount,
             false));
@@ -499,4 +524,5 @@ public sealed class LocalIncomingDamageReader
         int NativeExecutionOrder,
         int Amount,
         bool IsSingleVerifiedEvent);
+
 }

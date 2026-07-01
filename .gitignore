@@ -17,6 +17,7 @@ local.props
 work/
 logs/
 *.log
+.codegraph/
 
 # IDE and OS
 .vs/

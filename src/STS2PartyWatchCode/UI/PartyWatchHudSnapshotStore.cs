@@ -32,6 +32,21 @@ internal static class PartyWatchHudSnapshotStore
         }
     }
 
+    public static void OnPlayerTurnEnding(Player player, Creature creature, ForecastResult latest)
+    {
+        if (ReferenceEquals(_player, player)
+            || ReferenceEquals(_creature, creature)
+            || _player is null
+            || _creature is null)
+        {
+            _player = player;
+            _creature = creature;
+            _latestLiveResult = HasDisplayableDamage(latest) ? latest : null;
+            _snapshot = _latestLiveResult;
+            _hasPlayerEndedTurn = true;
+        }
+    }
+
     public static void Clear()
     {
         _player = null;

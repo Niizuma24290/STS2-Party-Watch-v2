@@ -283,6 +283,19 @@ internal static class ForecastRefreshPatch
             Refresh(bar, null);
         }
     }
+
+    internal static void CommitFinalSnapshot(Creature creature)
+    {
+        var player = creature.Player;
+        if (player is null)
+        {
+            return;
+        }
+
+        ObservedHpLossBudgetTracker.Observe(creature);
+        var result = Forecast.Calculate(Reader.ReadForLocalCreature(creature));
+        PartyWatchHudSnapshotStore.OnPlayerTurnEnding(player, creature, result);
+    }
 }
 
 [HarmonyPatch(typeof(CardPile))]
@@ -395,7 +408,7 @@ internal static class ForecastTurnLifecyclePatch
             return;
         }
 
-        PartyWatchHudSnapshotStore.OnPlayerTurnEnding(player, creature);
+        ForecastRefreshPatch.CommitFinalSnapshot(creature);
         ForecastRefreshPatch.RefreshRegisteredBars();
     }
 
