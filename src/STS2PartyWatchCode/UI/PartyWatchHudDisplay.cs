@@ -10,8 +10,8 @@ internal static class PartyWatchHudDisplay
     private const int DetailShieldFontSize = 15;
     private const int DetailHeartFontSize = 22;
     private const float HealthBarRightPadding = 6f;
-    private const float HealthBarRightVerticalNudge = -32f;
-    private const float DetailVerticalGap = 20f;
+    private const float HealthBarRightVerticalNudge = -40f;
+    private const float DetailHorizontalGap = 48f;
     private const float GuideThickness = 1f;
 
     public static string BuildMainHudDisplay(ForecastResult result)
@@ -80,7 +80,9 @@ internal static class PartyWatchHudDisplay
 
         if (detailLabel is not null)
         {
-            detailLabel.Position = new Vector2(mainLabel.Position.X, mainLabel.Position.Y + DetailVerticalGap);
+            detailLabel.Position = new Vector2(
+                mainLabel.Position.X + DetailHorizontalGap,
+                mainLabel.Position.Y + ((mainLabel.Size.Y - detailLabel.Size.Y) * 0.5f));
         }
     }
 

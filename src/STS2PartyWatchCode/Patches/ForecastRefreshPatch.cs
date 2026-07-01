@@ -23,7 +23,7 @@ internal static class ForecastRefreshPatch
     private const string DetailLabelName = "STS2PartyWatchForecastDetailsLabel";
     private const string BarCenterGuideName = "STS2PartyWatchBarCenterGuide";
     private const string HudCenterGuideName = "STS2PartyWatchHudCenterGuide";
-    private const bool ShowAlignmentGuide = true;
+    private const bool ShowAlignmentGuide = false;
     private static readonly FieldInfo? CreatureField = typeof(NHealthBar).GetField("_creature", BindingFlags.Instance | BindingFlags.NonPublic);
     private static readonly LocalIncomingDamageReader Reader = new();
     private static readonly LocalDamageForecast Forecast = new();
