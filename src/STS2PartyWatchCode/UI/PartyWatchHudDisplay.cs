@@ -54,11 +54,17 @@ internal static class PartyWatchHudDisplay
         label.AddThemeConstantOverride("shadow_offset_y", 2);
     }
 
-    public static void ApplyHudPosition(Control healthBar, Control mainLabel, Control? detailLabel, Vector2? containerSize)
+    public static void ApplyHudPosition(
+        Control healthBar,
+        Control mainLabel,
+        Control? detailLabel,
+        Vector2? containerSize,
+        bool forceBelowHealthBar)
     {
         var size = containerSize ?? healthBar.Size;
         var labelSize = mainLabel.Size;
-        var position = PartyWatchUiSettings.HudAnchor switch
+        var anchor = forceBelowHealthBar ? PartyWatchHudAnchor.HealthBarBelow : PartyWatchUiSettings.HudAnchor;
+        var position = anchor switch
         {
             PartyWatchHudAnchor.HealthBarLeft => new Vector2(
                 healthBar.Position.X - labelSize.X - 22f,

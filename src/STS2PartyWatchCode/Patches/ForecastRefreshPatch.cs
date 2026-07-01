@@ -206,7 +206,13 @@ internal static class ForecastRefreshPatch
             return;
         }
 
-        PartyWatchHudDisplay.ApplyHudPosition(container, mainLabel, detailLabel, containerSize);
+        var isMultiplayer = GetCreature(bar)?.CombatState?.Players.Count > 1;
+        PartyWatchHudDisplay.ApplyHudPosition(
+            container,
+            mainLabel,
+            detailLabel,
+            containerSize,
+            isMultiplayer);
     }
 
     private static void HideExisting(NHealthBar bar)

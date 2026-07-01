@@ -7,6 +7,7 @@ internal static class PartyWatchUiSettings
     public static event Action? Changed;
 
     private static bool _hudEnabled = true;
+    private static bool _showLocalHudInMultiplayer = true;
     private static bool _showBreakdownDetails;
     private static bool _freezeHudWithinPlayerTurn = true;
     private static PartyWatchHudAnchor _hudAnchor = PartyWatchHudAnchor.HealthBarRight;
@@ -17,6 +18,8 @@ internal static class PartyWatchUiSettings
     private static Color _directHpLossDetailColor = new(1f, 0.55f, 0.62f);
 
     public static bool HudEnabled => _hudEnabled;
+
+    public static bool ShowLocalHudInMultiplayer => _showLocalHudInMultiplayer;
 
     public static bool ShowBreakdownDetails => _showBreakdownDetails;
 
@@ -35,6 +38,8 @@ internal static class PartyWatchUiSettings
     public static Color DirectHpLossDetailColor => _directHpLossDetailColor;
 
     public static void SetHudEnabled(bool value) => Set(ref _hudEnabled, value);
+
+    public static void SetShowLocalHudInMultiplayer(bool value) => Set(ref _showLocalHudInMultiplayer, value);
 
     public static void SetShowBreakdownDetails(bool value) => Set(ref _showBreakdownDetails, value);
 
@@ -55,6 +60,7 @@ internal static class PartyWatchUiSettings
     public static void ResetDefaults()
     {
         _hudEnabled = true;
+        _showLocalHudInMultiplayer = true;
         _showBreakdownDetails = false;
         _freezeHudWithinPlayerTurn = true;
         _hudAnchor = PartyWatchHudAnchor.HealthBarRight;

@@ -22,9 +22,14 @@ internal static class PartyWatchHudVisibilityPolicy
         var combatState = creature.CombatState;
         if (combatState is null
             || !combatState.IsLiveCombat()
-            || combatState.Players.Count != 1
+            || combatState.Players.Count <= 0
             || creature.Player is null
             || !creature.IsAlive)
+        {
+            return false;
+        }
+
+        if (combatState.Players.Count > 1 && !PartyWatchUiSettings.ShowLocalHudInMultiplayer)
         {
             return false;
         }

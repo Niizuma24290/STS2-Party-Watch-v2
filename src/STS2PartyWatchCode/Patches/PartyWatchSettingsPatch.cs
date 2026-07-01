@@ -80,7 +80,7 @@ internal static class PartyWatchModdingSettingsPatch
 
         var content = new VBoxContainer
         {
-            CustomMinimumSize = new Vector2(560f, 680f)
+            CustomMinimumSize = new Vector2(560f, 720f)
         };
         content.AddThemeConstantOverride("separation", 10);
 
@@ -107,6 +107,10 @@ internal static class PartyWatchModdingSettingsPatch
             "Enable Party Watch HUD",
             PartyWatchUiSettings.HudEnabled,
             PartyWatchUiSettings.SetHudEnabled));
+        content.AddChild(MakeCheckBox(
+            "Show Local HUD in Multiplayer",
+            PartyWatchUiSettings.ShowLocalHudInMultiplayer,
+            PartyWatchUiSettings.SetShowLocalHudInMultiplayer));
         content.AddChild(MakeCheckBox(
             "Show advanced shield / heart details",
             PartyWatchUiSettings.ShowBreakdownDetails,
