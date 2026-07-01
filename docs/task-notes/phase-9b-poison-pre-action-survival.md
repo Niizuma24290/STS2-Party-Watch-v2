@@ -116,7 +116,8 @@ match?
 
 ## 提交 hash
 
-未提交。
+- `81e06a3`：`docs: document poison pre-action survival evidence`
+- `0130eff`：`feat: preview poison-based enemy action cancellation`
 
 ## 下一步唯一任务
 
