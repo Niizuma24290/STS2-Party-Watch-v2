@@ -58,7 +58,23 @@ Record actual result versus forecast.
 Remove temporary diagnostics.
 Confirm only production responsibilities remain.
 Document known limitations.
-Tag v2.0.0 only after manual runtime validation.
+
+Current status: complete for the single-player, read-only HUD scope. The default HUD shows only total expected HP loss `-N`; advanced `🛡 / ♥` details are optional and disabled by default.
+
+## Phase 9A - HUD lifecycle and settings
+
+Complete the front-end productization pass without changing prediction mechanics:
+
+- conservative HUD hiding behind covering screens,
+- turn-scoped display freezing,
+- session-only native Settings panel,
+- position and color controls.
+
+Current status: complete.
+
+## Workshop prep - Private upload test
+
+Prepare the ignored Workshop workspace, cover, tags, and private upload test. Do not treat the mod as publicly released until a private upload and subscription runtime verification have passed.
 
 ## Phase 10 - Multiplayer research
 

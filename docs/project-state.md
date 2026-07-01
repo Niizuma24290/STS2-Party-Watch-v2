@@ -36,10 +36,19 @@
 ## 当前快照
 
 - 任务登记文件夹：`docs/task-notes/`
-- 当前唯一任务：基于实际游戏截图进行 HUD 位置、字号、间距、颜色与设置页可读性的视觉微调
+- 当前唯一任务：准备 Workshop 封面、tags 与私密上传测试。
 - 当前分支：`main`
-- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入与 Steam 运行时验证；Phase 6B 已按 shipped 代码机制接入 Regret；Phase 6C 已完成 Beckon / Bad Luck / Regret 的 Steam 运行时联合验证；Phase 7 已按正常游戏范围收口：TungstenRod 与 BeatingRemnant 已接入，复数棍子控制台无效状态不作为正式行为依据；Phase 8 已完成 DiamondDiademPower 最小接入并通过用户 Steam 运行时验证；Phase 9 合并 HUD 显示改造、水盆 + 惊涛修补、Constrict / Disintegration Power 自伤修补、IntangiblePower / 无实体 HP loss 结果修补均已完成代码、文档与用户 Steam 运行时收口；追加 TungstenRod 早于 BeatingRemnant 的预测顺序调整等待用户 Steam 运行时验证；Phase 9A 前端 UI、设置与显示生命周期已完成代码接入、构建、发布与安装，等待用户 Steam 运行时验证。
+- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入与 Steam 运行时验证；Phase 6B 已按 shipped 代码机制接入 Regret；Phase 6C 已完成 Beckon / Bad Luck / Regret 的 Steam 运行时联合验证；Phase 7 已按正常游戏范围收口：TungstenRod 与 BeatingRemnant 已接入，复数棍子控制台无效状态不作为正式行为依据；Phase 8 已完成 DiamondDiademPower 最小接入并通过用户 Steam 运行时验证；Phase 9 合并 HUD 显示改造、水盆 + 惊涛修补、Constrict / Disintegration Power 自伤修补、IntangiblePower / 无实体 HP loss 结果修补均已完成代码、文档与用户 Steam 运行时收口；Phase 9A 前端 UI、设置与显示生命周期已完成代码接入、构建、发布与安装；Workshop 工作区已在 ignored `work/` 下准备，本轮不执行 Workshop 上传，不提交 uploader、封面、`mod_id.txt`、DLL 或日志。
 - 约束：不提交 DLL、PDB、PCK、logs、publish 输出、NuGet 缓存或游戏目录文件。
+
+## Workshop workspace - 2026-07-01
+
+- 当前公开状态：未作为公开 Workshop 版本发布。
+- 本轮 Git 同步不运行 `ModUploader.exe`，不上传 Workshop。
+- Workshop workspace: `C:\Users\ROG\Documents\Codex\STS2-Party-Watch-v2\work\workshop-upload-rc-20260701`
+- Uploader workspace and logs remain under ignored `work/`.
+- DLL、manifest、封面、`mod_id.txt`、uploader 与 log 均不得进入 Git。
+- 下一步：准备 Workshop 封面、tags 与私密上传测试。
 
 ## Phase 1A 已完成
 
