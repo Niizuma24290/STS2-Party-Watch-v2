@@ -1,3 +1,14 @@
+## 追加快照：Phase 9B Poison 结算与敌人行动前存活预览
+
+- 本轮新增窄范围 `EnemyPreActionSurvivalPreview` / `PoisonTickPreview`，只预览敌方行动前 Poison tick 是否会让单个 enemy instance 无法执行当前 Attack Intent。
+- 敌人身份按实例处理：优先 `Creature.CombatId`，同时保留原生 `Creature` object reference，并只在同一快照内使用 enemy list index；不使用显示名称作为 key。
+- 当前只支持普通敌人 + 可读 `PoisonPower` / `AccelerantPower`，无 `HardToKillPower`、`SlipperyPower`、敌方 `IntangiblePower`、`AdaptablePower`、`HatchPower`、`TestSubject`、`ToughEgg` 等特殊机制。
+- `LocalIncomingDamageReader` 现在按 enemy instance 先预览 Poison 生存，再决定是否纳入该实例 Intent；确定被 Poison 杀死的普通敌人不再贡献最终 `-N`。
+- `Hook.BeforeTurnEnd` 会重新读取当前战斗状态并提交最终 HUD 快照；敌方行动期间继续保持该快照稳定。
+- 本轮不调用真实伤害/行动结算，不修改 CombatState、命令队列、RNG、存档、网络或游戏文件。
+- 代码已构建、publish 通过；安装因游戏目录 DLL 被占用失败，Steam 运行时矩阵尚未执行。
+- 下一步唯一任务：关闭占用 mod DLL 的游戏进程后重跑安装脚本，并从 Steam 验证普通 Poison、多敌人、两只同名敌人和 unsupported 特殊机制矩阵。
+
 ## 追加快照：Phase 9A 前端 UI、设置与显示生命周期
 
 - 本轮只做前端产品化，不修改 `LocalIncomingDamageReader`、`LocalDamageForecast`、遗物/Power 修正或任何预测公式。
@@ -36,9 +47,9 @@
 ## 当前快照
 
 - 任务登记文件夹：`docs/task-notes/`
-- 当前唯一任务：准备 Workshop 封面、tags 与私密上传测试。
+- 当前唯一任务：关闭占用 mod DLL 的游戏进程后完成 Phase 9B 安装与 Steam 运行时验证。
 - 当前分支：`main`
-- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入与 Steam 运行时验证；Phase 6B 已按 shipped 代码机制接入 Regret；Phase 6C 已完成 Beckon / Bad Luck / Regret 的 Steam 运行时联合验证；Phase 7 已按正常游戏范围收口：TungstenRod 与 BeatingRemnant 已接入，复数棍子控制台无效状态不作为正式行为依据；Phase 8 已完成 DiamondDiademPower 最小接入并通过用户 Steam 运行时验证；Phase 9 合并 HUD 显示改造、水盆 + 惊涛修补、Constrict / Disintegration Power 自伤修补、IntangiblePower / 无实体 HP loss 结果修补均已完成代码、文档与用户 Steam 运行时收口；Phase 9A 前端 UI、设置与显示生命周期已完成代码接入、构建、发布与安装；Workshop 工作区已在 ignored `work/` 下准备，本轮不执行 Workshop 上传，不提交 uploader、封面、`mod_id.txt`、DLL 或日志。
+- 当前状态：Phase 1A 已完成；Phase 1B 已完成；Phase 5 已完成并完成全量回归验证；Phase 6A 已完成代码接入与 Steam 运行时验证；Phase 6B 已按 shipped 代码机制接入 Regret；Phase 6C 已完成 Beckon / Bad Luck / Regret 的 Steam 运行时联合验证；Phase 7 已按正常游戏范围收口：TungstenRod 与 BeatingRemnant 已接入，复数棍子控制台无效状态不作为正式行为依据；Phase 8 已完成 DiamondDiademPower 最小接入并通过用户 Steam 运行时验证；Phase 9 合并 HUD 显示改造、水盆 + 惊涛修补、Constrict / Disintegration Power 自伤修补、IntangiblePower / 无实体 HP loss 结果修补均已完成代码、文档与用户 Steam 运行时收口；Phase 9A 前端 UI、设置与显示生命周期已完成代码接入、构建、发布与安装；Phase 9B 普通 Poison 行动前存活预览已完成代码接入、构建与 publish，安装因游戏目录 DLL 被占用失败，等待安装与 Steam 运行时验证；Workshop 工作区已在 ignored `work/` 下准备，本轮不执行 Workshop 上传，不提交 uploader、封面、`mod_id.txt`、DLL 或日志。
 - 约束：不提交 DLL、PDB、PCK、logs、publish 输出、NuGet 缓存或游戏目录文件。
 
 ## Workshop workspace - 2026-07-01

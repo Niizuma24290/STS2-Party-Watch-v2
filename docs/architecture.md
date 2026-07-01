@@ -11,6 +11,7 @@ v2.0 keeps each module narrow and read-only.
 ## Combat/LocalIncomingDamageReader
 
 - Reads local combat state and enemy AttackIntent objects.
+- Performs Phase 9B enemy pre-action survival filtering only inside the combat reader: each enemy instance is previewed independently before its current AttackIntent contribution is included.
 - Calls game-native preview APIs only for read-only damage forecasting.
 - Produces blockable damage, effective block, direct HP loss, or an explicit unknown state.
 - Does not touch UI nodes.

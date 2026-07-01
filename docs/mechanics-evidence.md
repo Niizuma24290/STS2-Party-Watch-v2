@@ -235,3 +235,35 @@ RegretLoss = 当前手牌总数 × 当前手牌中的 Regret 数量
 - Party Watch 的 HP loss 结果修正预测顺序固定为：`IntangiblePower` -> `TungstenRod` -> `BeatingRemnant`。
 - 本轮仅调整 Party Watch 预测顺序，让 `TungstenRod` 早于 `BeatingRemnant`；真实游戏原生结算顺序仍需 Steam 运行时验证。
 - 若未来总 HP loss 大于心脏剩余预算，HUD 将先应用棍子减免，再用心脏剩余预算封顶。
+
+## Phase 9B Poison pre-action survival evidence
+
+游戏版本证据：
+
+- 程序集：`C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\data_sts2_windows_x86_64\sts2.dll`
+- XML 文档：`C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\data_sts2_windows_x86_64\sts2.xml`
+- 文件时间：`2026-06-19 18:57`
+- 程序集版本：`sts2, Version=0.1.0.0`
+
+| 机制 | 类 / 方法 / 字段 | 原生结算阶段 | 作用范围 | 是否影响 Poison | 与 Poison 的顺序 | 是否可被当前只读数据准确预览 | Party Watch 接入结论 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Poison 基础 tick | `MegaCrit.Sts2.Core.Models.Powers.PoisonPower.AfterSideTurnStart`；`PoisonPower.TriggerCount`；`PoisonPower.CalculateTotalDamageNextTurn` | Enemy side `Hook.AfterSideTurnStart`，早于 `CombatManager.ExecuteEnemyTurn` | Power owner 自身 | 是 | 敌方行动前；每 tick 用当前 `PoisonPower.Amount`，若 owner 仍活着才 `PowerCmd.Decrement(this)` | 普通敌人、无特殊 damage/HP-loss/lifecycle power 时可预览 | 已接入：按单个 enemy instance 预览 Poison 致死，确定死于行动前时只排除该实例当前 Attack Intent |
+| 敌方行动取消 | `CombatManager.StartTurn`；`CombatManager.ExecuteEnemyTurn`；`CreatureCmd.Kill`；`Creature.IsAlive` / `CombatState.ContainsCreature(enemy)` | Enemy side start 后才执行敌人行动 | 每个原生 `Creature` 敌人对象 | 间接影响 | Poison death 发生在 `ExecuteEnemyTurn` 前；已移除敌人不会执行 `PerformIntent` / `TakeTurn` | 普通死亡移除可由 `CurrentHp`、`IsAlive`、`CurrentPoison` 和 unsupported 门判断 | 已接入普通场景；特殊死亡阻止/复活/阶段转换保持 Unknown |
+| Accelerant | `MegaCrit.Sts2.Core.Models.Powers.AccelerantPower`；`PoisonPower.TriggerCount` | PoisonPower 自己读取 opponent 的 Accelerant 层数 | Poison owner 的活着 opponents | 是 | 同一 Poison tick 阶段内增加触发次数，最大不超过当前 Poison 层数 | 单人本机战斗可读 opponents 的 `AccelerantPower.Amount` | 已接入为只读状态；不重放 `Accelerant` 卡或任何卡牌流程 |
+| 触媒 / 卡牌重放 | 当前类型列表未出现 `Catalyst`；当前 Poison 相关卡牌包括 `Accelerant`、`DeadlyPoison`、`PoisonedStab` | 卡牌打出时，不属于本预览 | 卡牌目标 / 命令队列 | 可能提前改变 Poison | 在预览读取前已经生效或未生效 | 不能安全重放，且任务禁止重放 | 不接入：只读取结束回合时已经存在的 `PoisonPower.Amount` / `AccelerantPower.Amount` |
+| 单次伤害上限 9 | `MegaCrit.Sts2.Core.Models.Monsters.Exoskeleton.AfterAddedToRoom` 施加 `HardToKillPower(9)`；`HardToKillPower.ModifyDamageCap` | `Hook.ModifyDamage` cap 阶段 | Power owner 收到的 damage | 是，Poison 走 `CreatureCmd.Damage` / `Hook.ModifyDamage` | Poison HP loss 前的 damage cap | 类名和 hook 已确认，但本轮未验证完整 Poison 致死/行动取消矩阵 | 未接入；敌人有 `HardToKillPower` 且有 Poison 时返回 Unknown |
+| Slippery | `MegaCrit.Sts2.Core.Models.Powers.SlipperyPower.ModifyHpLostAfterOsty`；`AfterDamageReceived` | `Hook.ModifyHpLost` AfterOsty；damage received 后消耗层数 | Power owner 的 HP loss | 是 | Poison damage 扣 Block 后进入 HP loss 修改；每次实际 damage received 后 decrement | 规则已定位，但逐 tick 消耗和多触发矩阵未运行时验证 | 未接入；敌人有 `SlipperyPower` 且有 Poison 时返回 Unknown |
+| Intangible | `MegaCrit.Sts2.Core.Models.Powers.IntangiblePower.ModifyDamageCap`；`ModifyHpLostAfterOsty` | damage cap 与 HP loss AfterOsty | Power owner | 是 | Poison 先经 damage cap，再经 HP loss cap | 已知会影响 Poison，但敌方 Poison 致死矩阵未验证 | 未接入敌人 Poison 预览；敌人有 `IntangiblePower` 且有 Poison 时返回 Unknown |
+| TestSubject 阶段 / 复活 | `MegaCrit.Sts2.Core.Models.Monsters.TestSubject`；`AdaptablePower.AfterDeath`；`AdaptablePower.ShouldCreatureBeRemovedFromCombatAfterDeath`; `RESPAWN_MOVE` | death hook 后进入 respawn move / revive | TestSubject enemy | 是，影响“是否真的不行动”结论 | Poison 可触发 death，但 `AdaptablePower` 阻止移除并安排复活阶段 | 当前无法只靠普通 HP<=0 判断其本次行动结论 | 未接入；`TestSubject` / `AdaptablePower` 返回 Unknown |
+| ToughEgg hatch lifecycle | `MegaCrit.Sts2.Core.Models.Monsters.ToughEgg`；`HatchPower.AfterSideTurnEnd`；`HATCH_MOVE` / `SetMaxAndCurrentHp` | enemy move / side turn end | ToughEgg enemy | 可能影响生命周期 | 不属于普通死亡模型 | 当前未验证 Poison 致死与 hatch 状态组合 | 未接入；`ToughEgg` / `HatchPower` 返回 Unknown |
+
+普通 Poison 接入所需字段：
+
+- stable enemy instance identity：优先 `Creature.CombatId`；没有时保留原生 `Creature` object reference，并只在同一快照内使用列表 index。
+- display name：`Creature.Name`。
+- native class / type：`enemy.Monster.GetType().FullName`。
+- current HP：`Creature.CurrentHp`。
+- current Poison：`enemy.GetPower<PoisonPower>()?.Amount`。
+- current Intent contribution：该 enemy instance 当前 `AttackIntent.GetTotalDamage(...)` 合计。
+- relevant Powers / DynamicVars：当前记录 `PoisonPower`、`AccelerantPower`、`HardToKillPower`、`SlipperyPower`、`IntangiblePower`、`AdaptablePower`、`HatchPower`、`NemesisPower` 的类型与 amount。
+- phase / death lifecycle state：当前 `Creature.IsAlive` / `Creature.IsDead`，并通过 unsupported 门排除已知阶段/复活类。

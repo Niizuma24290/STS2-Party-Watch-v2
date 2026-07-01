@@ -35,3 +35,7 @@
 | 已运行时验证 | 读取假奥利哈刚预期 Block | `player.Relics.OfType<FakeOrichalcum>()` + relic `BlockVar` + `Creature.Block == 0` | 公开只读 relic 集合 / DynamicVars 读取 | 是 | 仅在当前 Block 为 0 时计入。 |
 | 已运行时验证 | 读取波纹水盆预期 Block | `player.Relics.OfType<RippleBasin>()` + `CombatManager.Instance.History.CardPlaysFinished` + `localCreature.GetPower<StampedePower>()` + `CardPile.Get(PileType.Hand, player)` | 公开只读 relic 集合 / combat history / power / hand pile 读取 | 是 | 本回合已打出本机 Attack 或惊涛即将自动打出非 `Unplayable` Attack 时，不计入水盆 Block；水盆 + 惊涛组合已通过用户 Steam 验证；不模拟无合法目标等自动打牌边界。 |
 | 已运行时验证 | 读取斗篷扣预期 Block | `player.Relics.OfType<CloakClasp>()` + `CardPile.Get(PileType.Hand, player).Cards.Count` + relic `BlockVar` | 公开只读 relic 集合 / 手牌集合读取 | 是 | 只按当前手牌数计算。 |
+| 仅代码确认，尚未运行时验证 | 读取敌人实例身份 | `Creature.CombatId` + 原生 `Creature` object reference + 同一快照内 enemy list index | 公开属性读取 / object reference 保留 | 否 | Phase 9B 用于 Poison 行动前预览；禁止用敌人显示名称作为 key。 |
+| 仅代码确认，尚未运行时验证 | 读取敌人 Poison | `enemy.GetPower<PoisonPower>()?.Amount` | 公开只读 power 入口 | 否 | 只读取结束回合时已经生效的当前 Poison 层数，不重放卡牌或命令队列。 |
+| 仅代码确认，尚未运行时验证 | 读取 Poison 额外触发 | `enemy.CombatState.GetOpponentsOf(enemy).Sum(c => c.GetPowerAmount<AccelerantPower>())` | 公开只读 combat / power 入口 | 否 | 按 `PoisonPower.TriggerCount` 证据处理，触发次数不超过当前 Poison 层数。 |
+| 仅代码确认，尚未运行时验证 | Poison 行动前 Intent 过滤 | `EnemyPreActionSurvivalPreview.Preview(enemy)` + `PoisonTickPreview` | 只读预览；不调用真实 damage / kill / action 入口 | 否 | 仅普通敌人支持；`HardToKillPower`、`SlipperyPower`、敌方 `IntangiblePower`、`TestSubject`、`ToughEgg` 等返回 Unknown/隐藏。 |

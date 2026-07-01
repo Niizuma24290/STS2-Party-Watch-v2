@@ -15,3 +15,4 @@
 - D-013: HUD visibility is decided by a central UI policy and should conservatively hide behind full-screen or modal UI.
 - D-014: turn-scoped HUD freezing is display-only and must not change forecast mechanics.
 - D-015: until a verified official mod config API is available, Party Watch UI settings are session-only and must not be written into game saves or guessed game settings paths.
+- D-016: enemy pre-action survival previews must be keyed by native enemy instance identity, never by enemy display name; unsupported Poison/lifecycle mechanics hide rather than guessing whether an enemy attacks.

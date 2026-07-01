@@ -76,6 +76,12 @@ Current status: complete.
 
 Prepare the ignored Workshop workspace, cover, tags, and private upload test. Do not treat the mod as publicly released until a private upload and subscription runtime verification have passed.
 
+## Phase 9B - Poison pre-action survival preview
+
+Add a narrow read-only preview for ordinary Poison killing a specific enemy instance before enemy actions. Do not build a generic enemy damage simulator; unsupported enemy damage caps, HP-loss caps, revive, hatch, or phase lifecycle mechanics must hide rather than guess.
+
+Current status: code integrated and build-passing; waiting for publish, install, and Steam runtime validation.
+
 ## Phase 10 - Multiplayer research
 
 仅研究多人真实目标与原生 target-aware 伤害预览，证据不足前不做正式多人 HUD。
