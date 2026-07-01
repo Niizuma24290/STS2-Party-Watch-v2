@@ -23,11 +23,6 @@ public sealed class LocalIncomingDamageReader
             return IncomingDamageRead.Hidden;
         }
 
-        if (combatState.Players.Count != 1)
-        {
-            return IncomingDamageRead.Unknown;
-        }
-
         var localPlayer = LocalContext.GetMe(combatState);
         var localCreature = localPlayer?.Creature;
         if (localCreature is null || !localCreature.IsAlive)
@@ -46,14 +41,22 @@ public sealed class LocalIncomingDamageReader
             return IncomingDamageRead.Hidden;
         }
 
-        if (combatState.Players.Count != 1)
-        {
-            return IncomingDamageRead.Unknown;
-        }
-
         if (localCreature is null || !localCreature.IsAlive)
         {
             return IncomingDamageRead.Hidden;
+        }
+
+        try
+        {
+            var localPlayer = LocalContext.GetMe(combatState);
+            if (localPlayer is null || localCreature.Player?.NetId != localPlayer.NetId)
+            {
+                return IncomingDamageRead.Hidden;
+            }
+        }
+        catch
+        {
+            return IncomingDamageRead.Unknown;
         }
 
         return ReadKnown(combatState, localCreature);
