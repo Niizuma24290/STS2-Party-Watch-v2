@@ -95,3 +95,10 @@ Phase 1A 至 Phase 9A 已完成并有对应历史记录。Phase 9B 普通 Poison
 - `phase-9b-poison-pre-action-survival.md`: Poison 行动前存活预览与原生毒血条补充证据。
 - `phase-11-supplements.md`: Workshop 上传完成后的补充与维护阶段入口。
 - `workshop-private-rc-2026-07-01.md`: Workshop workspace、private/subscription 测试和多人本机 HUD 记录。
+## Current Diagnostic Update
+
+Phase 11 local HUD alignment now includes a temporary `[STS2 Party Watch][HUD Align]` runtime coordinate log in commit `0bf9a7e9ee597a1eb756b3432dadea4c7ee7734e`.
+
+Status boundary: Implemented, Built, and Installed only. RuntimeVerified remains pending until Steam runtime coordinates are captured from the log.
+
+Next task: use the log line, plus the cyan health-bar center guide and magenta HUD text center guide, to compare runtime centers without screenshot pixel measuring; then remove the temporary guides and log.

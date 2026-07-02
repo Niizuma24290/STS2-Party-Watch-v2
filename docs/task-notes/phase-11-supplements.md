@@ -56,6 +56,8 @@ HUD text center guide commit: `9d198445d1c3f14e193b73ffafab3542fe23d036`
 
 Shared center target commit: `ef91fcb1a8a1616b4376d7741b2ab2343ac19980`
 
+Alignment runtime coordinate log commit: `0bf9a7e9ee597a1eb756b3432dadea4c7ee7734e`
+
 Implemented:
 
 - Removed the temporary guide switch for the current test build. The guide now draws directly from the existing local HUD path whenever the local HUD number is eligible to show.
@@ -68,6 +70,8 @@ Implemented:
 - Replaced the temporary `-10f` nudge with measured HUD text bounds: the main label text is assigned before positioning, `Font.GetStringSize(...)` measures the current HUD string height, and the default right-anchor position centers that measured text box on the health-bar center line.
 - Added a second temporary diagnostic guide line over the HUD text: magenta marks the current main HUD label measured-text center, while cyan remains the local health-bar center line.
 - Consolidated the default right-anchor HUD target and cyan guide target through the same health-bar center helper. The cyan guide now uses the same `OffsetY` as the HUD target, while its X start remains at the raw health-bar center.
+- Moved temporary guide drawing and alignment logging into `PartyWatchHudDebugGuide` so the formal HUD display file keeps only the shared center/text-size helpers and layout calculation.
+- Added a throttled `[STS2 Party Watch][HUD Align]` runtime log line after HUD and guide layout. It reports anchor, session offset, raw health-bar center, offset target center, main HUD control center, measured text size, guide centers, local/global rects, and the actual Y deltas.
 - No settings panel, forecast, poison, power, intent, damage, or multiplayer strategy was changed.
 
 Built:
@@ -96,6 +100,10 @@ Built:
 - Result after shared center target: success, 0 warnings, 0 errors.
 - `C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
 - Result after shared center target: success.
+- `C:\sts2\dotnet\dotnet.exe build .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
+- Result after alignment runtime coordinate log: success, 0 warnings, 0 errors.
+- `C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
+- Result after alignment runtime coordinate log: success.
 
 Installed:
 
@@ -106,11 +114,12 @@ Installed:
 - Re-copied the measured text bounds alignment test build into the same local game mod directory on 2026-07-03.
 - Re-copied the HUD text center guide diagnostic build into the same local game mod directory on 2026-07-03.
 - Re-copied the shared center target diagnostic build into the same local game mod directory on 2026-07-03.
+- Re-copied the alignment runtime coordinate log diagnostic build into the same local game mod directory on 2026-07-03. Installed DLL: `sts2-party-watch-v2.dll`, length `86528`, timestamp `2026-07-03 01:30:39`.
 - This was a local game-directory install only, not a Workshop upload.
 
 RuntimeVerified:
 
-- Not run after the shared center target change. The provided screenshots confirmed both guide types before this change, but no post-change Steam screenshot has been recorded yet.
+- Not run after the alignment runtime coordinate log change. The provided screenshots confirmed both guide types before this change, but no post-change Steam log or screenshot has been recorded yet.
 
 DocumentedOnly:
 
