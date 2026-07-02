@@ -30,6 +30,7 @@ Party Watch does not simulate a full turn, does not call real damage or command 
 - Covering native pages, modal/popup/overlay screens, combat end, invalid player state, or disabled HUD settings hide and clear relevant display state.
 - A temporary local health-bar center guide is enabled directly in the current local testing build. It has no user setting or debug switch and is not part of the formal HUD layout; it must be removed after the alignment observation task is complete.
 - Default `HealthBarRight` HUD placement now centers the main HUD label on the same local health-bar center line used by the temporary guide. User X/Y offsets still apply after the default position is calculated.
+- A temporary `-10f` main HUD text visual-center nudge is applied after screenshot pixel checks showed the visible label glyphs sat about 10 px below the guide when only the label control rect was centered.
 
 ## Supported Mechanics
 
@@ -127,7 +128,7 @@ Current multiplayer behavior:
 - Tungsten Rod with aggregate enemy HP loss remains unsupported because per-hit or per-event granularity is required.
 - Diamond Diadem aggregate enemy damage with per-hit rounding unknown remains unsupported.
 - Settings persistence is session-only.
-- The health-bar center guide is temporary development instrumentation only. Implementation commit `68d94c0d54672757d17a4799b54f08e14ec91a4e`, no-switch testing commit `cd8c07e5c9afc35e23c5cf41a7c542d880b5b44d`, and default HUD alignment commit `8d6467204d25e90bf23141c2b42743ee25e3ed5d` are Built; the guide test build has been locally installed to the game mod directory, but the default HUD alignment has not yet been RuntimeVerified in Steam; the guide must be removed after the HUD alignment observation task is complete.
+- The health-bar center guide is temporary development instrumentation only. Implementation commit `68d94c0d54672757d17a4799b54f08e14ec91a4e`, no-switch testing commit `cd8c07e5c9afc35e23c5cf41a7c542d880b5b44d`, default HUD alignment commit `8d6467204d25e90bf23141c2b42743ee25e3ed5d`, and text visual-center nudge commit `af52c338fe21ea79411adc2074ea2a7591d5dddd` are Built; the guide test build has been locally installed to the game mod directory, but the nudge has not yet been RuntimeVerified in Steam; the guide must be removed after the HUD alignment observation task is complete.
 - Workshop state must not be described as a public release unless a public publish is explicitly recorded.
 
 ## Release State

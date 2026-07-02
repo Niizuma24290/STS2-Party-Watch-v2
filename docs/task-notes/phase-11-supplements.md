@@ -48,6 +48,8 @@ No-switch testing commit: `cd8c07e5c9afc35e23c5cf41a7c542d880b5b44d`
 
 Default HUD alignment commit: `8d6467204d25e90bf23141c2b42743ee25e3ed5d`
 
+Text visual center nudge commit: `af52c338fe21ea79411adc2074ea2a7591d5dddd`
+
 Implemented:
 
 - Removed the temporary guide switch for the current test build. The guide now draws directly from the existing local HUD path whenever the local HUD number is eligible to show.
@@ -56,6 +58,7 @@ Implemented:
 - The guide uses the existing `NHealthBar.HpBarContainer` position and the existing local-player `ForecastRefreshPatch.TryGetLocalCreature` path; it does not add a second local-player or health-bar lookup system.
 - The guide is only shown after the normal local HUD number is eligible to show. Non-local bars, hidden HUD state, non-combat state, invalid health bars, unknown / zero forecast output, and disabled local multiplayer HUD all hide the guide.
 - Adjusted the default `HealthBarRight` HUD vertical placement so the main HUD label center uses the same local `NHealthBar.HpBarContainer` center line as the guide.
+- Added a `-10f` visual-center nudge for the main HUD text after screenshot pixel checks showed the visible label glyphs sat about 10 px below the guide even when the label control rect was centered.
 - No settings panel, forecast, poison, power, intent, damage, or multiplayer strategy was changed.
 
 Built:
@@ -68,17 +71,22 @@ Built:
 - Result on 2026-07-03: success; produced a local test build with the temporary guide drawn without a switch.
 - `C:\sts2\dotnet\dotnet.exe build .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
 - Result after default HUD alignment: success, 0 warnings, 0 errors.
+- `C:\sts2\dotnet\dotnet.exe build .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
+- Result after visual-center nudge: success, 0 warnings, 0 errors.
+- `C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
+- Result after visual-center nudge: success.
 
 Installed:
 
 - Copied `sts2-party-watch-v2.dll` and `sts2-party-watch-v2.json` into `C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\mods\sts2-party-watch-v2` on 2026-07-02.
 - Re-copied the no-switch guide test build into the same local game mod directory on 2026-07-03.
 - Re-copied the default HUD alignment test build into the same local game mod directory on 2026-07-03.
+- Re-copied the visual-center nudge test build into the same local game mod directory on 2026-07-03.
 - This was a local game-directory install only, not a Workshop upload.
 
 RuntimeVerified:
 
-- Not run after the default HUD alignment change. The provided screenshot confirmed the guide was visible before the alignment adjustment, but no post-adjustment Steam screenshot has been recorded yet.
+- Not run after the visual-center nudge. The provided screenshot confirmed the guide was visible and showed the text glyphs about 10 px below the guide before this nudge, but no post-nudge Steam screenshot has been recorded yet.
 
 DocumentedOnly:
 
