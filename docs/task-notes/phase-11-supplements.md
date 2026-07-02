@@ -46,6 +46,8 @@ Implementation commit: `68d94c0d54672757d17a4799b54f08e14ec91a4e`
 
 No-switch testing commit: `cd8c07e5c9afc35e23c5cf41a7c542d880b5b44d`
 
+Default HUD alignment commit: `8d6467204d25e90bf23141c2b42743ee25e3ed5d`
+
 Implemented:
 
 - Removed the temporary guide switch for the current test build. The guide now draws directly from the existing local HUD path whenever the local HUD number is eligible to show.
@@ -53,7 +55,8 @@ Implemented:
 - Added a single horizontal `ColorRect` guide under the existing local HUD parent when the switch is enabled.
 - The guide uses the existing `NHealthBar.HpBarContainer` position and the existing local-player `ForecastRefreshPatch.TryGetLocalCreature` path; it does not add a second local-player or health-bar lookup system.
 - The guide is only shown after the normal local HUD number is eligible to show. Non-local bars, hidden HUD state, non-combat state, invalid health bars, unknown / zero forecast output, and disabled local multiplayer HUD all hide the guide.
-- No formal HUD X/Y offset, anchor, layout parameter, settings panel, forecast, poison, power, intent, damage, or multiplayer strategy was changed.
+- Adjusted the default `HealthBarRight` HUD vertical placement so the main HUD label center uses the same local `NHealthBar.HpBarContainer` center line as the guide.
+- No settings panel, forecast, poison, power, intent, damage, or multiplayer strategy was changed.
 
 Built:
 
@@ -63,16 +66,19 @@ Built:
 - Result: success; publish output produced under `src/STS2PartyWatchCode/bin/Release/net9.0/publish/`.
 - `C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
 - Result on 2026-07-03: success; produced a local test build with the temporary guide drawn without a switch.
+- `C:\sts2\dotnet\dotnet.exe build .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
+- Result after default HUD alignment: success, 0 warnings, 0 errors.
 
 Installed:
 
 - Copied `sts2-party-watch-v2.dll` and `sts2-party-watch-v2.json` into `C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\mods\sts2-party-watch-v2` on 2026-07-02.
 - Re-copied the no-switch guide test build into the same local game mod directory on 2026-07-03.
+- Re-copied the default HUD alignment test build into the same local game mod directory on 2026-07-03.
 - This was a local game-directory install only, not a Workshop upload.
 
 RuntimeVerified:
 
-- Not run. No Steam session, combat screenshot, or in-game validation was performed for this guide after the local install.
+- Not run after the default HUD alignment change. The provided screenshot confirmed the guide was visible before the alignment adjustment, but no post-adjustment Steam screenshot has been recorded yet.
 
 DocumentedOnly:
 

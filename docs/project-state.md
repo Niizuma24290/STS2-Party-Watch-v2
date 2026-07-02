@@ -29,6 +29,7 @@ Party Watch does not simulate a full turn, does not call real damage or command 
 - `FreezeHudWithinPlayerTurn` is enabled by default. It freezes a display snapshot within the player turn and commits a final snapshot at `Hook.BeforeTurnEnd`; it does not alter forecast mechanics.
 - Covering native pages, modal/popup/overlay screens, combat end, invalid player state, or disabled HUD settings hide and clear relevant display state.
 - A temporary local health-bar center guide is enabled directly in the current local testing build. It has no user setting or debug switch and is not part of the formal HUD layout; it must be removed after the alignment observation task is complete.
+- Default `HealthBarRight` HUD placement now centers the main HUD label on the same local health-bar center line used by the temporary guide. User X/Y offsets still apply after the default position is calculated.
 
 ## Supported Mechanics
 
@@ -126,7 +127,7 @@ Current multiplayer behavior:
 - Tungsten Rod with aggregate enemy HP loss remains unsupported because per-hit or per-event granularity is required.
 - Diamond Diadem aggregate enemy damage with per-hit rounding unknown remains unsupported.
 - Settings persistence is session-only.
-- The health-bar center guide is temporary development instrumentation only. Implementation commit `68d94c0d54672757d17a4799b54f08e14ec91a4e` and no-switch testing commit `cd8c07e5c9afc35e23c5cf41a7c542d880b5b44d` are Built, published, and locally installed to the game mod directory with the guide drawn directly for testing, but not RuntimeVerified in Steam; the guide must be removed after the HUD alignment observation task is complete.
+- The health-bar center guide is temporary development instrumentation only. Implementation commit `68d94c0d54672757d17a4799b54f08e14ec91a4e`, no-switch testing commit `cd8c07e5c9afc35e23c5cf41a7c542d880b5b44d`, and default HUD alignment commit `8d6467204d25e90bf23141c2b42743ee25e3ed5d` are Built; the guide test build has been locally installed to the game mod directory, but the default HUD alignment has not yet been RuntimeVerified in Steam; the guide must be removed after the HUD alignment observation task is complete.
 - Workshop state must not be described as a public release unless a public publish is explicitly recorded.
 
 ## Release State
@@ -147,4 +148,4 @@ Current multiplayer behavior:
 
 ## Next Single Task
 
-Run the Steam runtime alignment check for the temporary local health-bar center guide in single-player and local multiplayer, then remove the guide after the observation task is complete. Keep formal multiplayer HUD work frozen.
+Run the Steam runtime alignment check for the adjusted default HUD position against the temporary local health-bar center guide in single-player and local multiplayer, then remove the guide after the observation task is complete. Keep formal multiplayer HUD work frozen.
