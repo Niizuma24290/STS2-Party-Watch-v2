@@ -119,15 +119,9 @@ internal static class PartyWatchHudDisplay
 
     private static float GetMainHeight() => 34f;
 
-    public static Vector2 GetHealthBarCenter(Control healthBar, Vector2 size)
+    private static Vector2 GetHealthBarCenter(Control healthBar, Vector2 size)
     {
         return healthBar.Position + (size * 0.5f);
-    }
-
-    public static Vector2 GetOffsetHealthBarCenter(Control healthBar, Vector2 size)
-    {
-        return GetHealthBarCenter(healthBar, size)
-            + new Vector2(PartyWatchUiSettings.OffsetX, PartyWatchUiSettings.OffsetY);
     }
 
     private static Vector2 GetMainTextSize(Label label)
@@ -141,18 +135,6 @@ internal static class PartyWatchHudDisplay
         var fontSize = label.GetThemeFontSize("font_size");
         var textSize = font.GetStringSize(label.Text, fontSize: fontSize);
         return new Vector2(GetMainWidth(), MathF.Max(1f, textSize.Y));
-    }
-
-    public static Vector2 GetMeasuredTextSize(Label label)
-    {
-        if (string.IsNullOrEmpty(label.Text))
-        {
-            return Vector2.Zero;
-        }
-
-        var font = label.GetThemeFont("font");
-        var fontSize = label.GetThemeFontSize("font_size");
-        return font.GetStringSize(label.Text, fontSize: fontSize);
     }
 
     private static float GetDetailWidth() => 240f;

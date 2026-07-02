@@ -21,13 +21,10 @@ internal static class ForecastRefreshPatch
 {
     private const string MainLabelName = "STS2PartyWatchForecastLabel";
     private const string DetailLabelName = "STS2PartyWatchForecastDetailsLabel";
-    private const string HealthBarCenterGuideName = "STS2PartyWatchHealthBarCenterGuide";
-    private const string MainHudTextCenterGuideName = "STS2PartyWatchHudTextCenterGuide";
     private static readonly FieldInfo? CreatureField = typeof(NHealthBar).GetField("_creature", BindingFlags.Instance | BindingFlags.NonPublic);
     private static readonly LocalIncomingDamageReader Reader = new();
     private static readonly LocalDamageForecast Forecast = new();
     private static readonly List<WeakReference<NHealthBar>> RegisteredBars = new();
-    private static string? LastAlignmentDebugLine;
 
     static ForecastRefreshPatch()
     {
@@ -67,12 +64,8 @@ internal static class ForecastRefreshPatch
 
         var mainLabel = GetOrCreateMainLabel(bar);
         var detailLabel = GetOrCreateDetailLabel(bar);
-        var healthBarCenterGuide = GetOrCreateHealthBarCenterGuide(bar);
-        var mainHudTextCenterGuide = GetOrCreateMainHudTextCenterGuide(bar);
         if (mainLabel is null || detailLabel is null)
         {
-            HideOptional(healthBarCenterGuide);
-            HideOptional(mainHudTextCenterGuide);
             return;
         }
 
@@ -84,8 +77,6 @@ internal static class ForecastRefreshPatch
         {
             PartyWatchHudSnapshotStore.Clear();
             Hide(mainLabel, detailLabel);
-            HideOptional(healthBarCenterGuide);
-            HideOptional(mainHudTextCenterGuide);
             return;
         }
 
@@ -97,8 +88,6 @@ internal static class ForecastRefreshPatch
         if (result.State != ForecastResultState.KnownDamage || (result.OutDamage <= 0 && result.DirectHpLoss <= 0))
         {
             Hide(mainLabel, detailLabel);
-            HideOptional(healthBarCenterGuide);
-            HideOptional(mainHudTextCenterGuide);
             return;
         }
 
@@ -116,10 +105,6 @@ internal static class ForecastRefreshPatch
             detailLabel.Text = details;
             detailLabel.Show();
         }
-
-        ShowHealthBarCenterGuide(bar, mainLabel, detailLabel, healthBarCenterGuide, containerSize);
-        ShowMainHudTextCenterGuide(mainLabel, mainHudTextCenterGuide);
-        LogAlignmentIfChanged(bar, mainLabel, detailLabel, healthBarCenterGuide, mainHudTextCenterGuide, containerSize);
     }
 
     private static bool TryGetLocalCreature(NHealthBar bar, out Creature? creature)
@@ -209,72 +194,6 @@ internal static class ForecastRefreshPatch
         return label;
     }
 
-    private static ColorRect? GetOrCreateHealthBarCenterGuide(NHealthBar bar)
-    {
-        var parent = GetLabelParent(bar);
-        if (parent is null)
-        {
-            return null;
-        }
-
-        var existing = parent.GetNodeOrNull<ColorRect>(HealthBarCenterGuideName);
-        if (existing is not null)
-        {
-            return existing;
-        }
-
-        var stale = parent.GetNodeOrNull<Control>(HealthBarCenterGuideName);
-        if (stale is not null)
-        {
-            stale.Name = $"{HealthBarCenterGuideName}Stale";
-            stale.QueueFree();
-        }
-
-        var guide = new ColorRect
-        {
-            Name = HealthBarCenterGuideName,
-            MouseFilter = Control.MouseFilterEnum.Ignore,
-            ZIndex = 49,
-            Visible = false,
-        };
-
-        parent.AddChild(guide);
-        return guide;
-    }
-
-    private static ColorRect? GetOrCreateMainHudTextCenterGuide(NHealthBar bar)
-    {
-        var parent = GetLabelParent(bar);
-        if (parent is null)
-        {
-            return null;
-        }
-
-        var existing = parent.GetNodeOrNull<ColorRect>(MainHudTextCenterGuideName);
-        if (existing is not null)
-        {
-            return existing;
-        }
-
-        var stale = parent.GetNodeOrNull<Control>(MainHudTextCenterGuideName);
-        if (stale is not null)
-        {
-            stale.Name = $"{MainHudTextCenterGuideName}Stale";
-            stale.QueueFree();
-        }
-
-        var guide = new ColorRect
-        {
-            Name = MainHudTextCenterGuideName,
-            MouseFilter = Control.MouseFilterEnum.Ignore,
-            ZIndex = 60,
-            Visible = false,
-        };
-
-        parent.AddChild(guide);
-        return guide;
-    }
-
     private static Control? GetLabelParent(NHealthBar bar)
     {
         return bar.HpBarContainer?.GetParent() as Control ?? bar;
@@ -303,8 +222,6 @@ internal static class ForecastRefreshPatch
         var mainLabel = parent?.GetNodeOrNull<Label>(MainLabelName);
         var staleMainLabel = parent?.GetNodeOrNull<Control>(MainLabelName);
         var detailLabel = parent?.GetNodeOrNull<RichTextLabel>(DetailLabelName);
-        var healthBarCenterGuide = parent?.GetNodeOrNull<ColorRect>(HealthBarCenterGuideName);
-        var mainHudTextCenterGuide = parent?.GetNodeOrNull<ColorRect>(MainHudTextCenterGuideName);
         if (mainLabel is not null)
         {
             Hide(mainLabel);
@@ -319,9 +236,6 @@ internal static class ForecastRefreshPatch
         {
             Hide(detailLabel);
         }
-
-        HideOptional(healthBarCenterGuide);
-        HideOptional(mainHudTextCenterGuide);
     }
 
     private static void Hide(Label mainLabel, RichTextLabel detailLabel)
@@ -342,75 +256,6 @@ internal static class ForecastRefreshPatch
         }
 
         label.Hide();
-    }
-
-    private static void HideOptional(Control? control)
-    {
-        control?.Hide();
-    }
-
-    private static void ShowHealthBarCenterGuide(
-        NHealthBar bar,
-        Label mainLabel,
-        RichTextLabel detailLabel,
-        ColorRect? healthBarCenterGuide,
-        Vector2? containerSize)
-    {
-        var container = bar.HpBarContainer;
-        if (container is null || healthBarCenterGuide is null)
-        {
-            HideOptional(healthBarCenterGuide);
-            return;
-        }
-
-        PartyWatchHudDebugGuide.ApplyHealthBarCenterGuide(
-            healthBarCenterGuide,
-            container,
-            mainLabel,
-            detailLabel,
-            containerSize);
-    }
-
-    private static void ShowMainHudTextCenterGuide(Label mainLabel, ColorRect? mainHudTextCenterGuide)
-    {
-        if (mainHudTextCenterGuide is null)
-        {
-            return;
-        }
-
-        PartyWatchHudDebugGuide.ApplyMainHudTextCenterGuide(mainHudTextCenterGuide, mainLabel);
-    }
-
-    private static void LogAlignmentIfChanged(
-        NHealthBar bar,
-        Label mainLabel,
-        RichTextLabel detailLabel,
-        ColorRect? healthBarCenterGuide,
-        ColorRect? mainHudTextCenterGuide,
-        Vector2? containerSize)
-    {
-        var container = bar.HpBarContainer;
-        if (container is null)
-        {
-            return;
-        }
-
-        var isMultiplayer = GetCreature(bar)?.CombatState?.Players.Count > 1;
-        var line = PartyWatchHudDebugGuide.BuildAlignmentDebugLine(
-            container,
-            mainLabel,
-            detailLabel,
-            healthBarCenterGuide,
-            mainHudTextCenterGuide,
-            containerSize,
-            isMultiplayer);
-        if (line == LastAlignmentDebugLine)
-        {
-            return;
-        }
-
-        LastAlignmentDebugLine = line;
-        GD.Print(line);
     }
 
     private static void RegisterBar(NHealthBar bar)
