@@ -1,87 +1,88 @@
 # v2 Roadmap
 
-## Phase 0 - Bootstrap
+Last reconciled: 2026-07-02
 
-Create clean repository, scope, architecture rules, and roadmap.
+## Completed Phases
 
-## Phase 1 - Empty Mod load proof
+| Phase | Status | Outcome |
+| --- | --- | --- |
+| Phase 0 - Bootstrap | Complete | Clean v2 repository, initial docs, remote `main`, and project skeleton established. |
+| Phase 1 - Empty mod load proof | Complete | Steam-launched mod load and startup log proved. |
+| Phase 2 - Local combat access proof | Complete | Local player, local creature, enemy list, HP/Block, and intent presence access established. |
+| Phase 3 - Native RAW reader | Complete | Native `AttackIntent` preview read path established. |
+| Phase 4 - Local forecast calculation | Complete | `LocalDamageForecast` and `ForecastResult` established. |
+| Phase 5 - HUD integration and blockable damage | Complete | Health-bar HUD, enemy attack, hand turn-end blockable damage, and first EffectiveBlock set verified. |
+| Phase 6 - Direct HP loss | Complete | Beckon, Bad Luck, and Regret direct HP loss implemented and Steam verified. |
+| Phase 7 - HP-loss result modifiers | Complete within documented scope | TungstenRod and BeatingRemnant forecast path implemented with conservative granularity rules. |
+| Phase 8 - Non-Block damage modifiers | Complete within documented scope | Diamond Diadem / DiamondDiademPower implemented and runtime verified in supported single-player cases. |
+| Phase 9 - Single-player release cleanup | Complete | Default total `-N`, optional advanced `🛡/♥`, documentation, and single-player scope cleanup completed. |
+| Phase 9A - HUD lifecycle and settings | Complete | HUD visibility policy, turn freezing, settings panel, position, and colors implemented. |
+| Modding settings entry fix | Complete | Party Watch no longer occupies native Settings/Modding main entry; settings now live inside Party Watch's own mod info panel. |
+| Local HUD in multiplayer | Complete for local-player HUD only | Workshop subscription runtime evidence shows local player's Party Watch HUD in multiplayer combat. |
+| Phase 10 - Workshop upload / subscription milestone | Complete as private/subscription milestone | Workshop item `3755598583`, private visibility, cover/preview uploads, uploaded DLL hash, and subscription local-HUD validation are recorded in `workshop-private-rc-2026-07-01.md`. |
 
-Create the smallest possible independent Mod project.
-Build, publish, load in game, and prove one initialization log line.
-No combat logic.
+## Current Phase
 
-## Phase 2 - Local combat access proof
+### Phase 11 - Supplements and maintenance
 
-Read only local Player, local Creature, HP, Block, enemy list, and intent presence.
-No damage output and no HUD.
+Status: active for new follow-up work after Workshop upload. Do not create new Phase 9 subphases.
 
-## Phase 3 - Native RAW reader
+Historical note: Phase 9B Poison and several `phase-9*` follow-ups were named before this numbering correction. Keep those files as evidence, but record new work as Phase 11.
 
-Implement LocalIncomingDamageReader.
-Validate normal attack, multi-hit attack, and non-attack intent.
-No final forecast HUD.
+First supplement candidate:
 
-## Phase 4 - Local forecast calculation
+- ordinary Poison pre-action survival Steam runtime matrix.
 
-Implement LocalDamageForecast and ForecastResult.
-Use RAW and Creature.Block exactly once.
-Validate Block 0, partial Block, and full Block.
+## Legacy Follow-Up Needing Validation
 
-## Phase 5 - HUD integration
+### Phase 9B - Poison pre-action survival preview
 
-Create the final HUD label at a proven local health-bar anchor.
-Show only 🛡 -OUT.
-Hide for OUT=0, unknown, and no attack.
+Status: implemented in code and build/publish evidenced, but专项 Steam runtime matrix remains the next validation task.
 
-## Phase 6 - Controlled runtime validation
+Current supported scope:
 
-Run a small written test matrix:
-normal attack,
-multi-hit,
-0 Block,
-partial Block,
-full Block,
-non-attack,
-one tested special-case scene.
-Record actual result versus forecast.
+- ordinary enemy instance with readable `PoisonPower`;
+- readable opponent `AccelerantPower`;
+- no unsupported special damage cap, HP-loss cap, revive, hatch, phase, or special lifecycle Power;
+- only decides whether that enemy instance's current Attack Intent should contribute to the local forecast.
 
-## Phase 7 - HP Loss result modifiers
+Current unsupported/research scope:
 
-接入 TungstenRod、BeatingRemnant 等会修正 HP Loss 结果的机制。
+- `HardToKillPower` / Exoskeleton;
+- `SlipperyPower`;
+- enemy `IntangiblePower`;
+- `TestSubject` / `AdaptablePower`;
+- `ToughEgg` / `HatchPower`;
+- `SewerClam` / `HardenedShellPower`;
+- generic enemy HP-loss budgets and lifecycle simulation.
 
-## Phase 8 - Non-Block damage modifiers
+## Workshop State
 
-补 DiamondDiademPower 等“改变实际承伤、但不属于 Block”的伤害修正机制。
+Status: private/subscription milestone recorded. Do not describe the mod as publicly published unless a public publish record is added.
 
-## Phase 9 - Single-player release cleanup
+Current boundaries:
 
-Remove temporary diagnostics.
-Confirm only production responsibilities remain.
-Document known limitations.
+- no DLL, PDB, PCK, cover, uploader, `mod_id.txt`, logs, `bin`, `obj`, `publish`, or `work` content should be committed;
+- private/subscription testing is not the same as public release.
 
-Current status: complete for the single-player, read-only HUD scope. The default HUD shows only total expected HP loss `-N`; advanced `🛡 / ♥` details are optional and disabled by default.
+## Frozen Future Work
 
-## Phase 9A - HUD lifecycle and settings
+Formal multiplayer HUD remains frozen.
 
-Complete the front-end productization pass without changing prediction mechanics:
+Allowed future research direction:
 
-- conservative HUD hiding behind covering screens,
-- turn-scoped display freezing,
-- session-only native Settings panel,
-- position and color controls.
+- investigate real multiplayer targets and native target-aware previews;
+- keep local-player HUD distinct from formal teammate/party HUD.
 
-Current status: complete.
+Not implemented:
 
-## Workshop prep - Private upload test
+- teammate top-bar forecasts;
+- teammate HUD;
+- shared party HUD;
+- network messages;
+- network state modification;
+- guessed multiplayer targets.
 
-Prepare the ignored Workshop workspace, cover, tags, and private upload test. Do not treat the mod as publicly released until a private upload and subscription runtime verification have passed.
+## Next Single Direction
 
-## Phase 9B - Poison pre-action survival preview
-
-Add a narrow read-only preview for ordinary Poison killing a specific enemy instance before enemy actions. Do not build a generic enemy damage simulator; unsupported enemy damage caps, HP-loss caps, revive, hatch, or phase lifecycle mechanics must hide rather than guess.
-
-Current status: code integrated and build-passing; waiting for publish, install, and Steam runtime validation.
-
-## Phase 10 - Multiplayer research
-
-仅研究多人真实目标与原生 target-aware 伤害预览，证据不足前不做正式多人 HUD。
+Create Phase 11 supplements for new work. First candidate: validate and record the ordinary Poison matrix in Steam, including ordinary Poison kill/no-kill, multiple enemies, same-name enemies, and unsupported special enemy boundaries. Keep formal multiplayer HUD frozen.

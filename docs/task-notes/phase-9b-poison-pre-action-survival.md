@@ -122,3 +122,50 @@ match?
 ## 下一步唯一任务
 
 关闭正在占用 mod DLL 的游戏进程后重跑安装脚本，然后从 Steam 启动游戏执行普通 Poison / 多敌人 / 同名敌人验证矩阵。
+
+## 追加记录：原生毒血条与特殊敌人策略
+
+本节记录 2026-07-02 用户截图与本地反编译确认，仅作为后续小步接入依据；当前提交代码尚未改动。
+
+### 原生毒血条相关入口
+
+- `PoisonPower.CalculateTotalDamageNextTurn()`：
+  - 原生血条毒预览的模型层总量入口。
+  - 读取 `TriggerCount`，触发次数为 `min(PoisonPower.Amount, 1 + alive opponents AccelerantPower 总层数)`。
+  - 逐段计算 `PoisonPower.Amount - i`，并对每一段调用 `Hook.ModifyDamage(..., ValueProp.Unblockable | ValueProp.Unpowered, ModifyDamageHookType.All, CardPreviewMode.None, ...)`。
+  - 因为它走 `ModifyDamage`，可自然纳入 `HardToKillPower.ModifyDamageCap`、`IntangiblePower.ModifyDamageCap` 这类 damage cap。
+  - 它不执行真实 `CreatureCmd.Damage`，也不走完整 HP loss / death / phase 生命周期；`SlipperyPower.ModifyHpLostAfterOsty`、`HardenedShellPower.ModifyHpLostBeforeOstyLate` 这类 HP loss 修正不能只靠它证明。
+- `NHealthBar.IsPoisonLethal(int poisonDamage)`：
+  - UI 层 lethal 判断，只检查 `poisonDamage > 0`、目标有 `PoisonPower`、且 `poisonDamage >= Creature.CurrentHp`。
+  - 它不判断当前 Intent 是否取消，不判断复活 / 阶段转换，也不读取 enemy attack。
+- `NHealthBar._poisonForeground`：
+  - 纯 UI Control，用于显示毒预览绿色血条区间。
+  - `RefreshForeground()` 先调用 `PoisonPower.CalculateTotalDamageNextTurn()` 得到总毒伤；若 `IsPoisonLethal` 为 true，隐藏红色 HP 前景并用 poison foreground 覆盖当前 HP；否则把红色 HP 前景缩到 `CurrentHp - poisonDamage`，毒前景显示两者之间的宽度。
+  - 可作为运行时对照，不应作为 Party Watch 核心数据源；反推宽度会受 UI 尺寸、动画、Doom 和显示状态影响。
+
+### 触媒 / Accelerant 记录
+
+- 本地 `sts2.dll` 类型列表未发现 `Catalyst`。
+- 当前版本可确认的原生卡牌为 `MegaCrit.Sts2.Core.Models.Cards.Accelerant`：
+  - `CardType.Power`、`CardRarity.Rare`、`TargetType.Self`。
+  - `OnPlay` 对玩家 Creature 施加 `AccelerantPower`。
+  - 基础 `DynamicVar("Accelerant", 1m)`；升级后 `UpgradeValueBy(1m)`，即多 1 层。
+- `PoisonPower.TriggerCount` 读取 Poison owner 的 alive opponents 上 `AccelerantPower` 层数；对敌人身上的 Poison 来说，就是读取玩家侧已生效的 `AccelerantPower`。
+- Party Watch 仍不重放 `Accelerant` 卡牌，只读取结束回合时已经存在的 `AccelerantPower.Amount`。
+
+### 用户截图敌人策略记录
+
+| 截图 / 敌人 | 原生类 / Power | 用户观察 | 后续 Party Watch 策略 |
+| --- | --- | --- | --- |
+| 墨灵 boss / 带滑溜 | `SlipperyPower` | 当前仍有滑溜层数时，即使识别到 Poison，也不要用 Poison 行动前致死预览去移除 Intent；滑溜消失后再恢复普通 Poison 计算。 | 后续改为：若 enemy 有 `SlipperyPower.Amount > 0`，Poison survival preview 对该 enemy instance 禁用；该敌人的当前 Intent 按原有读取保留，不因 Poison 被移除。 |
+| 实验体 boss | `TestSubject`、`AdaptablePower`、可能有 `IntangiblePower` | 敌方 `IntangiblePower` 会让每段 Poison 至多 1；`AccelerantPower` 可让回合结束 Poison 触发 2-3 段。复活 / 阶段敌人当前回合不会继续攻击。 | 先记录，不马上接入。后续需要确认 death / revive / phase 后当前 Intent 是否稳定取消；若确认，则可在 Poison 足以触发该生命周期时排除 Intent。 |
+| 鬼祟珊瑚群 | `SewerClam`、`HardenedShellPower` | 每回合最多失去 20 HP；需要同时考虑本回合剩余限伤预算与剩余 HP，复杂度类似玩家 `BeatingRemnant` / 水盆类预算。 | 暂不接入 Poison survival preview。`HardenedShellPower` 走 `ModifyHpLostBeforeOstyLate`，不是单纯 damage cap，不能只用 `CalculateTotalDamageNextTurn()`。 |
+| 外骨骼虫 | `Exoskeleton`、`HardToKillPower(9)` | 单次伤害最高 9；原生毒血条可正确显示带 `AccelerantPower` 的多段 Poison，例如 12 毒且触发 3 段时为 `min(12,9) + min(11,9) + min(10,9) = 27`。 | 下一优先级候选。因为 `PoisonPower.CalculateTotalDamageNextTurn()` 每段会走 `Hook.ModifyDamage`，可优先用该原生总量支持 `HardToKillPower` 场景，再做 Steam 验证。 |
+
+### 接入顺序更新建议
+
+1. 先把普通 Poison 预览的伤害来源改为优先调用 `PoisonPower.CalculateTotalDamageNextTurn()`，并保持逐 enemy instance 身份绑定。
+2. 单独接入 `HardToKillPower` / `Exoskeleton`，用原生 `CalculateTotalDamageNextTurn()` 验证 12 毒 + `AccelerantPower` 三段 = 27 的场景。
+3. `SlipperyPower.Amount > 0` 时不隐藏整个预测，也不移除该敌人的 Intent；仅禁用该 enemy instance 的 Poison survival 修正。滑溜消失后恢复普通 / 已支持规则。
+4. 敌方 `IntangiblePower` 与 `TestSubject` 分开处理：先验证每段 Poison 为 1，再验证阶段 / 复活后当前 Intent 是否取消。
+5. `HardenedShellPower` / `SewerClam` 最后处理；未确认剩余预算读取与重置时机前保持不支持。

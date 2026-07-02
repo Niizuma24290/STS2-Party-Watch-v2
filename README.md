@@ -1,56 +1,67 @@
 # STS2 Party Watch v2
 
-STS2 Party Watch v2 is a read-only single-player combat forecast HUD for Slay the Spire 2.
+STS2 Party Watch v2 is a read-only combat forecast HUD for Slay the Spire 2.
 
-It answers one narrow question:
+It answers one practical question:
 
 ```text
-If I end the turn from the current single-player combat state, how much verified damage or HP loss should I expect?
+If I end the turn now, how much trusted HP loss should I expect?
 ```
 
 ## HUD
 
-The default HUD shows only total expected HP loss:
+The default HUD shows one total expected HP-loss number:
 
 ```text
 -18
 ```
 
-- `-N`: the sum of trusted final blockable prediction and trusted direct HP loss.
-- Advanced details are optional and disabled by default.
-- When enabled, advanced details can show `🛡 N` and `♥ N` as source breakdowns.
-- `🛡 N`: verified blockable incoming damage after verified block and HP-loss result modifiers.
-- `♥ N`: verified direct HP loss that does not go through Block.
+Advanced details are available but disabled by default:
 
-When a value cannot be predicted precisely, Party Watch hides that value instead of showing a guess.
+- `🛡 N`: trusted blockable incoming HP loss after verified Block and supported HP-loss result modifiers.
+- `♥ N`: trusted direct HP loss that does not go through Block.
 
-## Supported Single-Player Scope
+When Party Watch cannot predict a value reliably, it hides that value instead of guessing.
 
-- Enemy AttackIntent / DeathBlow intent damage.
-- Burn-style hand turn-end blockable `DamageVar`.
-- Verified end-turn block sources: Frost, PlatingPower, Orichalcum, FakeOrichalcum, RippleBasin, CloakClasp.
-- Direct HP loss from Beckon, Bad Luck, and Regret.
-- HP loss result modifiers from Tungsten Rod and Beating Remnant within the verified normal-game scope.
-- Diamond Diadem enemy attack reduction within the verified single-hit / multi-hit forecast path.
-- Session-only HUD settings for enablement, advanced details, turn display freezing, position, and colors.
+## Current Scope
 
-Read-only safety guarantees:
+Supported in the current codebase:
 
-- v2 reads local combat state and native attack intent damage.
-- v2 does not modify combat state, player state, enemy state, cards, powers, relics, or room state.
-- v2 does not call real damage, command, RNG, save, or network entry points.
-- Unknown is safer than an incorrect prediction.
+- local-player HUD in single-player combat;
+- local-player HUD in multiplayer combat when `Show Local HUD in Multiplayer` is enabled;
+- enemy AttackIntent / DeathBlow intent damage;
+- hand turn-end blockable `DamageVar`, including Burn-style cards;
+- Frost, PlatingPower, Orichalcum, FakeOrichalcum, RippleBasin, and CloakClasp;
+- Beckon, Bad Luck, and Regret direct HP loss;
+- ConstrictPower and DisintegrationPower self-damage;
+- IntangiblePower, Tungsten Rod, and Beating Remnant within documented event-granularity limits;
+- Diamond Diadem / DiamondDiademPower within documented single-player limits;
+- ordinary Poison pre-action enemy survival preview within documented ordinary-enemy limits.
 
-Explicitly out of scope:
+Explicitly not claimed:
 
-- Multiplayer.
-- Remote player state.
-- Formal multiplayer damage HUD.
-- Generic turn simulation, generic damage engines, or generic HP loss engines.
-- Unsupported or unverified relic, power, card, or enemy mechanisms.
-- Guessing partial blockable damage when required event order or hit granularity is unknown.
-- Persistent game-save or guessed settings-file writes.
-- Generic diagnostics systems.
+- public Workshop release status;
+- teammate HUD, shared party HUD, or network-aware multiplayer forecasts;
+- full turn simulation;
+- generic damage / HP-loss engines;
+- unsupported special enemy Poison lifecycles or HP-loss budgets;
+- persistent settings writes.
+
+## Settings
+
+Open the native Modding screen, select `Party Watch HUD`, then use the Party Watch settings button in that mod's info panel.
+
+Settings are session-only:
+
+- enable Party Watch HUD;
+- show local HUD in multiplayer;
+- show advanced `🛡 / ♥` details;
+- freeze HUD numbers after turn end;
+- position preset and X/Y offset;
+- total, shield-detail, and heart-detail colors;
+- restore defaults.
+
+Party Watch does not replace the native Settings or Modding menu entry.
 
 ## Installation
 
@@ -65,8 +76,8 @@ The publish output is:
 
 ```text
 src/STS2PartyWatchCode/bin/Release/net9.0/publish/
-├─ sts2-party-watch-v2.json
-└─ sts2-party-watch-v2.dll
+|- sts2-party-watch-v2.json
+`- sts2-party-watch-v2.dll
 ```
 
 For local testing, place those two files in:
@@ -75,10 +86,14 @@ For local testing, place those two files in:
 C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\mods\sts2-party-watch-v2
 ```
 
-Do not commit build outputs, DLLs, PDBs, PCKs, logs, `bin/`, `obj/`, `publish/`, or `work/`.
+Do not commit build outputs, DLLs, PDBs, PCKs, logs, `bin/`, `obj/`, `publish/`, `work/`, uploader files, cover assets, `mod_id.txt`, or game directory files.
 
-## Current Status
+## Workshop Status
 
-Phase 7 and Phase 8 backend prediction work is complete, including Tungsten Rod, Beating Remnant, and Diamond Diadem support within the verified single-player scope. Phase 9A HUD lifecycle, hiding policy, turn display behavior, settings panel, position, and color controls are complete.
+The repository has Workshop preparation and private/subscription test notes under `docs/task-notes/`, and the upload workspace is kept under ignored `work/`.
 
-The Workshop workspace is prepared under ignored `work/` files, but this repository state is not a public Workshop release. The next task is to prepare the Workshop cover, tags, and private upload test.
+This README does not describe the mod as publicly published. Public Workshop release status should only be added after an explicit public publish record exists.
+
+## Bugs
+
+I hope it covers 99.99% of cases. Bug reports are welcome. I'll keep improving it.

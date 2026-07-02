@@ -1,5 +1,9 @@
 # Phase 9｜单人正式版收口
 
+## 阶段编号修正
+
+本文件保留历史原文。文中的“Phase 10 多人研究 / 冻结”是早期编号说法；当前项目编号已修正为：Phase 10 = Workshop 上传 / 私密订阅测试里程碑，Phase 11 = Workshop 上传后的补充与维护。正式多人 HUD、队友 HUD、共享队伍 HUD 仍冻结，但后续新增补充不再登记为 Phase 9 或早期 Phase 10。
+
 ## 状态
 
 合并 HUD 显示改造已完成代码接入；本轮水盆 + 惊涛、Constrict / Disintegration Power 自伤修补均已通过用户 Steam 运行时验证。

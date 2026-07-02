@@ -1,5 +1,36 @@
 # Mechanics Evidence
 
+## 2026-07-02 Current mechanism ledger
+
+This section is the reconciliation index for the currently implemented mod. Older phase notes below remain historical evidence.
+
+| Mechanism | Current support | Affects | Core native evidence or hook | Current implementation entry | Runtime verification status | Known unsupported boundary |
+| --- | --- | --- | --- | --- | --- | --- |
+| AttackIntent / DeathBlow | Implemented | `🛡`, total `-N` | `AttackIntent.GetTotalDamage(...)`; `GetSingleDamage(...)` when per-hit granularity is needed | `LocalIncomingDamageReader.ReadKnown(...)` | RuntimeVerified for ordinary attack and regressions | Unreadable intent returns Hidden/Unknown. |
+| Burn-style hand turn-end `DamageVar` | Implemented | `🛡`, total `-N` | `HasTurnEndInHandEffect`, `CreatureCmd.Damage`, `DamageVar`, `Hook.ModifyDamage(...)` | `CardTurnEndDamageInspector`, `TryReadHandTurnEndDamage`, `TryReadOrderedHandTurnEndEvents` | RuntimeVerified for Burn and later hand-damage paths | `HpLossVar` and unblockable props do not enter `🛡`. |
+| Frost | Implemented | EffectiveBlock, `🛡`, total `-N` | `FrostOrb.PassiveVal` | `VerifiedPreAttackBlockReader.ReadFrostBlock(...)` | RuntimeVerified | Does not simulate evoke. |
+| PlatingPower | Implemented | EffectiveBlock, `🛡`, total `-N` | `PlatingPower.Amount` | `VerifiedPreAttackBlockReader.ReadPlatingBlock(...)` | RuntimeVerified | Reads current local player Power only. |
+| Orichalcum / FakeOrichalcum | Implemented, Conditional | EffectiveBlock, `🛡`, total `-N` | relic `BlockVar`, current Block condition | `ReadOrichalcumBlock(...)`, `ReadFakeOrichalcumBlock(...)` | RuntimeVerified | Counted only when current Block is 0. |
+| RippleBasin | Implemented, Conditional | EffectiveBlock, `🛡`, total `-N` | `CardPlaysFinished`, pending `StampedePower` attack timing | `ReadRippleBasinBlock(...)` | RuntimeVerified, including Stampede correction | Does not simulate arbitrary auto-play target failures. |
+| CloakClasp | Implemented | EffectiveBlock, `🛡`, total `-N` | current hand count and relic `BlockVar` | `ReadCloakClaspBlock(...)` | RuntimeVerified | Current hand only. |
+| Beckon | Implemented | `♥`, total `-N` | `HpLossVar(6)`, unblockable turn-end hand effect | `VerifiedFixedTurnEndHpLossReader` | RuntimeVerified | Only exact supported card path. |
+| Bad Luck | Implemented | `♥`, total `-N` | `HpLossVar(13)`, unblockable turn-end hand effect | `VerifiedFixedTurnEndHpLossReader` | RuntimeVerified | Only exact supported card path. |
+| Regret | Implemented | `♥`, total `-N` | hand count captured before turn-end effect | `VerifiedFixedTurnEndHpLossReader` | RuntimeVerified | Uses current public hand count, not private fields. |
+| ConstrictPower / DisintegrationPower | Implemented | `🛡`, total `-N` | turn-end Power self-damage through blockable non-card damage props | `VerifiedTurnEndPowerDamageReader` | RuntimeVerified | No generic Power damage scanner. |
+| IntangiblePower on local player | Implemented, Conditional | verified HP-loss result chain | `ModifyDamageCap`, `ModifyHpLostAfterOsty` | `VerifiedHpLossResultModifier.Apply(...)` | RuntimeVerified for supported direct HP-loss events | Aggregate direct HP loss with Intangible is unsupported. |
+| TungstenRod | Implemented, Conditional | verified HP-loss result chain | `HpLossReduction` dynamic var | `VerifiedHpLossResultModifier.Apply(...)` | Code evidence and historical notes; current order still needs subscription/runtime closure where noted | Requires single-event granularity. Aggregate enemy HP loss returns Unknown. |
+| BeatingRemnant | Implemented, Conditional | verified HP-loss result chain | `MaxHpLoss` dynamic var and turn budget | `ObservedHpLossBudgetTracker`, `VerifiedHpLossResultModifier.Apply(...)` | Code evidence and historical notes; current order still needs subscription/runtime closure where noted | Requires ordered verified events and non-negative remaining budget. |
+| Diamond Diadem / DiamondDiademPower | Implemented, Conditional | enemy attack damage, `🛡`, total `-N` | `DiamondDiademPower.ModifyDamageMultiplicative`, card threshold | `VerifiedEnemyDamageModifier.ApplyDiamondDiadem(...)` | RuntimeVerified for supported path | Aggregate enemy damage with per-hit rounding unknown returns Unknown. |
+| Ordinary Poison pre-action survival | Implemented, Conditional | enemy AttackIntent inclusion, total `-N` | `PoisonPower.AfterSideTurnStart`, `TriggerCount`, enemy action after side-turn start | `EnemyPreActionSurvivalPreview`, `PoisonTickPreview` | Code/build/publish evidence;专项 Steam matrix not fully backfilled | HardToKill, Slippery, enemy Intangible, TestSubject/Adaptable, Hatch/ToughEgg, HardenedShell/SewerClam unsupported. |
+| Local HUD in multiplayer | Implemented, Conditional | display only | local health bar / local player identity | `PartyWatchHudVisibilityPolicy`, `ForecastRefreshPatch`, `PartyWatchUiSettings.ShowLocalHudInMultiplayer` | Workshop subscription runtime evidence for local `-6` HUD | Not teammate HUD, not shared HUD, no network behavior. |
+
+## Status vocabulary
+
+- `Implemented`: current repository code exists.
+- `RuntimeVerified`: task notes or commits record Steam / Workshop runtime verification.
+- `Conditional`: supported only inside the named evidence boundary.
+- `Unsupported`: hidden or returned Unknown; not claimed as working.
+
 ## Carried observations from the v1 research prototype - must be revalidated in v2
 
 - AttackIntent.GetTotalDamage(IEnumerable<Creature> targets, Creature attacker) was observed in v1.
@@ -267,3 +298,27 @@ RegretLoss = 当前手牌总数 × 当前手牌中的 Regret 数量
 - current Intent contribution：该 enemy instance 当前 `AttackIntent.GetTotalDamage(...)` 合计。
 - relevant Powers / DynamicVars：当前记录 `PoisonPower`、`AccelerantPower`、`HardToKillPower`、`SlipperyPower`、`IntangiblePower`、`AdaptablePower`、`HatchPower`、`NemesisPower` 的类型与 amount。
 - phase / death lifecycle state：当前 `Creature.IsAlive` / `Creature.IsDead`，并通过 unsupported 门排除已知阶段/复活类。
+
+### 2026-07-02 native poison bar follow-up
+
+用户提供截图并要求记录原生毒血条相关机制；以下为本地 `sts2.dll` 反编译摘要，不提交反编译源码。
+
+- `PoisonPower.CalculateTotalDamageNextTurn()` 是原生毒血条使用的模型层总毒伤入口：
+  - `TriggerCount = min(PoisonPower.Amount, 1 + alive opponents AccelerantPower amount sum)`。
+  - 每段用 `PoisonPower.Amount - i`。
+  - 每段调用 `Hook.ModifyDamage(..., ValueProp.Unblockable | ValueProp.Unpowered, ModifyDamageHookType.All, CardPreviewMode.None, ...)`。
+  - 返回所有段 damage 的整数总和。
+- `NHealthBar.RefreshForeground()` 读取 `creature.GetPower<PoisonPower>()?.CalculateTotalDamageNextTurn() ?? 0`，再设置 `_poisonForeground` 显示毒血条。
+- `NHealthBar.IsPoisonLethal(int poisonDamage)` 只是 UI 层判断：`poisonDamage > 0 && creature.HasPower<PoisonPower>() && poisonDamage >= creature.CurrentHp`。
+- `_poisonForeground` 是 UI Control；它只表达毒预览宽度，不是结算事件，也不提供 enemy Intent 取消结论。
+
+更新后的特殊敌人证据与接入结论：
+
+| 机制 | 类 / 方法 / 字段 | 原生结算 / 预览证据 | 是否影响 Poison | Party Watch 接入结论 |
+| --- | --- | --- | --- | --- |
+| Accelerant / 触发次数 | `MegaCrit.Sts2.Core.Models.Cards.Accelerant`；`AccelerantPower`；`PoisonPower.TriggerCount` | `Accelerant` 是 Rare Power，基础施加 1 层 `AccelerantPower`，升级多 1 层；Poison owner 从 alive opponents 读取 `AccelerantPower` 总层数 | 是，增加 Poison tick 段数，最大不超过当前 Poison 层数 | 只读取已生效 `AccelerantPower.Amount`；不重放卡牌。当前类型列表未发现 `Catalyst` |
+| 外骨骼虫单次 9 | `MegaCrit.Sts2.Core.Models.Monsters.Exoskeleton`；`HardToKillPower(9)`；`HardToKillPower.ModifyDamageCap` | `HardToKillPower` 对 owner 返回 damage cap = `Amount`；`CalculateTotalDamageNextTurn()` 每段走 `Hook.ModifyDamage` | 是；例如 12 毒 + 3 段可按 `min(12,9)+min(11,9)+min(10,9)=27` | 下一优先候选；可用原生总毒伤接入后单独 Steam 验证 |
+| Slippery | `SlipperyPower.ModifyHpLostAfterOsty`；`SlipperyPower.AfterDamageReceived` | HP loss >= 1 时压到 1；收到未格挡伤害后 decrement | 是，但属于 HP loss 结果修正，不由 `CalculateTotalDamageNextTurn()` 完整证明 | 用户要求：当前仍有 `SlipperyPower.Amount > 0` 时禁用该敌人的 Poison survival 修正，保留其 Intent；层数消失后再恢复已支持 Poison 计算 |
+| 敌方无实体 | `IntangiblePower.ModifyDamageCap`；`IntangiblePower.ModifyHpLostAfterOsty` | damage cap 与 HP loss cap 均压到 1；`CalculateTotalDamageNextTurn()` 可反映 damage cap 侧 | 是，每个 Poison tick 通常至多 1 | 与 `TestSubject` 生命周期分开验证；先证实每段 Poison 结果，再证实当前 Intent 是否取消 |
+| 鬼祟珊瑚群限伤 | `MegaCrit.Sts2.Core.Models.Monsters.SewerClam`；`HardenedShellPower` | `HardenedShellPower.DisplayAmount = Amount - damageReceivedThisTurn`；`ModifyHpLostBeforeOstyLate` 将 HP loss 限到剩余预算；`AfterDamageReceived` 累加 `result.UnblockedDamage`；`BeforeSideTurnStart` 重置预算 | 是，但属于 HP loss budget，不是单纯 damage cap | 暂不接入。需要先验证预算重置时机和 enemy side Poison tick 前的剩余预算 |
+| 实验体生命周期 | `MegaCrit.Sts2.Core.Models.Monsters.TestSubject`；`AdaptablePower`；`IntangiblePower` | 用户观察复活 / 阶段敌人当前回合不会继续攻击；原生仍需确认 death / respawn 后当前 Intent 取消点 | 是，影响“是否执行当前 Intent” | 暂不接入；后续单独验证生命周期后可从 Unknown 改为确定排除 Intent |

@@ -1,41 +1,72 @@
 # Interface Map
 
-| 状态 | 用途 | 类型 / 成员 | 读取方式 | 运行时是否验证 | 已知限制 |
-| --- | --- | --- | --- | --- | --- |
-| 已运行时验证 | 判断当前是否处于战斗 | `ICombatState.IsLiveCombat()` | 公开只读方法 | 是 | 非战斗 HUD 隐藏已验证；直接 exe 启动仍不作为验证方式。 |
-| 已运行时验证 | 获取本机玩家 | `LocalContext.GetMe(ICombatState)` | 公开只读静态方法 | 是 | 当前实现要求 `combatState.Players.Count == 1`，多人返回 Unknown。 |
-| 已运行时验证 | 获取本机玩家 Creature | `Player.Creature` 与玩家 `NHealthBar._creature` | 公开属性读取；UI 绑定处使用窄范围 reflection 读取血条绑定 Creature | 是 | 仅单人本机玩家路径；reflection 只用于确认 UI 血条绑定对象。 |
-| 已运行时验证 | 读取本机玩家当前 Block | `Creature.Block` | 公开属性读取 | 是 | v2.0 只读取当前 Block 一次，不额外计算 Frost、覆甲、遗物 Block。 |
-| 仅代码确认，尚未运行时验证 | 读取本机玩家当前 HP | `Creature.CurrentHp` | 公开属性读取 | 否 | Phase 1–4 不显示 HP，仅作为接口候选保留。 |
-| 仅代码确认，尚未运行时验证 | 读取本机玩家最大 HP | `Creature.MaxHp` | 公开属性读取 | 否 | Phase 1–4 不显示 HP，仅作为接口候选保留。 |
-| 已运行时验证 | 判断实体是否存活 | `Creature.IsAlive` | 公开只读属性 | 是 | 死亡或不可读实体隐藏 HUD。 |
-| 已运行时验证 | 读取敌人列表 | `ICombatState.Enemies` | 公开只读集合 | 是 | 只读取敌方 Creature，不读取队友或远程玩家。 |
-| 已运行时验证 | 读取敌人当前 Intent 列表 | `enemy.Monster.NextMove.Intents` | 公开属性链 | 是 | 只处理可读 `NextMove.Intents`；不可读时跳过或 Unknown。 |
-| 已运行时验证 | 判断攻击 Intent | `intent is AttackIntent` | 公开类型判断 | 是 | 非攻击 Intent 不显示。 |
-| 已运行时验证 | 原生攻击伤害预览 | `AttackIntent.GetTotalDamage(IEnumerable<Creature> targets, Creature owner)` | 公开方法调用 | 是 | 运行时确认 Intent 9 / Block 0、5、10 场景；不手写 Strength、Weak、Vulnerable、多段等公式。 |
-| 已运行时验证 | 玩家血条绑定生命周期 | `NHealthBar.SetCreature` | Harmony postfix | 是 | 仅创建/刷新本机玩家血条旁标签，不修改 combat state。 |
-| 已运行时验证 | 玩家血条数值刷新 | `NHealthBar.RefreshValues` | Harmony postfix | 是 | Block 变化后 HUD 刷新已验证。 |
-| 已运行时验证 | 定位血条右侧 | `NHealthBar.HpBarContainer` 与私有 `SetHpBarContainerSizeWithOffsets(Vector2)` | 公开属性读取；Harmony postfix 监听尺寸更新 | 是 | 标签挂在 `HpBarContainer` 的同级父节点或等价父节点；仅用于 UI 定位。 |
-| 仅代码确认，尚未运行时验证 | HUD 可见性集中判断 | `PartyWatchHudVisibilityPolicy.ShouldRenderHud(NHealthBar, Creature)` | 读取本机战斗状态、血条节点可见性、Godot 可见 UI 树 | 否 | 检测到可见非战斗 Screen、modal、popup、overlay 或常见遮挡页面时保守隐藏。 |
-| 仅代码确认，尚未运行时验证 | 回合内 HUD 显示快照 | `Hook.BeforeSideTurnStart` / `Hook.BeforeTurnEnd` / `Hook.AfterCombatEnd` + `PartyWatchHudSnapshotStore` | Harmony postfix，仅存显示层 `ForecastResult` 快照 | 否 | 默认开启；不改变预测计算，只决定何时采用或保留已提交显示值。 |
-| 仅代码确认，尚未运行时验证 | Mod 设置界面入口 | `NSettingsScreen._Ready` + `PartyWatchSettingsPatch` | Harmony postfix，在原生 Settings 屏注入 Godot 控件面板 | 否 | 当前未找到可证实官方持久化 API，设置仅会话内生效。 |
-| 仅代码确认，尚未运行时验证 | 读取本机玩家手牌 | `CardPile.Get(PileType.Hand, player)` | 公开静态方法 | 否 | Phase 5A+5B 只读取本机玩家手牌，不读取队友。 |
-| 仅代码确认，尚未运行时验证 | 判断卡牌是否有回合末手牌伤害 | `CardModel.HasTurnEndInHandEffect` + `OnTurnEndInHand` 状态机 IL 中的 `CreatureCmd.Damage` 调用 | 只读 reflection / IL inspection，按卡牌类型缓存 | 否 | 仅用于筛选候选卡；无法确认则排除。 |
-| 仅代码确认，尚未运行时验证 | 读取回合末 blockable 卡牌伤害变量 | `card.DynamicVars.Values.OfType<DamageVar>()` | 公开集合读取 | 否 | `HpLossVar` 不读取；`ValueProp.Unblockable` 不进入 `🛡 -N`。 |
-| 仅代码确认，尚未运行时验证 | 原生修正回合末卡牌 DamageVar | `Hook.ModifyDamage(...)` | 公开静态方法，只读预览调用 | 否 | 不调用 `CreatureCmd.Damage(...)`、`BeforeDamageReceived`、`AfterDamageReceived` 或真实结算。 |
-| 仅代码确认，尚未运行时验证 | 手牌变化刷新 HUD | `CardPile.InvokeContentsChanged` | Harmony postfix | 否 | 只刷新已登记玩家血条 HUD，不每帧扫描。 |
-| 已运行时验证 | 识别 Beckon 当前是否在本机玩家手牌 | `card is MegaCrit.Sts2.Core.Models.Cards.Beckon` + `CardPile.Get(PileType.Hand, player)` | 公开手牌集合读取 + 精确类型判断 | 是 | 只服务 Phase 6A；不扫描所有 `HpLossVar`。 |
-| 已运行时验证 | 读取 Beckon 固定 HP loss | `card.DynamicVars.Values.OfType<HpLossVar>().SingleOrDefault()`，要求 `BaseValue == 6` | 公开 DynamicVars 读取 | 是 | 仅在卡牌仍在手牌且 `HasTurnEndInHandEffect == true` 时计入 `♥ -N`。 |
-| 已运行时验证 | 识别 Bad Luck 当前是否在本机玩家手牌 | `card is MegaCrit.Sts2.Core.Models.Cards.BadLuck` + `CardPile.Get(PileType.Hand, player)` | 公开手牌集合读取 + 精确类型判断 | 是 | 只服务 Phase 6A；不扫描所有 `HpLossVar`。 |
-| 已运行时验证 | 读取 Bad Luck 固定 HP loss | `card.DynamicVars.Values.OfType<HpLossVar>().SingleOrDefault()`，要求 `BaseValue == 13` | 公开 DynamicVars 读取 | 是 | 仅在卡牌仍在手牌且 `HasTurnEndInHandEffect == true` 时计入 `♥ -N`。 |
-| 已运行时验证 | 确认回合末手牌 HP loss 时序 | `CombatManager.DoTurnEnd` + `CardModel.OnTurnEndInHandWrapper` | 最小反编译片段确认 + Steam 运行时结果确认 | 是 | 有 `HasTurnEndInHandEffect` 的手牌先执行 `OnTurnEndInHand`；之后才 Ethereal exhaust 或加入 discard。 |
-| 已运行时验证 | 读取 Frost 回合末预期 Block | `player.PlayerCombatState.OrbQueue.Orbs.OfType<FrostOrb>()` 与 `FrostOrb.PassiveVal` | 公开只读属性 / 集合读取 | 是 | 仅计入 Frost passive；不模拟 evoke；Focus 通过 `PassiveVal` 走原生修正。 |
-| 已运行时验证 | 读取覆甲回合末预期 Block | `localCreature.GetPower<PlatingPower>()?.Amount` | 公开只读 power 入口 | 是 | 只读取本机玩家当前覆甲层数。 |
-| 已运行时验证 | 读取奥利哈刚预期 Block | `player.Relics.OfType<Orichalcum>()` + relic `BlockVar` + `Creature.Block == 0` | 公开只读 relic 集合 / DynamicVars 读取 | 是 | 仅在当前 Block 为 0 时计入。 |
-| 已运行时验证 | 读取假奥利哈刚预期 Block | `player.Relics.OfType<FakeOrichalcum>()` + relic `BlockVar` + `Creature.Block == 0` | 公开只读 relic 集合 / DynamicVars 读取 | 是 | 仅在当前 Block 为 0 时计入。 |
-| 已运行时验证 | 读取波纹水盆预期 Block | `player.Relics.OfType<RippleBasin>()` + `CombatManager.Instance.History.CardPlaysFinished` + `localCreature.GetPower<StampedePower>()` + `CardPile.Get(PileType.Hand, player)` | 公开只读 relic 集合 / combat history / power / hand pile 读取 | 是 | 本回合已打出本机 Attack 或惊涛即将自动打出非 `Unplayable` Attack 时，不计入水盆 Block；水盆 + 惊涛组合已通过用户 Steam 验证；不模拟无合法目标等自动打牌边界。 |
-| 已运行时验证 | 读取斗篷扣预期 Block | `player.Relics.OfType<CloakClasp>()` + `CardPile.Get(PileType.Hand, player).Cards.Count` + relic `BlockVar` | 公开只读 relic 集合 / 手牌集合读取 | 是 | 只按当前手牌数计算。 |
-| 仅代码确认，尚未运行时验证 | 读取敌人实例身份 | `Creature.CombatId` + 原生 `Creature` object reference + 同一快照内 enemy list index | 公开属性读取 / object reference 保留 | 否 | Phase 9B 用于 Poison 行动前预览；禁止用敌人显示名称作为 key。 |
-| 仅代码确认，尚未运行时验证 | 读取敌人 Poison | `enemy.GetPower<PoisonPower>()?.Amount` | 公开只读 power 入口 | 否 | 只读取结束回合时已经生效的当前 Poison 层数，不重放卡牌或命令队列。 |
-| 仅代码确认，尚未运行时验证 | 读取 Poison 额外触发 | `enemy.CombatState.GetOpponentsOf(enemy).Sum(c => c.GetPowerAmount<AccelerantPower>())` | 公开只读 combat / power 入口 | 否 | 按 `PoisonPower.TriggerCount` 证据处理，触发次数不超过当前 Poison 层数。 |
-| 仅代码确认，尚未运行时验证 | Poison 行动前 Intent 过滤 | `EnemyPreActionSurvivalPreview.Preview(enemy)` + `PoisonTickPreview` | 只读预览；不调用真实 damage / kill / action 入口 | 否 | 仅普通敌人支持；`HardToKillPower`、`SlipperyPower`、敌方 `IntangiblePower`、`TestSubject`、`ToughEgg` 等返回 Unknown/隐藏。 |
+Last reconciled: 2026-07-02
+
+## Production Modules
+
+| File / type | Responsibility | Key dependencies | Verification status | Limits |
+| --- | --- | --- | --- | --- |
+| `MainFile` | Mod bootstrap and Harmony patch setup | Mod loader / Harmony | Implemented | No mechanics or HUD rendering logic. |
+| `Combat/LocalIncomingDamageReader` | Reads local combat state and returns `IncomingDamageRead` | `LocalContext`, `ICombatState`, `AttackIntent`, hand pile, powers, relics | Implemented, partially RuntimeVerified by mechanism | Local player only. Unsupported mechanics return Unknown or direct-only result when explicitly supported. |
+| `Combat/IncomingDamageRead` | Typed reader result | Forecast layer | Implemented | No game access. |
+| `Forecast/LocalDamageForecast` | Combines blockable raw, effective Block, and direct HP loss | `IncomingDamageRead` | Implemented, RuntimeVerified through HUD matrices | Does not read game state. |
+| `Forecast/ForecastResult` | Immutable display contract | UI layer | Implemented | States are Hidden, KnownDamage, Unknown. |
+| `Patches/ForecastRefreshPatch` | Health-bar HUD label lifecycle, refreshes, final snapshot commit | `NHealthBar`, `Hook`, `CardPile`, `Player`, reader, forecast, UI helpers | Implemented, RuntimeVerified for main HUD paths | Coordinates display only. |
+| `Patches/NativeCoveringScreenLifecyclePatch` | Notifies HUD when native covering screens enter/exit | Native screen node types, visibility tracker | Implemented | Only tracks known covering screens. |
+| `Patches/PartyWatchSettingsPatch` / `PartyWatchModdingSettingsPatch` | Adds Party Watch settings button and panel inside Party Watch's native Modding info panel | `NModInfoContainer.Fill(Mod)`, `PartyWatchUiSettings` | Implemented, build/publish evidence | Does not occupy native Settings or Modding main entry. |
+| `UI/PartyWatchUiSettings` | Session-only HUD settings | Godot `Color` | Implemented | No persistent settings API used. |
+| `UI/PartyWatchHudDisplay` | HUD text, style, color, and positioning | `ForecastResult`, `PartyWatchUiSettings` | Implemented | Display-only. |
+| `UI/PartyWatchHudVisibilityPolicy` | Conservative render/hide decision | local combat state, health-bar state, covering-screen tracker | Implemented | Hides instead of guessing through overlays. |
+| `UI/PartyWatchHudSnapshotStore` | Display-only turn snapshot and freeze lifecycle | `ForecastResult`, local player/creature identity | Implemented | Does not change forecast mechanics. |
+| `UI/PartyWatchNativeCoveringScreenTracker` | Tracks native screens that cover combat | native Godot node type names | Implemented | Explicit known-screen list. |
+
+## Mechanics Readers
+
+| Reader / helper | Reads | Current status | Runtime status | Unsupported boundary |
+| --- | --- | --- | --- | --- |
+| `AttackIntent.GetTotalDamage(...)` via `LocalIncomingDamageReader` | Native enemy attack preview | Implemented | RuntimeVerified for ordinary attack and regression scenes | Missing/unreadable intents hide or return Unknown. |
+| `CardTurnEndDamageInspector` | Whether turn-end hand cards call damage | Implemented | RuntimeVerified through Burn and follow-up hand damage work | Does not call real card effects. |
+| `VerifiedPreAttackBlockReader` | Frost, PlatingPower, Orichalcum, FakeOrichalcum, RippleBasin, CloakClasp | Implemented | RuntimeVerified | No generic Block scanner. |
+| `VerifiedFixedTurnEndHpLossReader` | Beckon, Bad Luck, Regret | Implemented | RuntimeVerified | No generic `HpLossVar` scanner. |
+| `VerifiedTurnEndPowerDamageReader` | ConstrictPower, DisintegrationPower | Implemented | RuntimeVerified | Poison, Doom, Demise, and generic Power damage are not included. |
+| `VerifiedHpLossResultModifier` | local IntangiblePower, TungstenRod, BeatingRemnant | Implemented, Conditional | Intangible runtime verified; Tungsten/Beating boundaries documented | Requires known event order and granularity. |
+| `VerifiedEnemyDamageModifier` | Diamond Diadem and `DiamondDiademPower` | Implemented, Conditional | RuntimeVerified for supported single-player path | Aggregate enemy damage with per-hit rounding remains Unknown. |
+| `EnemyPreActionSurvivalPreview` | enemy identity, HP, Poison, current intent contribution | Implemented, Conditional | Code/build evidence;专项 Poison matrix not fully backfilled | Special enemy lifecycle, caps, and HP-loss budgets return unsupported. |
+| `PoisonTickPreview` | ordinary Poison amount and opponent Accelerant | Implemented, Conditional | Code/build evidence | Does not call native `PoisonPower.CalculateTotalDamageNextTurn()` yet. |
+| `ObservedHpLossBudgetTracker` | observed local HP loss within the current budget window | Implemented | Used by BeatingRemnant forecast path | Healing does not reduce observed spent budget. |
+
+## Important Settings
+
+| Setting | Default | Effect | Boundary |
+| --- | ---: | --- | --- |
+| `HudEnabled` | true | Enables or hides Party Watch HUD | Display-only. |
+| `ShowLocalHudInMultiplayer` | true | Allows local-player HUD in multiplayer combat | Does not enable teammate or shared party HUD. |
+| `ShowBreakdownDetails` | false | Shows optional `🛡` / `♥` detail label | Does not change prediction. |
+| `FreezeHudWithinPlayerTurn` | true | Uses display snapshots within the turn and after ending turn | Does not change prediction. |
+| `HudAnchor` | `HealthBarRight` | Single-player anchor preset | Multiplayer positioning can force below local health bar. |
+| `OffsetX` / `OffsetY` | 0 / 0 | Manual position offset | Session-only. |
+| `TotalLossColor` | white | Main `-N` color | Session-only. |
+| `BlockableDetailColor` | light blue | `🛡` detail color | Session-only. |
+| `DirectHpLossDetailColor` | pink/red | `♥` detail color | Session-only. |
+
+## Native Hooks
+
+| Hook | Purpose | Notes |
+| --- | --- | --- |
+| `NHealthBar.SetCreature` | Bind and refresh local health-bar labels | Uses reflection only to read `_creature`. |
+| `NHealthBar.RefreshValues` | Refresh HUD after health/block changes | Display lifecycle only. |
+| `NHealthBar.SetHpBarContainerSizeWithOffsets` | Reposition labels after native size changes | No mechanics. |
+| `CardPile.InvokeContentsChanged` | Refresh when hand contents change | Only hand pile triggers refresh. |
+| `Player.AddRelicInternal` / `RemoveRelicInternal` / `MeltRelicInternal` | Refresh after relic state changes | No relic mutation by Party Watch. |
+| `BeatingRemnant.BeforeSideTurnStart` | Reset observed budget window for the owner | Reads owner and turn participants. |
+| `Hook.BeforeSideTurnStart` | Clear/start player-turn display snapshot | Local participant only. |
+| `Hook.BeforeTurnEnd` | Commit final forecast snapshot | Local player side only. |
+| `Hook.AfterCombatEnd` | Clear snapshots and refresh/hide HUD | Display cleanup. |
+| `NModInfoContainer.Fill(Mod)` | Add settings entry for Party Watch's own mod info panel | Does not modify native Modding entry flow. |
+
+## Removed / Not Present
+
+- `ForecastHudController`, `ForecastHudView`, and `HealthBarLocator` are no longer production HUD classes.
+- `ShowHudInMultiplayer` is not a current setting name. Current field is `ShowLocalHudInMultiplayer`.
+- There is no formal `FormalMultiplayerHud` implementation.
+- There is no persistent settings file writer.
