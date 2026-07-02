@@ -50,6 +50,8 @@ Default HUD alignment commit: `8d6467204d25e90bf23141c2b42743ee25e3ed5d`
 
 Text visual center nudge commit: `af52c338fe21ea79411adc2074ea2a7591d5dddd`
 
+Measured text bounds alignment commit: `8b2881d2a3f343a64ae3a44181eaea57aad29649`
+
 Implemented:
 
 - Removed the temporary guide switch for the current test build. The guide now draws directly from the existing local HUD path whenever the local HUD number is eligible to show.
@@ -59,6 +61,7 @@ Implemented:
 - The guide is only shown after the normal local HUD number is eligible to show. Non-local bars, hidden HUD state, non-combat state, invalid health bars, unknown / zero forecast output, and disabled local multiplayer HUD all hide the guide.
 - Adjusted the default `HealthBarRight` HUD vertical placement so the main HUD label center uses the same local `NHealthBar.HpBarContainer` center line as the guide.
 - Added a `-10f` visual-center nudge for the main HUD text after screenshot pixel checks showed the visible label glyphs sat about 10 px below the guide even when the label control rect was centered.
+- Replaced the temporary `-10f` nudge with measured HUD text bounds: the main label text is assigned before positioning, `Font.GetStringSize(...)` measures the current HUD string height, and the default right-anchor position centers that measured text box on the health-bar center line.
 - No settings panel, forecast, poison, power, intent, damage, or multiplayer strategy was changed.
 
 Built:
@@ -75,6 +78,10 @@ Built:
 - Result after visual-center nudge: success, 0 warnings, 0 errors.
 - `C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
 - Result after visual-center nudge: success.
+- `C:\sts2\dotnet\dotnet.exe build .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
+- Result after measured text bounds alignment: success, 0 warnings, 0 errors.
+- `C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
+- Result after measured text bounds alignment: success.
 
 Installed:
 
@@ -82,11 +89,12 @@ Installed:
 - Re-copied the no-switch guide test build into the same local game mod directory on 2026-07-03.
 - Re-copied the default HUD alignment test build into the same local game mod directory on 2026-07-03.
 - Re-copied the visual-center nudge test build into the same local game mod directory on 2026-07-03.
+- Re-copied the measured text bounds alignment test build into the same local game mod directory on 2026-07-03.
 - This was a local game-directory install only, not a Workshop upload.
 
 RuntimeVerified:
 
-- Not run after the visual-center nudge. The provided screenshot confirmed the guide was visible and showed the text glyphs about 10 px below the guide before this nudge, but no post-nudge Steam screenshot has been recorded yet.
+- Not run after the measured text bounds alignment. The provided screenshot confirmed the guide was visible and showed the text glyphs about 10 px below the guide before this measured-bounds change, but no post-change Steam screenshot has been recorded yet.
 
 DocumentedOnly:
 
