@@ -89,7 +89,7 @@ internal static class PartyWatchHudDisplay
         };
 
         position += offset;
-        mainLabel.Position = new Vector2(MathF.Max(0f, position.X), MathF.Max(0f, position.Y));
+        mainLabel.Position = new Vector2(MathF.Max(0f, position.X), position.Y);
 
         if (detailLabel is not null)
         {
