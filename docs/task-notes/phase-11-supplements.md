@@ -60,6 +60,8 @@ Alignment runtime coordinate log commit: `0bf9a7e9ee597a1eb756b3432dadea4c7ee773
 
 Vertical local-origin clamp fix commit: `e398089b92f51f41bb5277263f4b0c0399dc7822`
 
+Detail HUD forecast-line alignment commit: `370d631b7076b174b1a9d42b353aadcdb97ff202`
+
 Implemented:
 
 - Removed the temporary guide switch for the current test build. The guide now draws directly from the existing local HUD path whenever the local HUD number is eligible to show.
@@ -75,6 +77,9 @@ Implemented:
 - Moved temporary guide drawing and alignment logging into `PartyWatchHudDebugGuide` so the formal HUD display file keeps only the shared center/text-size helpers and layout calculation.
 - Added a throttled `[STS2 Party Watch][HUD Align]` runtime log line after HUD and guide layout. It reports anchor, session offset, raw health-bar center, offset target center, main HUD control center, measured text size, guide centers, local/global rects, and the actual Y deltas.
 - Removed the `MathF.Max(0f, position.Y)` clamp from the main HUD label position. The runtime log showed the desired local Y was `-9` (`targetCenter.Y=8`, `mainLabel.Size.Y=34`), but the clamp forced it to `0`, creating `main.deltaY=9` and `guide.deltaY=9`.
+- Moved the advanced detail HUD to the right of the main `-N` control by positioning it at `mainLabel.Position.X + mainLabel.Size.X + 12f`.
+- The advanced detail HUD now keeps its control center on the same forecast line as the main `-N` label.
+- The `[HUD Align]` debug log now includes `detail.visible`, `detail.pos`, `detail.size`, `detail.center`, `detail.deltaY`, and `detail.global` so the advanced detail line can be checked from runtime coordinates.
 - No settings panel, forecast, poison, power, intent, damage, or multiplayer strategy was changed.
 
 Built:
@@ -111,6 +116,10 @@ Built:
 - Result after vertical local-origin clamp fix: success, 0 warnings, 0 errors.
 - `C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
 - Result after vertical local-origin clamp fix: success.
+- `C:\sts2\dotnet\dotnet.exe build .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
+- Result after detail HUD forecast-line alignment: success, 0 warnings, 0 errors.
+- `C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
+- Result after detail HUD forecast-line alignment: success.
 
 Installed:
 
@@ -123,12 +132,14 @@ Installed:
 - Re-copied the shared center target diagnostic build into the same local game mod directory on 2026-07-03.
 - Re-copied the alignment runtime coordinate log diagnostic build into the same local game mod directory on 2026-07-03. Installed DLL: `sts2-party-watch-v2.dll`, length `86528`, timestamp `2026-07-03 01:30:39`.
 - Re-copied the vertical local-origin clamp fix build into the same local game mod directory on 2026-07-03. Installed DLL: `sts2-party-watch-v2.dll`, length `86528`, timestamp `2026-07-03 01:45:09`.
+- Re-copied the detail HUD forecast-line alignment build into the same local game mod directory on 2026-07-03. Installed DLL: `sts2-party-watch-v2.dll`, length `87040`, timestamp `2026-07-03 01:52:15`.
 - This was a local game-directory install only, not a Workshop upload.
 
 RuntimeVerified:
 
 - Runtime log captured before the clamp fix showed the cause of the vertical mismatch: `anchor=HealthBarRight`, `offset=(0,0)`, `targetCenter=(-1,8)`, `main.center=(162,17)`, `main.deltaY=9`, `cyanGuide.centerY=8`, `magentaGuide.centerY=17`, and `guide.deltaY=9`.
-- Not run after the vertical local-origin clamp fix. No post-fix Steam log or screenshot has been recorded yet.
+- Runtime log captured after the clamp fix showed `main.deltaY=0`, `cyanGuide.centerY=8`, `magentaGuide.centerY=8`, and `guide.deltaY=0`, confirming the main `-N` control and guides are on the same runtime line.
+- Not run after the detail HUD forecast-line alignment change. No post-detail-change Steam log with advanced details enabled has been recorded yet.
 
 DocumentedOnly:
 

@@ -103,4 +103,6 @@ Status boundary: Implemented, Built, and Installed only. RuntimeVerified remains
 
 Captured runtime coordinates showed the mismatch source: `MathF.Max(0f, position.Y)` clamped the main HUD label from desired local Y `-9` to `0`, producing `main.deltaY=9` and `guide.deltaY=9`. Commit `e398089b92f51f41bb5277263f4b0c0399dc7822` removes that local Y clamp; post-fix RuntimeVerified remains pending.
 
-Next task: use the log line, plus the cyan health-bar center guide and magenta HUD text center guide, to compare runtime centers without screenshot pixel measuring; then remove the temporary guides and log.
+Post-fix runtime logs showed `main.deltaY=0` and `guide.deltaY=0`. Commit `370d631b7076b174b1a9d42b353aadcdb97ff202` moves the advanced detail HUD to the right of `-N`, keeps it on the same forecast line, and adds `detail.deltaY` to the log.
+
+Next task: enable advanced details in Steam runtime and check `[HUD Align] detail.deltaY`; then remove the temporary guides and log after the alignment observation task is complete.
