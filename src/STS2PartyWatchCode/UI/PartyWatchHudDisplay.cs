@@ -5,11 +5,7 @@ namespace STS2PartyWatch.UI;
 
 internal static class PartyWatchHudDisplay
 {
-#if PARTY_WATCH_SHOW_HEALTH_BAR_CENTER_GUIDE
     internal static bool ShowHealthBarCenterGuide = true;
-#else
-    internal static bool ShowHealthBarCenterGuide = false;
-#endif
 
     private const int MainFontSize = 24;
     private const int DetailFontSize = 18;
