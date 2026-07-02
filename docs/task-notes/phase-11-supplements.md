@@ -148,17 +148,17 @@ RuntimeVerified:
 - Runtime log captured before the clamp fix showed the cause of the vertical mismatch: `anchor=HealthBarRight`, `offset=(0,0)`, `targetCenter=(-1,8)`, `main.center=(162,17)`, `main.deltaY=9`, `cyanGuide.centerY=8`, `magentaGuide.centerY=17`, and `guide.deltaY=9`.
 - Runtime log captured after the clamp fix showed `main.deltaY=0`, `cyanGuide.centerY=8`, `magentaGuide.centerY=8`, and `guide.deltaY=0`, confirming the main `-N` control and guides are on the same runtime line.
 - Not run after the detail HUD forecast-line alignment change. No post-detail-change Steam log with advanced details enabled has been recorded yet.
-- Not run after the debug-guide-removal build. No post-removal Steam smoke check has been recorded yet.
+- RuntimeVerified after the debug-guide-removal build: user confirmed the HUD view is OK, and latest `godot.log` inspection found no `HUD Align`, `STS2PartyWatchHealthBarCenterGuide`, `STS2PartyWatchHudTextCenterGuide`, or `PartyWatchHudDebugGuide` hits.
 
 DocumentedOnly:
 
-- This note records the implementation, build, publish, local install boundary, and pre-removal runtime coordinate evidence. The post-removal build must not be treated as RuntimeVerified until a Steam smoke check confirms that the HUD appears without temporary guide lines or `[HUD Align]` log noise.
+- This note records the implementation, build, publish, local install boundary, pre-removal runtime coordinate evidence, and final post-removal smoke result.
 
 ## 下一步唯一任务
 
-Final closure task: run one Steam smoke check for the locally installed debug-guide-removal build and confirm the HUD appears without the temporary cyan/magenta guide lines or `[HUD Align]` log noise. Formal multiplayer HUD remains frozen.
+Final closure status: complete for the local debug-guide-removal build. Formal multiplayer HUD remains frozen.
 ## Current Final Closure Update
 
 Debug guide removal commit `070774b70ef07a5ead50f3e82ad60f1a6a3c6c0f` removed the temporary cyan health-bar guide, magenta HUD text guide, `[HUD Align]` runtime log, and `PartyWatchHudDebugGuide` helper.
 
-The locally installed debug-guide-removal build is Built and Installed only: DLL `sts2-party-watch-v2.dll`, length `81408`, timestamp `2026-07-03 01:58:19`. A final Steam smoke check without guide lines or debug log noise is still pending. Formal multiplayer HUD remains frozen.
+The locally installed debug-guide-removal build is RuntimeVerified for local smoke: DLL `sts2-party-watch-v2.dll`, length `81408`, timestamp `2026-07-03 01:58:19`; latest `godot.log` timestamp `2026-07-03 02:12:44` contained no temporary guide or `[HUD Align]` noise. DLL SHA256: `A7E87950FDF19C8BE3985894F988B009CDA188BB341733EC27C415F5E5B4A02D`. JSON SHA256: `F93CED0594EC8EE7D49A4DF616BB4373251F08B12FFAC730B68262A2D567ED4C`. Formal multiplayer HUD remains frozen.

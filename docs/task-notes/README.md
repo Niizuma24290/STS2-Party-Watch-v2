@@ -99,7 +99,7 @@ Phase 1A 至 Phase 9A 已完成并有对应历史记录。Phase 9B 普通 Poison
 
 Phase 11 local HUD alignment used a temporary `[STS2 Party Watch][HUD Align]` runtime coordinate log in commit `0bf9a7e9ee597a1eb756b3432dadea4c7ee7734e`.
 
-Status boundary: the main `-N` alignment was RuntimeVerified by the temporary runtime coordinate log before the debug instrumentation was removed. The debug-guide-removal build is Built and Installed only until a final Steam smoke check confirms there are no temporary guide lines or `[HUD Align]` log noise.
+Status boundary: the main `-N` alignment was RuntimeVerified by the temporary runtime coordinate log before the debug instrumentation was removed. The debug-guide-removal build is now RuntimeVerified for local smoke: user confirmed the HUD view is OK, and latest log inspection found no temporary guide lines or `[HUD Align]` log noise.
 
 Captured runtime coordinates showed the mismatch source: `MathF.Max(0f, position.Y)` clamped the main HUD label from desired local Y `-9` to `0`, producing `main.deltaY=9` and `guide.deltaY=9`. Commit `e398089b92f51f41bb5277263f4b0c0399dc7822` removes that local Y clamp; post-fix logs later confirmed `main.deltaY=0` and `guide.deltaY=0`.
 
@@ -107,4 +107,4 @@ Post-fix runtime logs showed `main.deltaY=0` and `guide.deltaY=0`. Commit `370d6
 
 Commit `070774b70ef07a5ead50f3e82ad60f1a6a3c6c0f` removes the temporary guide lines, `[HUD Align]` log, and `PartyWatchHudDebugGuide` helper.
 
-Next task: run a final Steam smoke check that the HUD appears without temporary guide lines or debug log noise.
+Next task: proceed with the next Phase 11 supplement; formal multiplayer HUD remains frozen.

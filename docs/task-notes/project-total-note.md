@@ -86,7 +86,7 @@ Verification classification:
 ## Current Known Limits
 
 - Phase 11 local HUD alignment cleanup is closed at the code level: the temporary cyan health-bar guide, magenta HUD text guide, `[HUD Align]` runtime log, and `PartyWatchHudDebugGuide` helper were removed in commit `070774b70ef07a5ead50f3e82ad60f1a6a3c6c0f`.
-- The main `-N` alignment was RuntimeVerified by pre-removal runtime logs (`main.deltaY=0`, `guide.deltaY=0`). The debug-guide-removal build is Built and Installed only until a final Steam smoke check confirms no guide lines or debug log noise.
+- The main `-N` alignment was RuntimeVerified by pre-removal runtime logs (`main.deltaY=0`, `guide.deltaY=0`). The debug-guide-removal build is RuntimeVerified for local smoke: user confirmed the HUD view is OK and latest log inspection found no temporary guide lines or `[HUD Align]` noise. Installed DLL SHA256: `A7E87950FDF19C8BE3985894F988B009CDA188BB341733EC27C415F5E5B4A02D`.
 - Formal multiplayer HUD remains frozen.
 - Poison special enemies and special HP-loss budgets remain unsupported or research-only.
 - Settings are session-only.

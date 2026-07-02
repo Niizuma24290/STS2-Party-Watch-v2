@@ -133,7 +133,7 @@ Current multiplayer behavior:
 - Tungsten Rod with aggregate enemy HP loss remains unsupported because per-hit or per-event granularity is required.
 - Diamond Diadem aggregate enemy damage with per-hit rounding unknown remains unsupported.
 - Settings persistence is session-only.
-- The health-bar center guide, HUD text center guide, `[HUD Align]` runtime log, and `PartyWatchHudDebugGuide` helper were removed in commit `070774b70ef07a5ead50f3e82ad60f1a6a3c6c0f`, Built and locally installed. The main `-N` alignment is RuntimeVerified by post-clamp logs; the detail HUD alignment was implemented and locally installed before debug instrumentation removal. Post-removal smoke verification is still pending.
+- The health-bar center guide, HUD text center guide, `[HUD Align]` runtime log, and `PartyWatchHudDebugGuide` helper were removed in commit `070774b70ef07a5ead50f3e82ad60f1a6a3c6c0f`, Built and locally installed. The main `-N` alignment is RuntimeVerified by post-clamp logs. Post-removal smoke verification passed: user confirmed the HUD view is OK, and latest log inspection found no temporary guide or `[HUD Align]` debug noise. Installed DLL SHA256: `A7E87950FDF19C8BE3985894F988B009CDA188BB341733EC27C415F5E5B4A02D`.
 - Workshop state must not be described as a public release unless a public publish is explicitly recorded.
 
 ## Release State
@@ -154,4 +154,4 @@ Current multiplayer behavior:
 
 ## Next Single Task
 
-Run a final Steam smoke check that the HUD appears without the temporary guide lines or `[HUD Align]` log noise. Keep formal multiplayer HUD work frozen.
+Next Phase 11 supplement can proceed. Keep formal multiplayer HUD work frozen.
