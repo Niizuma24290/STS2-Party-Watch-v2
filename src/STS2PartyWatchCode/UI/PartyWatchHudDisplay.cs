@@ -5,6 +5,8 @@ namespace STS2PartyWatch.UI;
 
 internal static class PartyWatchHudDisplay
 {
+    internal static bool ShowHealthBarCenterGuide = false;
+
     private const int MainFontSize = 24;
     private const int DetailFontSize = 18;
     private const int DetailShieldFontSize = 15;
@@ -12,6 +14,10 @@ internal static class PartyWatchHudDisplay
     private const float HealthBarRightPadding = 6f;
     private const float HealthBarRightVerticalNudge = -40f;
     private const float DetailHorizontalGap = 48f;
+    private const float HealthBarCenterGuideHeight = 2f;
+    private const float HealthBarCenterGuideMinWidth = 360f;
+    private const float HealthBarCenterGuideRightPadding = 36f;
+    private static readonly Color HealthBarCenterGuideColor = new(0.1f, 0.95f, 1f, 0.9f);
 
     public static string BuildMainHudDisplay(ForecastResult result)
     {
@@ -89,6 +95,48 @@ internal static class PartyWatchHudDisplay
                 mainLabel.Position.X + DetailHorizontalGap,
                 mainLabel.Position.Y + ((mainLabel.Size.Y - detailLabel.Size.Y) * 0.5f));
         }
+    }
+
+    public static void ApplyHealthBarCenterGuide(
+        ColorRect guide,
+        Control healthBar,
+        Control mainLabel,
+        Control? detailLabel,
+        Vector2? containerSize)
+    {
+        if (!ShowHealthBarCenterGuide)
+        {
+            guide.Hide();
+            return;
+        }
+
+        var size = containerSize ?? healthBar.Size;
+        if (size.X <= 0f || size.Y <= 0f)
+        {
+            guide.Hide();
+            return;
+        }
+
+        var center = healthBar.Position + (size * 0.5f);
+        var guideStartX = center.X;
+        var guideEndX = MathF.Max(
+            guideStartX + HealthBarCenterGuideMinWidth,
+            mainLabel.Position.X + mainLabel.Size.X + HealthBarCenterGuideRightPadding);
+
+        if (detailLabel is not null)
+        {
+            guideEndX = MathF.Max(
+                guideEndX,
+                detailLabel.Position.X + detailLabel.Size.X + HealthBarCenterGuideRightPadding);
+        }
+
+        guide.MouseFilter = Control.MouseFilterEnum.Ignore;
+        guide.Color = HealthBarCenterGuideColor;
+        guide.Position = new Vector2(
+            MathF.Max(0f, guideStartX),
+            MathF.Max(0f, center.Y - (HealthBarCenterGuideHeight * 0.5f)));
+        guide.Size = new Vector2(MathF.Max(1f, guideEndX - guideStartX), HealthBarCenterGuideHeight);
+        guide.Show();
     }
 
     private static string BuildForecastDetails(int blockablePrediction, int directHpLossPrediction)
