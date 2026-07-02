@@ -56,18 +56,21 @@ Built:
 
 - `C:\sts2\dotnet\dotnet.exe build .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
 - Result: success, 0 warnings, 0 errors.
+- `C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
+- Result: success; publish output produced under `src/STS2PartyWatchCode/bin/Release/net9.0/publish/`.
 
 Installed:
 
-- Not installed or copied into the game / Workshop mod directory in this task.
+- Copied `sts2-party-watch-v2.dll` and `sts2-party-watch-v2.json` into `C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\mods\sts2-party-watch-v2` on 2026-07-02.
+- This was a local game-directory install only, not a Workshop upload.
 
 RuntimeVerified:
 
-- Not run. No Steam session, combat screenshot, or in-game validation was performed for this guide in this task.
+- Not run. No Steam session, combat screenshot, or in-game validation was performed for this guide after the local install.
 
 DocumentedOnly:
 
-- This note records the implementation and build boundary only. It must not be treated as runtime alignment verification.
+- This note records the implementation, build, publish, and local install boundary only. It must not be treated as runtime alignment verification.
 
 ## 下一步唯一任务
 

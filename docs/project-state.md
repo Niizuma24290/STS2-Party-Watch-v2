@@ -126,7 +126,7 @@ Current multiplayer behavior:
 - Tungsten Rod with aggregate enemy HP loss remains unsupported because per-hit or per-event granularity is required.
 - Diamond Diadem aggregate enemy damage with per-hit rounding unknown remains unsupported.
 - Settings persistence is session-only.
-- The health-bar center guide is temporary development instrumentation only. Implementation commit `68d94c0d54672757d17a4799b54f08e14ec91a4e` is Built but not Installed or RuntimeVerified in Steam; it must be removed after the HUD alignment observation task is complete.
+- The health-bar center guide is temporary development instrumentation only. Implementation commit `68d94c0d54672757d17a4799b54f08e14ec91a4e` is Built, published, and locally installed to the game mod directory, but not RuntimeVerified in Steam; it must be removed after the HUD alignment observation task is complete.
 - Workshop state must not be described as a public release unless a public publish is explicitly recorded.
 
 ## Release State
