@@ -14,7 +14,9 @@ internal static class PartyWatchHudDisplay
     private const float HealthBarCenterGuideHeight = 2f;
     private const float HealthBarCenterGuideMinWidth = 360f;
     private const float HealthBarCenterGuideRightPadding = 36f;
+    private const float MainHudTextCenterGuideHeight = 2f;
     private static readonly Color HealthBarCenterGuideColor = new(0.1f, 0.95f, 1f, 0.9f);
+    private static readonly Color MainHudTextCenterGuideColor = new(1f, 0.1f, 0.95f, 0.95f);
 
     public static string BuildMainHudDisplay(ForecastResult result)
     {
@@ -134,6 +136,24 @@ internal static class PartyWatchHudDisplay
             MathF.Max(0f, guideStartX),
             MathF.Max(0f, center.Y - (HealthBarCenterGuideHeight * 0.5f)));
         guide.Size = new Vector2(MathF.Max(1f, guideEndX - guideStartX), HealthBarCenterGuideHeight);
+        guide.Show();
+    }
+
+    public static void ApplyMainHudTextCenterGuide(ColorRect guide, Control mainLabel)
+    {
+        if (mainLabel.Size.X <= 0f || mainLabel.Size.Y <= 0f)
+        {
+            guide.Hide();
+            return;
+        }
+
+        var centerY = mainLabel.Position.Y + (mainLabel.Size.Y * 0.5f);
+        guide.MouseFilter = Control.MouseFilterEnum.Ignore;
+        guide.Color = MainHudTextCenterGuideColor;
+        guide.Position = new Vector2(
+            MathF.Max(0f, mainLabel.Position.X),
+            MathF.Max(0f, centerY - (MainHudTextCenterGuideHeight * 0.5f)));
+        guide.Size = new Vector2(MathF.Max(1f, mainLabel.Size.X), MainHudTextCenterGuideHeight);
         guide.Show();
     }
 
