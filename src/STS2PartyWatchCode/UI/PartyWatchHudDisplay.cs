@@ -75,6 +75,8 @@ internal static class PartyWatchHudDisplay
     {
         var size = containerSize ?? healthBar.Size;
         var labelSize = mainLabel.Size;
+        var center = GetHealthBarCenter(healthBar, size);
+        var offset = new Vector2(PartyWatchUiSettings.OffsetX, PartyWatchUiSettings.OffsetY);
         var anchor = forceBelowHealthBar ? PartyWatchHudAnchor.HealthBarBelow : PartyWatchUiSettings.HudAnchor;
         var position = anchor switch
         {
@@ -89,10 +91,10 @@ internal static class PartyWatchHudDisplay
                 healthBar.Position.Y + size.Y + 14f),
             _ => new Vector2(
                 healthBar.Position.X + size.X + HealthBarRightPadding,
-                healthBar.Position.Y + (size.Y * 0.5f) - (labelSize.Y * 0.5f))
+                center.Y - (labelSize.Y * 0.5f))
         };
 
-        position += new Vector2(PartyWatchUiSettings.OffsetX, PartyWatchUiSettings.OffsetY);
+        position += offset;
         mainLabel.Position = new Vector2(MathF.Max(0f, position.X), MathF.Max(0f, position.Y));
 
         if (detailLabel is not null)
@@ -117,8 +119,8 @@ internal static class PartyWatchHudDisplay
             return;
         }
 
-        var center = healthBar.Position + (size * 0.5f);
-        var guideStartX = center.X;
+        var center = GetOffsetHealthBarCenter(healthBar, size);
+        var guideStartX = GetHealthBarCenter(healthBar, size).X;
         var guideEndX = MathF.Max(
             guideStartX + HealthBarCenterGuideMinWidth,
             mainLabel.Position.X + mainLabel.Size.X + HealthBarCenterGuideRightPadding);
@@ -176,6 +178,17 @@ internal static class PartyWatchHudDisplay
     private static float GetMainWidth() => 72f;
 
     private static float GetMainHeight() => 34f;
+
+    private static Vector2 GetHealthBarCenter(Control healthBar, Vector2 size)
+    {
+        return healthBar.Position + (size * 0.5f);
+    }
+
+    private static Vector2 GetOffsetHealthBarCenter(Control healthBar, Vector2 size)
+    {
+        return GetHealthBarCenter(healthBar, size)
+            + new Vector2(PartyWatchUiSettings.OffsetX, PartyWatchUiSettings.OffsetY);
+    }
 
     private static Vector2 GetMainTextSize(Label label)
     {
