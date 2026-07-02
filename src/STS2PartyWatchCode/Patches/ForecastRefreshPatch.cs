@@ -103,22 +103,23 @@ internal static class ForecastRefreshPatch
         }
 
         mainLabel.Text = PartyWatchHudDisplay.BuildMainHudDisplay(result);
+        var details = PartyWatchHudDisplay.BuildHudDetails(result);
         PartyWatchHudDisplay.ApplyMainHudTextBounds(mainLabel);
         Reposition(bar, mainLabel, detailLabel, containerSize);
         mainLabel.Show();
-        ShowHealthBarCenterGuide(bar, mainLabel, detailLabel, healthBarCenterGuide, containerSize);
-        ShowMainHudTextCenterGuide(mainLabel, mainHudTextCenterGuide);
-        LogAlignmentIfChanged(bar, mainLabel, healthBarCenterGuide, mainHudTextCenterGuide, containerSize);
-
-        var details = PartyWatchHudDisplay.BuildHudDetails(result);
         if (string.IsNullOrEmpty(details))
         {
             Hide(detailLabel);
-            return;
+        }
+        else
+        {
+            detailLabel.Text = details;
+            detailLabel.Show();
         }
 
-        detailLabel.Text = details;
-        detailLabel.Show();
+        ShowHealthBarCenterGuide(bar, mainLabel, detailLabel, healthBarCenterGuide, containerSize);
+        ShowMainHudTextCenterGuide(mainLabel, mainHudTextCenterGuide);
+        LogAlignmentIfChanged(bar, mainLabel, detailLabel, healthBarCenterGuide, mainHudTextCenterGuide, containerSize);
     }
 
     private static bool TryGetLocalCreature(NHealthBar bar, out Creature? creature)
@@ -383,6 +384,7 @@ internal static class ForecastRefreshPatch
     private static void LogAlignmentIfChanged(
         NHealthBar bar,
         Label mainLabel,
+        RichTextLabel detailLabel,
         ColorRect? healthBarCenterGuide,
         ColorRect? mainHudTextCenterGuide,
         Vector2? containerSize)
@@ -397,6 +399,7 @@ internal static class ForecastRefreshPatch
         var line = PartyWatchHudDebugGuide.BuildAlignmentDebugLine(
             container,
             mainLabel,
+            detailLabel,
             healthBarCenterGuide,
             mainHudTextCenterGuide,
             containerSize,

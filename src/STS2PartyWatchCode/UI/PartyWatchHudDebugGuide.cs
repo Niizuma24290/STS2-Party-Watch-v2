@@ -68,6 +68,7 @@ internal static class PartyWatchHudDebugGuide
     public static string BuildAlignmentDebugLine(
         Control healthBar,
         Label mainLabel,
+        RichTextLabel detailLabel,
         ColorRect? healthBarCenterGuide,
         ColorRect? mainHudTextCenterGuide,
         Vector2? containerSize,
@@ -77,6 +78,7 @@ internal static class PartyWatchHudDebugGuide
         var rawHealthBarCenter = PartyWatchHudDisplay.GetHealthBarCenter(healthBar, healthBarSize);
         var targetCenter = PartyWatchHudDisplay.GetOffsetHealthBarCenter(healthBar, healthBarSize);
         var mainHudCenter = GetControlCenter(mainLabel);
+        var detailHudCenter = GetControlCenter(detailLabel);
         var measuredTextSize = PartyWatchHudDisplay.GetMeasuredTextSize(mainLabel);
         var healthGuideCenter = healthBarCenterGuide is null ? (float?)null : GetControlCenter(healthBarCenterGuide).Y;
         var textGuideCenter = mainHudTextCenterGuide is null ? (float?)null : GetControlCenter(mainHudTextCenterGuide).Y;
@@ -95,11 +97,17 @@ internal static class PartyWatchHudDebugGuide
             + $"main.deltaY={FormatFloat(mainHudCenter.Y - targetCenter.Y)} "
             + $"text='{mainLabel.Text}' "
             + $"textSize={FormatVector(measuredTextSize)} "
+            + $"detail.visible={detailLabel.Visible} "
+            + $"detail.pos={FormatVector(detailLabel.Position)} "
+            + $"detail.size={FormatVector(detailLabel.Size)} "
+            + $"detail.center={FormatVector(detailHudCenter)} "
+            + $"detail.deltaY={FormatFloat(detailHudCenter.Y - targetCenter.Y)} "
             + $"cyanGuide.centerY={FormatNullableFloat(healthGuideCenter)} "
             + $"magentaGuide.centerY={FormatNullableFloat(textGuideCenter)} "
             + $"guide.deltaY={FormatNullableDelta(textGuideCenter, healthGuideCenter)} "
             + $"healthBar.global={FormatRect(healthBar.GetGlobalRect())} "
-            + $"main.global={FormatRect(mainLabel.GetGlobalRect())}";
+            + $"main.global={FormatRect(mainLabel.GetGlobalRect())} "
+            + $"detail.global={FormatRect(detailLabel.GetGlobalRect())}";
     }
 
     private static Vector2 GetControlCenter(Control control)
