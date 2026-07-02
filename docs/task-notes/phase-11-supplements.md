@@ -62,6 +62,8 @@ Vertical local-origin clamp fix commit: `e398089b92f51f41bb5277263f4b0c0399dc782
 
 Detail HUD forecast-line alignment commit: `370d631b7076b174b1a9d42b353aadcdb97ff202`
 
+Debug guide removal commit: `070774b70ef07a5ead50f3e82ad60f1a6a3c6c0f`
+
 Implemented:
 
 - Removed the temporary guide switch for the current test build. The guide now draws directly from the existing local HUD path whenever the local HUD number is eligible to show.
@@ -80,6 +82,7 @@ Implemented:
 - Moved the advanced detail HUD to the right of the main `-N` control by positioning it at `mainLabel.Position.X + mainLabel.Size.X + 12f`.
 - The advanced detail HUD now keeps its control center on the same forecast line as the main `-N` label.
 - The `[HUD Align]` debug log now includes `detail.visible`, `detail.pos`, `detail.size`, `detail.center`, `detail.deltaY`, and `detail.global` so the advanced detail line can be checked from runtime coordinates.
+- Removed the temporary cyan health-bar guide, magenta HUD text guide, `[HUD Align]` runtime log, and `PartyWatchHudDebugGuide` helper after the alignment observation task.
 - No settings panel, forecast, poison, power, intent, damage, or multiplayer strategy was changed.
 
 Built:
@@ -120,6 +123,10 @@ Built:
 - Result after detail HUD forecast-line alignment: success, 0 warnings, 0 errors.
 - `C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
 - Result after detail HUD forecast-line alignment: success.
+- `C:\sts2\dotnet\dotnet.exe build .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
+- Result after debug guide removal: success, 0 warnings, 0 errors.
+- `C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
+- Result after debug guide removal: success.
 
 Installed:
 
@@ -133,6 +140,7 @@ Installed:
 - Re-copied the alignment runtime coordinate log diagnostic build into the same local game mod directory on 2026-07-03. Installed DLL: `sts2-party-watch-v2.dll`, length `86528`, timestamp `2026-07-03 01:30:39`.
 - Re-copied the vertical local-origin clamp fix build into the same local game mod directory on 2026-07-03. Installed DLL: `sts2-party-watch-v2.dll`, length `86528`, timestamp `2026-07-03 01:45:09`.
 - Re-copied the detail HUD forecast-line alignment build into the same local game mod directory on 2026-07-03. Installed DLL: `sts2-party-watch-v2.dll`, length `87040`, timestamp `2026-07-03 01:52:15`.
+- Re-copied the debug-guide-removal build into the same local game mod directory on 2026-07-03. Installed DLL: `sts2-party-watch-v2.dll`, length `81408`, timestamp `2026-07-03 01:58:19`.
 - This was a local game-directory install only, not a Workshop upload.
 
 RuntimeVerified:

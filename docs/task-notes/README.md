@@ -97,12 +97,14 @@ Phase 1A 至 Phase 9A 已完成并有对应历史记录。Phase 9B 普通 Poison
 - `workshop-private-rc-2026-07-01.md`: Workshop workspace、private/subscription 测试和多人本机 HUD 记录。
 ## Current Diagnostic Update
 
-Phase 11 local HUD alignment now includes a temporary `[STS2 Party Watch][HUD Align]` runtime coordinate log in commit `0bf9a7e9ee597a1eb756b3432dadea4c7ee7734e`.
+Phase 11 local HUD alignment used a temporary `[STS2 Party Watch][HUD Align]` runtime coordinate log in commit `0bf9a7e9ee597a1eb756b3432dadea4c7ee7734e`.
 
 Status boundary: Implemented, Built, and Installed only. RuntimeVerified remains pending until Steam runtime coordinates are captured from the log.
 
 Captured runtime coordinates showed the mismatch source: `MathF.Max(0f, position.Y)` clamped the main HUD label from desired local Y `-9` to `0`, producing `main.deltaY=9` and `guide.deltaY=9`. Commit `e398089b92f51f41bb5277263f4b0c0399dc7822` removes that local Y clamp; post-fix RuntimeVerified remains pending.
 
-Post-fix runtime logs showed `main.deltaY=0` and `guide.deltaY=0`. Commit `370d631b7076b174b1a9d42b353aadcdb97ff202` moves the advanced detail HUD to the right of `-N`, keeps it on the same forecast line, and adds `detail.deltaY` to the log.
+Post-fix runtime logs showed `main.deltaY=0` and `guide.deltaY=0`. Commit `370d631b7076b174b1a9d42b353aadcdb97ff202` moves the advanced detail HUD to the right of `-N` and keeps it on the same forecast line.
 
-Next task: enable advanced details in Steam runtime and check `[HUD Align] detail.deltaY`; then remove the temporary guides and log after the alignment observation task is complete.
+Commit `070774b70ef07a5ead50f3e82ad60f1a6a3c6c0f` removes the temporary guide lines, `[HUD Align]` log, and `PartyWatchHudDebugGuide` helper.
+
+Next task: run a final Steam smoke check that the HUD appears without temporary guide lines or debug log noise.

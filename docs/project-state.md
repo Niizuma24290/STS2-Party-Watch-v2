@@ -28,12 +28,11 @@ Party Watch does not simulate a full turn, does not call real damage or command 
 - HUD refreshes from health-bar lifecycle hooks, hand pile changes, relic add/remove/melt, selected turn lifecycle hooks, and settings changes.
 - `FreezeHudWithinPlayerTurn` is enabled by default. It freezes a display snapshot within the player turn and commits a final snapshot at `Hook.BeforeTurnEnd`; it does not alter forecast mechanics.
 - Covering native pages, modal/popup/overlay screens, combat end, invalid player state, or disabled HUD settings hide and clear relevant display state.
-- A temporary local health-bar center guide is enabled directly in the current local testing build. It has no user setting or debug switch and is not part of the formal HUD layout; it must be removed after the alignment observation task is complete.
-- A temporary magenta HUD text center guide is also enabled in the current local testing build. It marks the measured main HUD text center so screenshots can distinguish HUD coordinate drift from font/glyph visual offset.
+- The temporary local health-bar center guide, HUD text center guide, and alignment runtime log have been removed after the alignment observation task.
 - Default `HealthBarRight` HUD placement now centers the main HUD label on the same local health-bar center line used by the temporary guide. User X/Y offsets still apply after the default position is calculated.
 - The default right-anchor HUD alignment now assigns the current HUD string before positioning, measures that string with `Font.GetStringSize(...)`, and centers the measured text bounds on the health-bar center line instead of centering a fixed empty label rect.
 - The default right-anchor HUD target and cyan guide target now share the same health-bar center helper. The guide uses the same `OffsetY` as the HUD target so a nonzero session offset does not create a false diagnostic gap.
-- A temporary `[STS2 Party Watch][HUD Align]` runtime log is enabled in the local diagnostic build. It reports raw health-bar center, offset target center, HUD label center, measured text size, guide center deltas, anchor, offsets, and local/global rects so alignment can be checked from runtime coordinates instead of screenshot pixels.
+- The temporary `[STS2 Party Watch][HUD Align]` runtime log was used for alignment diagnosis and has been removed.
 - Runtime coordinate logs showed the vertical mismatch was caused by clamping the main HUD label's local Y position to zero. The local health-bar target center was `Y=8`, the measured main label height was `34`, and the desired label top was `-9`; clamping it to `0` produced `main.deltaY=9`. The local Y clamp has been removed for the main label.
 - Post-clamp runtime logs showed `main.deltaY=0` and `guide.deltaY=0`, confirming the main `-N` control and temporary guides are on the same runtime line.
 - The advanced detail HUD is now placed to the right of the main `-N` control and centered on the same forecast line. The diagnostic log includes detail position, center, and delta fields for post-change verification when advanced details are enabled.
@@ -134,7 +133,7 @@ Current multiplayer behavior:
 - Tungsten Rod with aggregate enemy HP loss remains unsupported because per-hit or per-event granularity is required.
 - Diamond Diadem aggregate enemy damage with per-hit rounding unknown remains unsupported.
 - Settings persistence is session-only.
-- The health-bar center guide, HUD text center guide, and `[HUD Align]` runtime log are temporary development instrumentation only. Implementation commit `68d94c0d54672757d17a4799b54f08e14ec91a4e`, no-switch testing commit `cd8c07e5c9afc35e23c5cf41a7c542d880b5b44d`, default HUD alignment commit `8d6467204d25e90bf23141c2b42743ee25e3ed5d`, text visual-center nudge commit `af52c338fe21ea79411adc2074ea2a7591d5dddd`, measured text bounds alignment commit `8b2881d2a3f343a64ae3a44181eaea57aad29649`, HUD text center guide commit `9d198445d1c3f14e193b73ffafab3542fe23d036`, shared center target commit `ef91fcb1a8a1616b4376d7741b2ab2343ac19980`, alignment runtime coordinate log commit `0bf9a7e9ee597a1eb756b3432dadea4c7ee7734e`, vertical local-origin clamp fix commit `e398089b92f51f41bb5277263f4b0c0399dc7822`, and detail HUD forecast-line alignment commit `370d631b7076b174b1a9d42b353aadcdb97ff202` are Built and locally installed. The main `-N` alignment is RuntimeVerified by post-clamp logs; the detail HUD alignment still needs a post-change Steam log with advanced details enabled. Temporary guides and the temporary log must be removed after the HUD alignment observation task is complete.
+- The health-bar center guide, HUD text center guide, `[HUD Align]` runtime log, and `PartyWatchHudDebugGuide` helper were removed in commit `070774b70ef07a5ead50f3e82ad60f1a6a3c6c0f`, Built and locally installed. The main `-N` alignment is RuntimeVerified by post-clamp logs; the detail HUD alignment was implemented and locally installed before debug instrumentation removal.
 - Workshop state must not be described as a public release unless a public publish is explicitly recorded.
 
 ## Release State
@@ -155,4 +154,4 @@ Current multiplayer behavior:
 
 ## Next Single Task
 
-Run the Steam runtime alignment check using the `[STS2 Party Watch][HUD Align]` log line plus the temporary local health-bar and HUD-text center guides in single-player and local multiplayer, then remove the temporary guides/log after the observation task is complete. Keep formal multiplayer HUD work frozen.
+Run a final Steam smoke check that the HUD appears without the temporary guide lines or `[HUD Align]` log noise. Keep formal multiplayer HUD work frozen.
