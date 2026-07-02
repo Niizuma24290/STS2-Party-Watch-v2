@@ -10,7 +10,6 @@ internal static class PartyWatchHudDisplay
     private const int DetailShieldFontSize = 15;
     private const int DetailHeartFontSize = 22;
     private const float HealthBarRightPadding = 6f;
-    private const float HealthBarRightVerticalNudge = -40f;
     private const float DetailHorizontalGap = 48f;
     private const float HealthBarCenterGuideHeight = 2f;
     private const float HealthBarCenterGuideMinWidth = 360f;
@@ -81,7 +80,7 @@ internal static class PartyWatchHudDisplay
                 healthBar.Position.Y + size.Y + 14f),
             _ => new Vector2(
                 healthBar.Position.X + size.X + HealthBarRightPadding,
-                healthBar.Position.Y + ((size.Y - labelSize.Y) * 0.5f) + HealthBarRightVerticalNudge)
+                healthBar.Position.Y + (size.Y * 0.5f) - (labelSize.Y * 0.5f))
         };
 
         position += new Vector2(PartyWatchUiSettings.OffsetX, PartyWatchUiSettings.OffsetY);
