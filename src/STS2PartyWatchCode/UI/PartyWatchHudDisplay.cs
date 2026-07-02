@@ -5,8 +5,6 @@ namespace STS2PartyWatch.UI;
 
 internal static class PartyWatchHudDisplay
 {
-    internal static bool ShowHealthBarCenterGuide = true;
-
     private const int MainFontSize = 24;
     private const int DetailFontSize = 18;
     private const int DetailShieldFontSize = 15;
@@ -104,12 +102,6 @@ internal static class PartyWatchHudDisplay
         Control? detailLabel,
         Vector2? containerSize)
     {
-        if (!ShowHealthBarCenterGuide)
-        {
-            guide.Hide();
-            return;
-        }
-
         var size = containerSize ?? healthBar.Size;
         if (size.X <= 0f || size.Y <= 0f)
         {

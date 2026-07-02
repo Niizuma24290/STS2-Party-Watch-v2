@@ -65,9 +65,7 @@ internal static class ForecastRefreshPatch
 
         var mainLabel = GetOrCreateMainLabel(bar);
         var detailLabel = GetOrCreateDetailLabel(bar);
-        var healthBarCenterGuide = PartyWatchHudDisplay.ShowHealthBarCenterGuide
-            ? GetOrCreateHealthBarCenterGuide(bar)
-            : GetExistingHealthBarCenterGuide(bar);
+        var healthBarCenterGuide = GetOrCreateHealthBarCenterGuide(bar);
         if (mainLabel is null || detailLabel is null)
         {
             HideOptional(healthBarCenterGuide);
@@ -232,11 +230,6 @@ internal static class ForecastRefreshPatch
 
         parent.AddChild(guide);
         return guide;
-    }
-
-    private static ColorRect? GetExistingHealthBarCenterGuide(NHealthBar bar)
-    {
-        return GetLabelParent(bar)?.GetNodeOrNull<ColorRect>(HealthBarCenterGuideName);
     }
 
     private static Control? GetLabelParent(NHealthBar bar)
