@@ -74,7 +74,6 @@ internal static class ForecastRefreshPatch
 
         PartyWatchHudDisplay.ApplyMainHudStyle(mainLabel);
         PartyWatchHudDisplay.ApplyDetailHudStyle(detailLabel);
-        Reposition(bar, mainLabel, detailLabel, containerSize);
         ObservedHpLossBudgetTracker.Observe(creature);
 
         if (!PartyWatchHudVisibilityPolicy.ShouldRenderHud(bar, creature))
@@ -98,6 +97,8 @@ internal static class ForecastRefreshPatch
         }
 
         mainLabel.Text = PartyWatchHudDisplay.BuildMainHudDisplay(result);
+        PartyWatchHudDisplay.ApplyMainHudTextBounds(mainLabel);
+        Reposition(bar, mainLabel, detailLabel, containerSize);
         mainLabel.Show();
         ShowHealthBarCenterGuide(bar, mainLabel, detailLabel, healthBarCenterGuide, containerSize);
 

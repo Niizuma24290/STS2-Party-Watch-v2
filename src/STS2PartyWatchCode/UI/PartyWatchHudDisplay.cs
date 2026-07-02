@@ -10,7 +10,6 @@ internal static class PartyWatchHudDisplay
     private const int DetailShieldFontSize = 15;
     private const int DetailHeartFontSize = 22;
     private const float HealthBarRightPadding = 6f;
-    private const float MainHudTextVisualCenterNudge = -10f;
     private const float DetailHorizontalGap = 48f;
     private const float HealthBarCenterGuideHeight = 2f;
     private const float HealthBarCenterGuideMinWidth = 360f;
@@ -42,6 +41,13 @@ internal static class PartyWatchHudDisplay
         label.AddThemeColorOverride("font_shadow_color", Colors.Black);
         label.AddThemeConstantOverride("shadow_offset_x", 2);
         label.AddThemeConstantOverride("shadow_offset_y", 2);
+    }
+
+    public static void ApplyMainHudTextBounds(Label label)
+    {
+        var textSize = GetMainTextSize(label);
+        label.CustomMinimumSize = textSize;
+        label.Size = textSize;
     }
 
     public static void ApplyDetailHudStyle(RichTextLabel label)
@@ -81,7 +87,7 @@ internal static class PartyWatchHudDisplay
                 healthBar.Position.Y + size.Y + 14f),
             _ => new Vector2(
                 healthBar.Position.X + size.X + HealthBarRightPadding,
-                healthBar.Position.Y + (size.Y * 0.5f) - (labelSize.Y * 0.5f) + MainHudTextVisualCenterNudge)
+                healthBar.Position.Y + (size.Y * 0.5f) - (labelSize.Y * 0.5f))
         };
 
         position += new Vector2(PartyWatchUiSettings.OffsetX, PartyWatchUiSettings.OffsetY);
@@ -150,6 +156,19 @@ internal static class PartyWatchHudDisplay
     private static float GetMainWidth() => 72f;
 
     private static float GetMainHeight() => 34f;
+
+    private static Vector2 GetMainTextSize(Label label)
+    {
+        if (string.IsNullOrEmpty(label.Text))
+        {
+            return new Vector2(GetMainWidth(), GetMainHeight());
+        }
+
+        var font = label.GetThemeFont("font");
+        var fontSize = label.GetThemeFontSize("font_size");
+        var textSize = font.GetStringSize(label.Text, fontSize: fontSize);
+        return new Vector2(GetMainWidth(), MathF.Max(1f, textSize.Y));
+    }
 
     private static float GetDetailWidth() => 240f;
 
