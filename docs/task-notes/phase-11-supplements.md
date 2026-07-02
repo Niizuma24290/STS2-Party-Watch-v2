@@ -31,6 +31,7 @@ Phase 11 是 Workshop 上传完成后的后续补充 / 维护阶段。
 - Phase 9B 普通 Poison 专项 Steam 验证矩阵。
 - 已上传 / 订阅版状态下的 Tungsten Rod + Beating Remnant 顺序验证。
 - 设置入口完整 Steam 导航矩阵。
+- 本机血条中线临时开发辅助线的 Steam 运行时确认与后续删除。
 - 后续任何新补丁的 task note 命名应优先使用 `phase-11-<topic>.md`。
 
 ## 编号规则
@@ -39,6 +40,35 @@ Phase 11 是 Workshop 上传完成后的后续补充 / 维护阶段。
 - Phase 10：Workshop 上传完成后的发布 / 订阅测试里程碑。
 - Phase 11：Phase 10 之后的补充与维护。
 
+## 2026-07-02 本机血条中线临时辅助线
+
+Implementation commit: `68d94c0d54672757d17a4799b54f08e14ec91a4e`
+
+Implemented:
+
+- Added a default-off development switch, `PartyWatchHudDisplay.ShowHealthBarCenterGuide = false`.
+- Added a single horizontal `ColorRect` guide under the existing local HUD parent when the switch is enabled.
+- The guide uses the existing `NHealthBar.HpBarContainer` position and the existing local-player `ForecastRefreshPatch.TryGetLocalCreature` path; it does not add a second local-player or health-bar lookup system.
+- The guide is only shown after the normal local HUD number is eligible to show. Non-local bars, hidden HUD state, non-combat state, invalid health bars, unknown / zero forecast output, and disabled local multiplayer HUD all hide the guide.
+- No formal HUD X/Y offset, anchor, layout parameter, settings panel, forecast, poison, power, intent, damage, or multiplayer strategy was changed.
+
+Built:
+
+- `C:\sts2\dotnet\dotnet.exe build .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
+- Result: success, 0 warnings, 0 errors.
+
+Installed:
+
+- Not installed or copied into the game / Workshop mod directory in this task.
+
+RuntimeVerified:
+
+- Not run. No Steam session, combat screenshot, or in-game validation was performed for this guide in this task.
+
+DocumentedOnly:
+
+- This note records the implementation and build boundary only. It must not be treated as runtime alignment verification.
+
 ## 下一步唯一任务
 
-把后续新增补充工作从 Phase 11 开始登记，不再创建新的 Phase 9 子阶段。
+进入 Steam 运行时临时打开本机血条中线辅助线，确认单人和本机多人 HUD 对齐观察结果；确认完成后删除该临时辅助线。正式多人 HUD 仍冻结。

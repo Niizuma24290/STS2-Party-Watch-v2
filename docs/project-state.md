@@ -28,6 +28,7 @@ Party Watch does not simulate a full turn, does not call real damage or command 
 - HUD refreshes from health-bar lifecycle hooks, hand pile changes, relic add/remove/melt, selected turn lifecycle hooks, and settings changes.
 - `FreezeHudWithinPlayerTurn` is enabled by default. It freezes a display snapshot within the player turn and commits a final snapshot at `Hook.BeforeTurnEnd`; it does not alter forecast mechanics.
 - Covering native pages, modal/popup/overlay screens, combat end, invalid player state, or disabled HUD settings hide and clear relevant display state.
+- A temporary local health-bar center guide exists behind the default-off development switch `PartyWatchHudDisplay.ShowHealthBarCenterGuide = false`; it is not a user setting and is not part of the formal HUD layout.
 
 ## Supported Mechanics
 
@@ -95,6 +96,7 @@ Verification state:
 
 - HUD label is anchored to the local player's `NHealthBar.HpBarContainer` parent or equivalent health-bar node parent.
 - Main label and detail label are separate nodes.
+- The temporary health-bar center guide, when manually enabled in source for development, reuses the same local health-bar lifecycle and parent node as the HUD labels and draws only after the local HUD number is eligible to show.
 - Native covering screen lifecycle is tracked by `PartyWatchNativeCoveringScreenTracker` and `NativeCoveringScreenLifecyclePatch`.
 - Settings live in `PartyWatchUiSettings` for the current game session.
 - Settings include HUD enabled, local HUD in multiplayer, advanced details, freeze behavior, anchor preset, X/Y offset, total color, shield detail color, heart detail color, and restore defaults.
@@ -124,6 +126,7 @@ Current multiplayer behavior:
 - Tungsten Rod with aggregate enemy HP loss remains unsupported because per-hit or per-event granularity is required.
 - Diamond Diadem aggregate enemy damage with per-hit rounding unknown remains unsupported.
 - Settings persistence is session-only.
+- The health-bar center guide is temporary development instrumentation only. Implementation commit `68d94c0d54672757d17a4799b54f08e14ec91a4e` is Built but not Installed or RuntimeVerified in Steam; it must be removed after the HUD alignment observation task is complete.
 - Workshop state must not be described as a public release unless a public publish is explicitly recorded.
 
 ## Release State
@@ -144,4 +147,4 @@ Current multiplayer behavior:
 
 ## Next Single Task
 
-Record future follow-up work as Phase 11. First candidate: run and record the remaining dedicated Steam runtime validation for ordinary Poison pre-action survival and the currently documented unsupported special-enemy boundaries. Keep formal multiplayer HUD work frozen.
+Run the Steam runtime alignment check for the temporary local health-bar center guide in single-player and local multiplayer, then remove the guide after the observation task is complete. Keep formal multiplayer HUD work frozen.
