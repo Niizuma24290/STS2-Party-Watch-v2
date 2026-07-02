@@ -27,6 +27,7 @@ internal static class ForecastRefreshPatch
     private static readonly LocalIncomingDamageReader Reader = new();
     private static readonly LocalDamageForecast Forecast = new();
     private static readonly List<WeakReference<NHealthBar>> RegisteredBars = new();
+    private static string? LastAlignmentDebugLine;
 
     static ForecastRefreshPatch()
     {
@@ -107,6 +108,7 @@ internal static class ForecastRefreshPatch
         mainLabel.Show();
         ShowHealthBarCenterGuide(bar, mainLabel, detailLabel, healthBarCenterGuide, containerSize);
         ShowMainHudTextCenterGuide(mainLabel, mainHudTextCenterGuide);
+        LogAlignmentIfChanged(bar, mainLabel, healthBarCenterGuide, mainHudTextCenterGuide, containerSize);
 
         var details = PartyWatchHudDisplay.BuildHudDetails(result);
         if (string.IsNullOrEmpty(details))
@@ -360,7 +362,7 @@ internal static class ForecastRefreshPatch
             return;
         }
 
-        PartyWatchHudDisplay.ApplyHealthBarCenterGuide(
+        PartyWatchHudDebugGuide.ApplyHealthBarCenterGuide(
             healthBarCenterGuide,
             container,
             mainLabel,
@@ -375,7 +377,37 @@ internal static class ForecastRefreshPatch
             return;
         }
 
-        PartyWatchHudDisplay.ApplyMainHudTextCenterGuide(mainHudTextCenterGuide, mainLabel);
+        PartyWatchHudDebugGuide.ApplyMainHudTextCenterGuide(mainHudTextCenterGuide, mainLabel);
+    }
+
+    private static void LogAlignmentIfChanged(
+        NHealthBar bar,
+        Label mainLabel,
+        ColorRect? healthBarCenterGuide,
+        ColorRect? mainHudTextCenterGuide,
+        Vector2? containerSize)
+    {
+        var container = bar.HpBarContainer;
+        if (container is null)
+        {
+            return;
+        }
+
+        var isMultiplayer = GetCreature(bar)?.CombatState?.Players.Count > 1;
+        var line = PartyWatchHudDebugGuide.BuildAlignmentDebugLine(
+            container,
+            mainLabel,
+            healthBarCenterGuide,
+            mainHudTextCenterGuide,
+            containerSize,
+            isMultiplayer);
+        if (line == LastAlignmentDebugLine)
+        {
+            return;
+        }
+
+        LastAlignmentDebugLine = line;
+        GD.Print(line);
     }
 
     private static void RegisterBar(NHealthBar bar)

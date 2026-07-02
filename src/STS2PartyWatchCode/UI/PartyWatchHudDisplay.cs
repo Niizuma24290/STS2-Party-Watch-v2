@@ -11,12 +11,6 @@ internal static class PartyWatchHudDisplay
     private const int DetailHeartFontSize = 22;
     private const float HealthBarRightPadding = 6f;
     private const float DetailHorizontalGap = 48f;
-    private const float HealthBarCenterGuideHeight = 2f;
-    private const float HealthBarCenterGuideMinWidth = 360f;
-    private const float HealthBarCenterGuideRightPadding = 36f;
-    private const float MainHudTextCenterGuideHeight = 2f;
-    private static readonly Color HealthBarCenterGuideColor = new(0.1f, 0.95f, 1f, 0.9f);
-    private static readonly Color MainHudTextCenterGuideColor = new(1f, 0.1f, 0.95f, 0.95f);
 
     public static string BuildMainHudDisplay(ForecastResult result)
     {
@@ -105,60 +99,6 @@ internal static class PartyWatchHudDisplay
         }
     }
 
-    public static void ApplyHealthBarCenterGuide(
-        ColorRect guide,
-        Control healthBar,
-        Control mainLabel,
-        Control? detailLabel,
-        Vector2? containerSize)
-    {
-        var size = containerSize ?? healthBar.Size;
-        if (size.X <= 0f || size.Y <= 0f)
-        {
-            guide.Hide();
-            return;
-        }
-
-        var center = GetOffsetHealthBarCenter(healthBar, size);
-        var guideStartX = GetHealthBarCenter(healthBar, size).X;
-        var guideEndX = MathF.Max(
-            guideStartX + HealthBarCenterGuideMinWidth,
-            mainLabel.Position.X + mainLabel.Size.X + HealthBarCenterGuideRightPadding);
-
-        if (detailLabel is not null)
-        {
-            guideEndX = MathF.Max(
-                guideEndX,
-                detailLabel.Position.X + detailLabel.Size.X + HealthBarCenterGuideRightPadding);
-        }
-
-        guide.MouseFilter = Control.MouseFilterEnum.Ignore;
-        guide.Color = HealthBarCenterGuideColor;
-        guide.Position = new Vector2(
-            MathF.Max(0f, guideStartX),
-            MathF.Max(0f, center.Y - (HealthBarCenterGuideHeight * 0.5f)));
-        guide.Size = new Vector2(MathF.Max(1f, guideEndX - guideStartX), HealthBarCenterGuideHeight);
-        guide.Show();
-    }
-
-    public static void ApplyMainHudTextCenterGuide(ColorRect guide, Control mainLabel)
-    {
-        if (mainLabel.Size.X <= 0f || mainLabel.Size.Y <= 0f)
-        {
-            guide.Hide();
-            return;
-        }
-
-        var centerY = mainLabel.Position.Y + (mainLabel.Size.Y * 0.5f);
-        guide.MouseFilter = Control.MouseFilterEnum.Ignore;
-        guide.Color = MainHudTextCenterGuideColor;
-        guide.Position = new Vector2(
-            MathF.Max(0f, mainLabel.Position.X),
-            MathF.Max(0f, centerY - (MainHudTextCenterGuideHeight * 0.5f)));
-        guide.Size = new Vector2(MathF.Max(1f, mainLabel.Size.X), MainHudTextCenterGuideHeight);
-        guide.Show();
-    }
-
     private static string BuildForecastDetails(int blockablePrediction, int directHpLossPrediction)
     {
         var details = new List<string>(2);
@@ -179,12 +119,12 @@ internal static class PartyWatchHudDisplay
 
     private static float GetMainHeight() => 34f;
 
-    private static Vector2 GetHealthBarCenter(Control healthBar, Vector2 size)
+    public static Vector2 GetHealthBarCenter(Control healthBar, Vector2 size)
     {
         return healthBar.Position + (size * 0.5f);
     }
 
-    private static Vector2 GetOffsetHealthBarCenter(Control healthBar, Vector2 size)
+    public static Vector2 GetOffsetHealthBarCenter(Control healthBar, Vector2 size)
     {
         return GetHealthBarCenter(healthBar, size)
             + new Vector2(PartyWatchUiSettings.OffsetX, PartyWatchUiSettings.OffsetY);
@@ -201,6 +141,18 @@ internal static class PartyWatchHudDisplay
         var fontSize = label.GetThemeFontSize("font_size");
         var textSize = font.GetStringSize(label.Text, fontSize: fontSize);
         return new Vector2(GetMainWidth(), MathF.Max(1f, textSize.Y));
+    }
+
+    public static Vector2 GetMeasuredTextSize(Label label)
+    {
+        if (string.IsNullOrEmpty(label.Text))
+        {
+            return Vector2.Zero;
+        }
+
+        var font = label.GetThemeFont("font");
+        var fontSize = label.GetThemeFontSize("font_size");
+        return font.GetStringSize(label.Text, fontSize: fontSize);
     }
 
     private static float GetDetailWidth() => 240f;
