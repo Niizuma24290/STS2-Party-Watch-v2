@@ -101,4 +101,6 @@ Phase 11 local HUD alignment now includes a temporary `[STS2 Party Watch][HUD Al
 
 Status boundary: Implemented, Built, and Installed only. RuntimeVerified remains pending until Steam runtime coordinates are captured from the log.
 
+Captured runtime coordinates showed the mismatch source: `MathF.Max(0f, position.Y)` clamped the main HUD label from desired local Y `-9` to `0`, producing `main.deltaY=9` and `guide.deltaY=9`. Commit `e398089b92f51f41bb5277263f4b0c0399dc7822` removes that local Y clamp; post-fix RuntimeVerified remains pending.
+
 Next task: use the log line, plus the cyan health-bar center guide and magenta HUD text center guide, to compare runtime centers without screenshot pixel measuring; then remove the temporary guides and log.
