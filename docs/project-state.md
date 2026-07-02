@@ -32,6 +32,7 @@ Party Watch does not simulate a full turn, does not call real damage or command 
 - A temporary magenta HUD text center guide is also enabled in the current local testing build. It marks the measured main HUD text center so screenshots can distinguish HUD coordinate drift from font/glyph visual offset.
 - Default `HealthBarRight` HUD placement now centers the main HUD label on the same local health-bar center line used by the temporary guide. User X/Y offsets still apply after the default position is calculated.
 - The default right-anchor HUD alignment now assigns the current HUD string before positioning, measures that string with `Font.GetStringSize(...)`, and centers the measured text bounds on the health-bar center line instead of centering a fixed empty label rect.
+- The default right-anchor HUD target and cyan guide target now share the same health-bar center helper. The guide uses the same `OffsetY` as the HUD target so a nonzero session offset does not create a false diagnostic gap.
 
 ## Supported Mechanics
 
@@ -129,7 +130,7 @@ Current multiplayer behavior:
 - Tungsten Rod with aggregate enemy HP loss remains unsupported because per-hit or per-event granularity is required.
 - Diamond Diadem aggregate enemy damage with per-hit rounding unknown remains unsupported.
 - Settings persistence is session-only.
-- The health-bar center guide and HUD text center guide are temporary development instrumentation only. Implementation commit `68d94c0d54672757d17a4799b54f08e14ec91a4e`, no-switch testing commit `cd8c07e5c9afc35e23c5cf41a7c542d880b5b44d`, default HUD alignment commit `8d6467204d25e90bf23141c2b42743ee25e3ed5d`, text visual-center nudge commit `af52c338fe21ea79411adc2074ea2a7591d5dddd`, measured text bounds alignment commit `8b2881d2a3f343a64ae3a44181eaea57aad29649`, and HUD text center guide commit `9d198445d1c3f14e193b73ffafab3542fe23d036` are Built and locally installed; the magenta guide has not yet been RuntimeVerified in Steam; both temporary guides must be removed after the HUD alignment observation task is complete.
+- The health-bar center guide and HUD text center guide are temporary development instrumentation only. Implementation commit `68d94c0d54672757d17a4799b54f08e14ec91a4e`, no-switch testing commit `cd8c07e5c9afc35e23c5cf41a7c542d880b5b44d`, default HUD alignment commit `8d6467204d25e90bf23141c2b42743ee25e3ed5d`, text visual-center nudge commit `af52c338fe21ea79411adc2074ea2a7591d5dddd`, measured text bounds alignment commit `8b2881d2a3f343a64ae3a44181eaea57aad29649`, HUD text center guide commit `9d198445d1c3f14e193b73ffafab3542fe23d036`, and shared center target commit `ef91fcb1a8a1616b4376d7741b2ab2343ac19980` are Built and locally installed; the shared-target diagnostic build has not yet been RuntimeVerified in Steam; both temporary guides must be removed after the HUD alignment observation task is complete.
 - Workshop state must not be described as a public release unless a public publish is explicitly recorded.
 
 ## Release State
