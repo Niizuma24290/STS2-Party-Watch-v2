@@ -60,7 +60,7 @@ Phase 1A 至 Phase 9A 已完成并有对应历史记录。Phase 9B 普通 Poison
 | Phase 9B | 已实现，历史误编号；后续归 Phase 11 | Poison 行动前存活预览 | 普通 Poison 确定击杀的 enemy instance 不再贡献当前 Attack Intent | Phase 11 专项 Steam 验证 |
 | 本机多人 HUD | 已完成，条件支持 | 多人战斗中显示本机 local HUD | Workshop 订阅版已看到本机 `-6` 在本机角色血条下方 | 正式多人 HUD 仍冻结 |
 | Phase 10 | 已完成 / 私密订阅里程碑 | Steam Workshop upload / subscription test | item `3755598583`、private visibility、订阅版本机 HUD 验证、封面和 preview 上传记录 | 不得误写为 public release |
-| Phase 11 | 当前后续阶段 | 补充与维护 | 新增补丁、补验证和文档同步从 Phase 11 登记；本机血条中线临时辅助线已实现、built、published 并本地安装，但未运行时验证 | `phase-11-supplements.md` |
+| Phase 11 | 当前后续阶段 | 补充与维护 | 新增补丁、补验证和文档同步从 Phase 11 登记；本机血条中线临时辅助线已实现，当前本地测试安装版无开关直接显示辅助线，但未运行时验证 | `phase-11-supplements.md` |
 
 ## Phase 9B Poison 总记录
 

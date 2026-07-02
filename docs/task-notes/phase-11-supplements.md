@@ -44,9 +44,12 @@ Phase 11 是 Workshop 上传完成后的后续补充 / 维护阶段。
 
 Implementation commit: `68d94c0d54672757d17a4799b54f08e14ec91a4e`
 
+No-switch testing commit: `cd8c07e5c9afc35e23c5cf41a7c542d880b5b44d`
+
 Implemented:
 
-- Added a default-off development switch, `PartyWatchHudDisplay.ShowHealthBarCenterGuide = false`.
+- Removed the temporary guide switch for the current test build. The guide now draws directly from the existing local HUD path whenever the local HUD number is eligible to show.
+- The first local install did not show the guide because the guide was still gated behind an off switch; the current test build has no guide toggle and is intended only for alignment observation.
 - Added a single horizontal `ColorRect` guide under the existing local HUD parent when the switch is enabled.
 - The guide uses the existing `NHealthBar.HpBarContainer` position and the existing local-player `ForecastRefreshPatch.TryGetLocalCreature` path; it does not add a second local-player or health-bar lookup system.
 - The guide is only shown after the normal local HUD number is eligible to show. Non-local bars, hidden HUD state, non-combat state, invalid health bars, unknown / zero forecast output, and disabled local multiplayer HUD all hide the guide.
@@ -58,10 +61,13 @@ Built:
 - Result: success, 0 warnings, 0 errors.
 - `C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
 - Result: success; publish output produced under `src/STS2PartyWatchCode/bin/Release/net9.0/publish/`.
+- `C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore`
+- Result on 2026-07-03: success; produced a local test build with the temporary guide drawn without a switch.
 
 Installed:
 
 - Copied `sts2-party-watch-v2.dll` and `sts2-party-watch-v2.json` into `C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\mods\sts2-party-watch-v2` on 2026-07-02.
+- Re-copied the no-switch guide test build into the same local game mod directory on 2026-07-03.
 - This was a local game-directory install only, not a Workshop upload.
 
 RuntimeVerified:
