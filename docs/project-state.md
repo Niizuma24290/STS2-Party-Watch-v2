@@ -1,6 +1,6 @@
 # Project State
 
-Last reconciled: 2026-07-02
+Last reconciled: 2026-07-03
 
 ## Positioning
 
@@ -31,11 +31,11 @@ Party Watch does not simulate a full turn, does not call real damage or command 
 - The temporary local health-bar center guide, HUD text center guide, and alignment runtime log have been removed after the alignment observation task.
 - Default `HealthBarRight` HUD placement now centers the main HUD label on the same local health-bar center line used by the temporary guide. User X/Y offsets still apply after the default position is calculated.
 - The default right-anchor HUD alignment now assigns the current HUD string before positioning, measures that string with `Font.GetStringSize(...)`, and centers the measured text bounds on the health-bar center line instead of centering a fixed empty label rect.
-- The default right-anchor HUD target and cyan guide target now share the same health-bar center helper. The guide uses the same `OffsetY` as the HUD target so a nonzero session offset does not create a false diagnostic gap.
+- The default right-anchor HUD target was verified against the temporary cyan guide using the same health-bar center helper while the diagnostic build was active.
 - The temporary `[STS2 Party Watch][HUD Align]` runtime log was used for alignment diagnosis and has been removed.
 - Runtime coordinate logs showed the vertical mismatch was caused by clamping the main HUD label's local Y position to zero. The local health-bar target center was `Y=8`, the measured main label height was `34`, and the desired label top was `-9`; clamping it to `0` produced `main.deltaY=9`. The local Y clamp has been removed for the main label.
 - Post-clamp runtime logs showed `main.deltaY=0` and `guide.deltaY=0`, confirming the main `-N` control and temporary guides are on the same runtime line.
-- The advanced detail HUD is now placed to the right of the main `-N` control and centered on the same forecast line. The diagnostic log includes detail position, center, and delta fields for post-change verification when advanced details are enabled.
+- The advanced detail HUD is now placed to the right of the main `-N` control and centered on the same forecast line. The temporary diagnostic log included detail position, center, and delta fields before the debug instrumentation was removed.
 
 ## Supported Mechanics
 
@@ -103,7 +103,7 @@ Verification state:
 
 - HUD label is anchored to the local player's `NHealthBar.HpBarContainer` parent or equivalent health-bar node parent.
 - Main label and detail label are separate nodes.
-- The temporary health-bar center guide, when manually enabled in source for development, reuses the same local health-bar lifecycle and parent node as the HUD labels and draws only after the local HUD number is eligible to show.
+- The temporary health-bar center guide and HUD text guide were removed after the alignment observation task. The remaining HUD labels continue to use the local health-bar lifecycle and parent node.
 - Native covering screen lifecycle is tracked by `PartyWatchNativeCoveringScreenTracker` and `NativeCoveringScreenLifecyclePatch`.
 - Settings live in `PartyWatchUiSettings` for the current game session.
 - Settings include HUD enabled, local HUD in multiplayer, advanced details, freeze behavior, anchor preset, X/Y offset, total color, shield detail color, heart detail color, and restore defaults.
@@ -133,7 +133,7 @@ Current multiplayer behavior:
 - Tungsten Rod with aggregate enemy HP loss remains unsupported because per-hit or per-event granularity is required.
 - Diamond Diadem aggregate enemy damage with per-hit rounding unknown remains unsupported.
 - Settings persistence is session-only.
-- The health-bar center guide, HUD text center guide, `[HUD Align]` runtime log, and `PartyWatchHudDebugGuide` helper were removed in commit `070774b70ef07a5ead50f3e82ad60f1a6a3c6c0f`, Built and locally installed. The main `-N` alignment is RuntimeVerified by post-clamp logs; the detail HUD alignment was implemented and locally installed before debug instrumentation removal.
+- The health-bar center guide, HUD text center guide, `[HUD Align]` runtime log, and `PartyWatchHudDebugGuide` helper were removed in commit `070774b70ef07a5ead50f3e82ad60f1a6a3c6c0f`, Built and locally installed. The main `-N` alignment is RuntimeVerified by post-clamp logs; the detail HUD alignment was implemented and locally installed before debug instrumentation removal. Post-removal smoke verification is still pending.
 - Workshop state must not be described as a public release unless a public publish is explicitly recorded.
 
 ## Release State
