@@ -1,12 +1,17 @@
 {
   "id": "sts2-party-watch-v2",
-  "name": "Party Watch HUD",
+  "name": "Damage Forecast",
   "author": "Niizuma24290",
-  "description": "Read-only single-player combat attack forecast HUD.",
+  "description": "Read-only local-player combat damage forecast HUD.",
   "version": "v0.1.0",
   "has_pck": false,
   "has_dll": true,
-  "dependencies": [],
+  "dependencies": [
+    {
+      "id": "BaseLib",
+      "min_version": "3.3.4"
+    }
+  ],
   "affects_gameplay": false,
   "min_game_version": "0.107.1"
 }

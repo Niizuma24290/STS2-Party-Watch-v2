@@ -1,6 +1,6 @@
-# STS2 Party Watch v2
+# Damage Forecast
 
-STS2 Party Watch v2 is a read-only combat forecast HUD for Slay the Spire 2.
+Damage Forecast (formerly Party Watch) is a read-only local-player combat forecast HUD for Slay the Spire 2.
 
 It answers one practical question:
 
@@ -21,21 +21,21 @@ Advanced details are available but disabled by default:
 - `🛡 N`: trusted blockable incoming HP loss after verified Block and supported HP-loss result modifiers.
 - `♥ N`: trusted direct HP loss that does not go through Block.
 
-When Party Watch cannot predict a value reliably, it hides that value instead of guessing.
+When Damage Forecast cannot predict a value reliably, it hides that value instead of guessing.
 
 ## Current Scope
 
 Supported in the current codebase:
 
 - local-player HUD in single-player combat;
-- local-player HUD in multiplayer combat when `Show Local HUD in Multiplayer` is enabled;
+- local-player HUD in multiplayer combat when `Show local-player Damage Forecast HUD in Multiplayer` is enabled;
 - enemy AttackIntent / DeathBlow intent damage;
 - hand turn-end blockable `DamageVar`, including Burn-style cards;
 - Frost, PlatingPower, Orichalcum, FakeOrichalcum, RippleBasin, and CloakClasp;
 - Beckon, Bad Luck, and Regret direct HP loss;
 - ConstrictPower and DisintegrationPower self-damage;
 - IntangiblePower, Tungsten Rod, and Beating Remnant within documented event-granularity limits;
-- Diamond Diadem / DiamondDiademPower within documented single-player limits;
+- capability-routed Diamond Diadem support: preserved legacy card-count reduction plus v0.109 native first-turn Block/Blur handling;
 - ordinary Poison pre-action enemy survival preview within documented ordinary-enemy limits.
 
 Explicitly not claimed:
@@ -45,23 +45,23 @@ Explicitly not claimed:
 - full turn simulation;
 - generic damage / HP-loss engines;
 - unsupported special enemy Poison lifecycles or HP-loss budgets;
-- persistent settings writes.
+- unsupported persistence paths outside BaseLib's settings storage.
 
 ## Settings
 
-Open the native Modding screen, select `Party Watch HUD`, then use the Party Watch settings button in that mod's info panel.
+Open `Main Menu -> Mod Configuration`, then select `Damage Forecast`.
 
-Settings are session-only:
+Settings are persisted by BaseLib:
 
-- enable Party Watch HUD;
-- show local HUD in multiplayer;
+- enable Damage Forecast HUD;
+- show the local-player Damage Forecast HUD in multiplayer;
 - show advanced `🛡 / ♥` details;
 - freeze HUD numbers after turn end;
 - position preset and X/Y offset;
 - total, shield-detail, and heart-detail colors;
 - restore defaults.
 
-Party Watch does not replace the native Settings or Modding menu entry.
+Damage Forecast does not replace any existing settings screen. Changes apply immediately.
 
 ## Installation
 

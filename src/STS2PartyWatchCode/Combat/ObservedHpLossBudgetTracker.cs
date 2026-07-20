@@ -65,5 +65,10 @@ internal static class ObservedHpLossBudgetTracker
         return Math.Max(0, budget.SpentThisWindow);
     }
 
+    public static void Clear()
+    {
+        Budgets.Clear();
+    }
+
     private readonly record struct ObservedHpLossBudget(int LastObservedHp, int SpentThisWindow);
 }

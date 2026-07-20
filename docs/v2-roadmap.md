@@ -1,6 +1,8 @@
 # v2 Roadmap
 
-Last reconciled: 2026-07-02
+Last reconciled: 2026-07-21
+
+Current player-facing name: `Damage Forecast` / `伤害预测`. Completed-phase wording below is preserved as historical evidence where it used the former `Party Watch` name; technical identifiers are unchanged.
 
 ## Completed Phases
 
@@ -20,16 +22,44 @@ Last reconciled: 2026-07-02
 | Modding settings entry fix | Complete | Party Watch no longer occupies native Settings/Modding main entry; settings now live inside Party Watch's own mod info panel. |
 | Local HUD in multiplayer | Complete for local-player HUD only | Workshop subscription runtime evidence shows local player's Party Watch HUD in multiplayer combat. |
 | Phase 10 - Workshop upload / subscription milestone | Complete as private/subscription milestone | Workshop item `3755598583`, private visibility, cover/preview uploads, uploaded DLL hash, and subscription local-HUD validation are recorded in `workshop-private-rc-2026-07-01.md`. |
+| Phase 12A - BaseLib automatic config baseline | Complete | Party Watch settings migrated to BaseLib automatic `SimpleModConfig`; main-menu Mod Configuration route user-verified usable; in-combat BaseLib route remains a known limitation. |
 
 ## Current Phase
 
-### Phase 11 - Supplements and maintenance
+### Phase 12C-B G3/G4 - Surface Rename and Runtime Closure
 
-Status: active for new follow-up work after Workshop upload. Do not create new Phase 9 subphases.
+Status: completed / StaticVerified / BuildVerified / ContractVerified / RuntimeVerified. G2 audit closure and AUD-0007 performance measurement were complete before G3; the separately approved G4 runtime gate is now closed.
 
-Historical note: Phase 9B Poison and several `phase-9*` follow-ups were named before this numbering correction. Keep those files as evidence, but record new work as Phase 11.
+Task note:
 
-First supplement candidate:
+```text
+docs/task-notes/phase-12c-surface-rename.md
+docs/task-notes/phase-12c-g4-runtime-verification.md
+```
+
+Authorized scope:
+
+- rename the player-visible product to `Damage Forecast` / `伤害预测`;
+- update manifest display metadata, BaseLib labels, and current product documentation;
+- explicitly label multiplayer visibility as local-player only;
+- retain Mod ID, BaseLib persistence key, Harmony ID, namespaces, `PartyWatch*` symbols, project/assembly/file identities, paths, Workshop ID, diagnostic prefix, and historical evidence.
+
+Hard boundary:
+
+- no behavior, forecast, persistence, layout, or performance logic changes;
+- no technical-identity or filename migration;
+- no install or game runtime verification inside G3.
+
+Runtime note:
+
+- G3 ended at static verification and stable/beta build evidence;
+- G4 installed the artifact and verified single-load identity, the Mod list, BaseLib English/Chinese titles and labels, restart persistence, and the core single-player HUD;
+- the final installed DLL is 112,128 bytes with SHA256 `1BAC85248FD83B62BE9867FD3A2F8F3B54D676D96D3F6B25F71B720A62D544F0`;
+- the in-combat BaseLib config route remains a known limitation.
+
+Historical note: Phase 9B Poison and several `phase-9*` follow-ups were named before the Phase 11 numbering correction. Keep those files as evidence. Poison matrix work remains deferred unless explicitly reopened.
+
+Deferred candidate:
 
 - ordinary Poison pre-action survival Steam runtime matrix.
 
@@ -85,4 +115,4 @@ Not implemented:
 
 ## Next Single Direction
 
-Create Phase 11 supplements for new work. First candidate: validate and record the ordinary Poison matrix in Steam, including ordinary Poison kill/no-kill, multiple enemies, same-name enemies, and unsupported special enemy boundaries. Keep formal multiplayer HUD frozen.
+G4 is closed. Request separate G5 approval before any commit, push, Workshop update, or remote-documentation update. Keep formal multiplayer HUD frozen unless explicitly reopened.

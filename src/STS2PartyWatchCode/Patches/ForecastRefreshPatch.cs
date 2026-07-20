@@ -7,10 +7,14 @@ using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models.Relics;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using STS2PartyWatch.Combat;
+#if PARTY_WATCH_VISIBILITY_PROFILING
+using STS2PartyWatch.Diagnostics;
+#endif
 using STS2PartyWatch.Forecast;
 using STS2PartyWatch.UI;
 
@@ -20,11 +24,18 @@ namespace STS2PartyWatch.Patches;
 internal static class ForecastRefreshPatch
 {
     private const string MainLabelName = "STS2PartyWatchForecastLabel";
+    private const string IncomingLabelName = "STS2PartyWatchIncomingDamageLabel";
     private const string DetailLabelName = "STS2PartyWatchForecastDetailsLabel";
     private static readonly FieldInfo? CreatureField = typeof(NHealthBar).GetField("_creature", BindingFlags.Instance | BindingFlags.NonPublic);
     private static readonly LocalIncomingDamageReader Reader = new();
     private static readonly LocalDamageForecast Forecast = new();
     private static readonly List<WeakReference<NHealthBar>> RegisteredBars = new();
+#if PARTY_WATCH_VISIBILITY_PROFILING
+    [ThreadStatic]
+    private static int _lastRegisteredBarsVisited;
+
+    internal static int LastRegisteredBarsVisitedForVisibilityProfiling => _lastRegisteredBarsVisited;
+#endif
 
     static ForecastRefreshPatch()
     {
@@ -63,39 +74,52 @@ internal static class ForecastRefreshPatch
         RegisterBar(bar);
 
         var mainLabel = GetOrCreateMainLabel(bar);
+        var incomingLabel = GetOrCreateIncomingLabel(bar);
         var detailLabel = GetOrCreateDetailLabel(bar);
-        if (mainLabel is null || detailLabel is null)
+        if (mainLabel is null || incomingLabel is null || detailLabel is null)
         {
             return;
         }
 
         PartyWatchHudDisplay.ApplyMainHudStyle(mainLabel);
+        PartyWatchHudDisplay.ApplyIncomingHudStyle(incomingLabel);
         PartyWatchHudDisplay.ApplyDetailHudStyle(detailLabel);
         ObservedHpLossBudgetTracker.Observe(creature);
 
-        if (!PartyWatchHudVisibilityPolicy.ShouldRenderHud(bar, creature))
+        if (!PartyWatchHudVisibilityPolicy.ShouldRenderHud(bar, creature, out var temporarilyCovered))
         {
-            PartyWatchHudSnapshotStore.Clear();
-            Hide(mainLabel, detailLabel);
+            if (!temporarilyCovered)
+            {
+                PartyWatchHudSnapshotStore.Clear();
+            }
+
+            Hide(mainLabel, incomingLabel, detailLabel);
             return;
         }
 
-        var result = PartyWatchHudSnapshotStore.TryGetCommitted(creature, out var committed)
+        var snapshot = PartyWatchHudSnapshotStore.TryGetCommitted(creature, out var committed)
             ? committed
             : PartyWatchHudSnapshotStore.ResolveDisplayResult(
                 creature,
-                Forecast.Calculate(Reader.ReadForLocalCreature(creature)));
-        if (result.State != ForecastResultState.KnownDamage || (result.OutDamage <= 0 && result.DirectHpLoss <= 0))
+                BuildForecastHudSnapshot(creature));
+        if (!PartyWatchHudDisplay.HasDisplayableSnapshot(snapshot))
         {
-            Hide(mainLabel, detailLabel);
+            Hide(mainLabel, incomingLabel, detailLabel);
             return;
         }
 
-        mainLabel.Text = PartyWatchHudDisplay.BuildMainHudDisplay(result);
-        var details = PartyWatchHudDisplay.BuildHudDetails(result);
+        mainLabel.Text = PartyWatchHudDisplay.ShouldShowExpectedHpLoss(snapshot)
+            ? PartyWatchHudDisplay.BuildMainHudDisplay(snapshot.ExpectedHpLoss)
+            : string.Empty;
+        incomingLabel.Text = PartyWatchHudDisplay.ShouldShowIncomingDamage(snapshot)
+            ? PartyWatchHudDisplay.BuildIncomingHudDisplay(snapshot.IncomingDamage)
+            : string.Empty;
+        var details = PartyWatchHudDisplay.BuildHudDetails(snapshot.ExpectedHpLoss);
         PartyWatchHudDisplay.ApplyMainHudTextBounds(mainLabel);
-        Reposition(bar, mainLabel, detailLabel, containerSize);
-        mainLabel.Show();
+        PartyWatchHudDisplay.ApplyHudTextBounds(incomingLabel);
+        Reposition(bar, mainLabel, incomingLabel, detailLabel, containerSize);
+        ShowOrHide(mainLabel);
+        ShowOrHide(incomingLabel);
         if (string.IsNullOrEmpty(details))
         {
             Hide(detailLabel);
@@ -105,6 +129,18 @@ internal static class ForecastRefreshPatch
             detailLabel.Text = details;
             detailLabel.Show();
         }
+    }
+
+    private static ForecastHudSnapshot BuildForecastHudSnapshot(Creature creature)
+    {
+        var expected = Forecast.Calculate(Reader.ReadForLocalCreature(creature));
+        var incoming = Reader.ReadIncomingDamageForLocalCreature(creature, new IncomingDamageDisplayOptions(
+            PartyWatchUiSettings.IncludeCurrentBlockInIncomingDamage,
+            PartyWatchUiSettings.IncludePowerBlockInIncomingDamage,
+            PartyWatchUiSettings.IncludeRelicBlockInIncomingDamage,
+            PartyWatchUiSettings.IncludePowerHpLossModifiersInIncomingDamage,
+            PartyWatchUiSettings.IncludeRelicHpLossModifiersInIncomingDamage));
+        return new ForecastHudSnapshot(expected, incoming);
     }
 
     private static bool TryGetLocalCreature(NHealthBar bar, out Creature? creature)
@@ -166,6 +202,41 @@ internal static class ForecastRefreshPatch
         return label;
     }
 
+    private static Label? GetOrCreateIncomingLabel(NHealthBar bar)
+    {
+        var parent = GetLabelParent(bar);
+        if (parent is null)
+        {
+            return null;
+        }
+
+        var existing = parent.GetNodeOrNull<Label>(IncomingLabelName);
+        if (existing is not null)
+        {
+            return existing;
+        }
+
+        var stale = parent.GetNodeOrNull<Control>(IncomingLabelName);
+        if (stale is not null)
+        {
+            stale.Name = $"{IncomingLabelName}Stale";
+            stale.QueueFree();
+        }
+
+        var label = new Label
+        {
+            Name = IncomingLabelName,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+            ZIndex = 50,
+            Text = string.Empty,
+            Visible = false,
+        };
+        PartyWatchHudDisplay.ApplyIncomingHudStyle(label);
+
+        parent.AddChild(label);
+        return label;
+    }
+
     private static RichTextLabel? GetOrCreateDetailLabel(NHealthBar bar)
     {
         var parent = GetLabelParent(bar);
@@ -199,7 +270,12 @@ internal static class ForecastRefreshPatch
         return bar.HpBarContainer?.GetParent() as Control ?? bar;
     }
 
-    private static void Reposition(NHealthBar bar, Label mainLabel, RichTextLabel detailLabel, Vector2? containerSize)
+    private static void Reposition(
+        NHealthBar bar,
+        Label mainLabel,
+        Label incomingLabel,
+        RichTextLabel detailLabel,
+        Vector2? containerSize)
     {
         var container = bar.HpBarContainer;
         if (container is null)
@@ -211,6 +287,7 @@ internal static class ForecastRefreshPatch
         PartyWatchHudDisplay.ApplyHudPosition(
             container,
             mainLabel,
+            incomingLabel,
             detailLabel,
             containerSize,
             isMultiplayer);
@@ -221,6 +298,8 @@ internal static class ForecastRefreshPatch
         var parent = GetLabelParent(bar);
         var mainLabel = parent?.GetNodeOrNull<Label>(MainLabelName);
         var staleMainLabel = parent?.GetNodeOrNull<Control>(MainLabelName);
+        var incomingLabel = parent?.GetNodeOrNull<Label>(IncomingLabelName);
+        var staleIncomingLabel = parent?.GetNodeOrNull<Control>(IncomingLabelName);
         var detailLabel = parent?.GetNodeOrNull<RichTextLabel>(DetailLabelName);
         if (mainLabel is not null)
         {
@@ -232,16 +311,39 @@ internal static class ForecastRefreshPatch
             staleMainLabel.QueueFree();
         }
 
+        if (incomingLabel is not null)
+        {
+            Hide(incomingLabel);
+        }
+        else if (staleIncomingLabel is not null)
+        {
+            staleIncomingLabel.Name = $"{IncomingLabelName}Stale";
+            staleIncomingLabel.QueueFree();
+        }
+
         if (detailLabel is not null)
         {
             Hide(detailLabel);
         }
     }
 
-    private static void Hide(Label mainLabel, RichTextLabel detailLabel)
+    private static void Hide(Label mainLabel, Label incomingLabel, RichTextLabel detailLabel)
     {
         Hide(mainLabel);
+        Hide(incomingLabel);
         Hide(detailLabel);
+    }
+
+    private static void ShowOrHide(Label label)
+    {
+        if (string.IsNullOrEmpty(label.Text))
+        {
+            Hide(label);
+        }
+        else
+        {
+            label.Show();
+        }
     }
 
     private static void Hide(Control label)
@@ -279,6 +381,9 @@ internal static class ForecastRefreshPatch
 
     internal static void RefreshRegisteredBars()
     {
+#if PARTY_WATCH_VISIBILITY_PROFILING
+        var barsVisited = 0;
+#endif
         for (var i = RegisteredBars.Count - 1; i >= 0; i--)
         {
             if (!RegisteredBars[i].TryGetTarget(out var bar) || !GodotObject.IsInstanceValid(bar))
@@ -287,8 +392,14 @@ internal static class ForecastRefreshPatch
                 continue;
             }
 
+#if PARTY_WATCH_VISIBILITY_PROFILING
+            barsVisited++;
+#endif
             Refresh(bar, null);
         }
+#if PARTY_WATCH_VISIBILITY_PROFILING
+        _lastRegisteredBarsVisited = barsVisited;
+#endif
     }
 
     internal static void CommitFinalSnapshot(Creature creature)
@@ -300,8 +411,8 @@ internal static class ForecastRefreshPatch
         }
 
         ObservedHpLossBudgetTracker.Observe(creature);
-        var result = Forecast.Calculate(Reader.ReadForLocalCreature(creature));
-        PartyWatchHudSnapshotStore.OnPlayerTurnEnding(player, creature, result);
+        var snapshot = BuildForecastHudSnapshot(creature);
+        PartyWatchHudSnapshotStore.OnPlayerTurnEnding(player, creature, snapshot);
     }
 }
 
@@ -396,8 +507,32 @@ internal static class ForecastTurnLifecyclePatch
     }
 
     [HarmonyPostfix]
-    [HarmonyPatch(nameof(Hook.BeforeTurnEnd))]
-    private static void BeforeTurnEndPostfix(
+    [HarmonyPatch(nameof(Hook.AfterPlayerTurnStart))]
+    private static void AfterPlayerTurnStartPostfix(
+        ICombatState combatState,
+        PlayerChoiceContext choiceContext,
+        Player player)
+    {
+        try
+        {
+            var localPlayer = LocalContext.GetMe(combatState);
+            var creature = player.Creature;
+            if (localPlayer is null
+                || creature is null
+                || player.NetId != localPlayer.NetId)
+            {
+                return;
+            }
+
+            PartyWatchHudSnapshotStore.OnPlayerSideTurnStarted(player, creature);
+            ForecastRefreshPatch.RefreshRegisteredBars();
+        }
+        catch
+        {
+        }
+    }
+
+    internal static void CommitTurnEndSnapshot(
         ICombatState combatState,
         CombatSide side,
         IEnumerable<Creature> participants)
@@ -424,7 +559,16 @@ internal static class ForecastTurnLifecyclePatch
     private static void AfterCombatEndPostfix()
     {
         PartyWatchHudSnapshotStore.Clear();
+        ObservedHpLossBudgetTracker.Clear();
         ForecastRefreshPatch.RefreshRegisteredBars();
+#if PARTY_WATCH_VISIBILITY_PROFILING
+        Aud0007VisibilityProfiler.Dump("combat-end", reset: true);
+#endif
+    }
+
+    internal static bool HasHookMethod(string methodName)
+    {
+        return AccessTools.Method(typeof(Hook), methodName) is not null;
     }
 
     private static bool TryGetLocalParticipant(
@@ -463,5 +607,45 @@ internal static class ForecastTurnLifecyclePatch
     private static bool IsPlayerSide(CombatSide side)
     {
         return side.ToString().Contains("Player", StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+[HarmonyPatch(typeof(Hook))]
+internal static class ForecastStableTurnEndPatch
+{
+    [HarmonyPrepare]
+    private static bool Prepare()
+    {
+        return ForecastTurnLifecyclePatch.HasHookMethod("BeforeTurnEnd");
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch("BeforeTurnEnd")]
+    private static void BeforeTurnEndPostfix(
+        ICombatState combatState,
+        CombatSide side,
+        IEnumerable<Creature> participants)
+    {
+        ForecastTurnLifecyclePatch.CommitTurnEndSnapshot(combatState, side, participants);
+    }
+}
+
+[HarmonyPatch(typeof(Hook))]
+internal static class ForecastBetaTurnEndPatch
+{
+    [HarmonyPrepare]
+    private static bool Prepare()
+    {
+        return ForecastTurnLifecyclePatch.HasHookMethod("BeforeSideTurnEnd");
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch("BeforeSideTurnEnd")]
+    private static void BeforeSideTurnEndPostfix(
+        ICombatState combatState,
+        CombatSide side,
+        IEnumerable<Creature> participants)
+    {
+        ForecastTurnLifecyclePatch.CommitTurnEndSnapshot(combatState, side, participants);
     }
 }

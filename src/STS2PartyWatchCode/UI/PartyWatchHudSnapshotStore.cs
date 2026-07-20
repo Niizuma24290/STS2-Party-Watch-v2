@@ -8,8 +8,8 @@ internal static class PartyWatchHudSnapshotStore
 {
     private static Player? _player;
     private static Creature? _creature;
-    private static ForecastResult? _snapshot;
-    private static ForecastResult? _latestLiveResult;
+    private static ForecastHudSnapshot? _snapshot;
+    private static ForecastHudSnapshot? _latestLiveResult;
     private static bool _hasPlayerEndedTurn;
 
     public static void OnPlayerSideTurnStarted(Player player, Creature creature)
@@ -32,7 +32,7 @@ internal static class PartyWatchHudSnapshotStore
         }
     }
 
-    public static void OnPlayerTurnEnding(Player player, Creature creature, ForecastResult latest)
+    public static void OnPlayerTurnEnding(Player player, Creature creature, ForecastHudSnapshot latest)
     {
         if (ReferenceEquals(_player, player)
             || ReferenceEquals(_creature, creature)
@@ -56,7 +56,7 @@ internal static class PartyWatchHudSnapshotStore
         _hasPlayerEndedTurn = false;
     }
 
-    public static bool TryGetCommitted(Creature creature, out ForecastResult result)
+    public static bool TryGetCommitted(Creature creature, out ForecastHudSnapshot result)
     {
         if (PartyWatchUiSettings.FreezeHudWithinPlayerTurn
             && ReferenceEquals(_creature, creature)
@@ -68,11 +68,11 @@ internal static class PartyWatchHudSnapshotStore
             return true;
         }
 
-        result = ForecastResult.Hidden;
+        result = ForecastHudSnapshot.Hidden;
         return false;
     }
 
-    public static ForecastResult ResolveDisplayResult(Creature creature, ForecastResult latest)
+    public static ForecastHudSnapshot ResolveDisplayResult(Creature creature, ForecastHudSnapshot latest)
     {
         if (!PartyWatchUiSettings.FreezeHudWithinPlayerTurn)
         {
@@ -97,7 +97,7 @@ internal static class PartyWatchHudSnapshotStore
         {
             return _snapshot is { } snapshot && HasDisplayableDamage(snapshot)
                 ? snapshot
-                : ForecastResult.Hidden;
+                : ForecastHudSnapshot.Hidden;
         }
 
         _latestLiveResult = HasDisplayableDamage(latest)
@@ -106,15 +106,14 @@ internal static class PartyWatchHudSnapshotStore
 
         if (!HasDisplayableDamage(latest))
         {
-            return ForecastResult.Hidden;
+            return ForecastHudSnapshot.Hidden;
         }
 
         return latest;
     }
 
-    private static bool HasDisplayableDamage(ForecastResult result)
+    private static bool HasDisplayableDamage(ForecastHudSnapshot result)
     {
-        return result.State == ForecastResultState.KnownDamage
-            && (result.OutDamage > 0 || result.DirectHpLoss > 0);
+        return PartyWatchHudDisplay.HasDisplayableSnapshot(result);
     }
 }

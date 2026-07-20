@@ -94,3 +94,91 @@ Do not run this command during Git synchronization.
 - Two user-provided gameplay screenshots were compressed and uploaded as Workshop preview images:
   - `previews\forecast-total-example.jpg`
   - `previews\forecast-details-example.jpg`
+
+## Workshop Preview Recovery Note - 2026-07-03
+
+If the Steam Workshop page shows black / missing preview images, do not rely on the Steam web "Add / Edit Images and Videos" page first; it can be very slow or unresponsive inside the Steam client.
+
+Use the local Workshop workspace instead:
+
+- Keep the extra preview screenshots under:
+  - `C:\Users\ROG\Documents\Codex\STS2-Party-Watch-v2\work\workshop-upload-rc-20260701\previews`
+- Keep filenames stable. Steam keys preview images by filename; uploading the same filename replaces the missing backend image.
+- Keep each preview under 1 MB.
+- Keep `mod_id.txt` present and non-empty so the uploader updates item `3755598583` instead of creating a new item.
+- Set a short `changeNote`, for example `Restore preview images.`
+
+Recovery command:
+
+```powershell
+cd "C:\Users\ROG\Documents\Codex\STS2-Party-Watch-v2\work\tools\sts2-mod-uploader-v0.2.0\extracted"
+.\ModUploader.exe upload -w "C:\Users\ROG\Documents\Codex\STS2-Party-Watch-v2\work\workshop-upload-rc-20260701"
+```
+
+Successful recovery evidence from 2026-07-03:
+
+- Uploader printed:
+  - `Adding new preview file: ...\previews\00-multiplayer-local-hud-example.jpg`
+  - `Adding new preview file: ...\previews\01-forecast-total-example.jpg`
+  - `Adding new preview file: ...\previews\02-forecast-details-example.jpg`
+  - `Successfully uploaded 'Damage Forecast / 伤害预测' to the workshop with id 3755598583`
+- User confirmed the preview images were restored on Steam.
+- Prefer this method for future preview-image recovery before trying the Steam web image manager.
+
+## DLL / Manifest Only Workshop Update Note - 2026-07-04
+
+Current Workshop item remains `3755598583`.
+
+User requested a Workshop update that changes only the mod content files:
+
+- `content\sts2-party-watch-v2.dll`
+- `content\sts2-party-watch-v2.json`
+
+Do not intentionally change title, description, tags, visibility, cover, extra preview images, or gameplay code during this type of upload.
+
+Latest uploaded content:
+
+- DLL SHA256: `4B324F5B76A96322B3AD660F21EE04DA241D4DA83B26CC64F25235606FBA899A`
+- DLL size: `89,600` bytes
+- DLL timestamp: `2026-07-04 02:08:28`
+- JSON SHA256: `A12AE8A5FD44292DFF347350CEB64B005C54DE82D5155F5CE1B50A2F6C6C96BA`
+- JSON size: `376` bytes
+- JSON timestamp: `2026-07-03 22:05:11`
+
+The upload succeeded and updated the same Workshop item `3755598583`.
+
+Important uploader gotcha:
+
+- `ModUploader.exe` requires `image.png` in the workspace, even for content-only updates.
+- If `previews\` is absent, extra preview images are left unchanged.
+- If `dependencies` is absent from `workshop.json`, the uploader may remove existing Steam Workshop dependencies.
+- Therefore a DLL / manifest only temporary upload workspace must still preserve the current title and dependency list while omitting description, tags, visibility, and previews.
+- Current known dependency to preserve: `3737335127`.
+
+Preferred minimal `workshop.json` for future DLL / manifest only uploads:
+
+```json
+{
+  "title": "Damage Forecast / 伤害预测",
+  "contentfolder": "content",
+  "dependencies": [
+    3737335127
+  ]
+}
+```
+
+Preferred DLL / manifest only upload workspace contents:
+
+- `content\sts2-party-watch-v2.dll`
+- `content\sts2-party-watch-v2.json`
+- `image.png` copied unchanged from the main Workshop workspace
+- `mod_id.txt`
+- `workshop.json` using the minimal form above
+
+Do not include `previews\` in this temporary workspace unless preview images should also be synchronized.
+
+Closure status:
+
+- First upload updated the new DLL / JSON but accidentally removed dependency `3737335127` because the temporary `workshop.json` omitted dependencies.
+- Follow-up upload restored dependency `3737335127`.
+- Final Workshop state should be treated as content updated, dependency restored, and preview images untouched.

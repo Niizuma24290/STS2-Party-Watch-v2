@@ -2,7 +2,10 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Cards;
+using MegaCrit.Sts2.Core.ValueProps;
 
 namespace STS2PartyWatch.Combat;
 
@@ -27,6 +30,37 @@ internal static class CardTurnEndDamageInspector
         var result = DoesTurnEndInHandCallDamage(cardType);
         Cache[cardType] = result;
         return result;
+    }
+
+    public static bool TryGetVerifiedSingleBlockableDamageVar(CardModel card, out DamageVar? damageVar)
+    {
+        damageVar = null;
+        if (!DoesTurnEndInHandCallDamage(card))
+        {
+            return true;
+        }
+
+        // Burn is the only built-in turn-end DamageVar card with direct runtime evidence.
+        // Exact-type matching prevents a derived or modded card from inheriting that trust.
+        if (card.GetType() != typeof(Burn))
+        {
+            return false;
+        }
+
+        var damageVars = card.DynamicVars.Values.OfType<DamageVar>().ToArray();
+        var singleDamageVarIsUnblockable = damageVars.Length == 1
+            && damageVars[0].Props.HasFlag(ValueProp.Unblockable);
+        if (!VerifiedTurnEndDamagePolicy.IsVerifiedSingleBlockableDamageShape(
+                card.GetType(),
+                typeof(Burn),
+                damageVars.Length,
+                singleDamageVarIsUnblockable))
+        {
+            return false;
+        }
+
+        damageVar = damageVars[0];
+        return true;
     }
 
     private static bool DoesTurnEndInHandCallDamage(Type cardType)

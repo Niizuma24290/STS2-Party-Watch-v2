@@ -8,8 +8,9 @@ namespace STS2PartyWatch.UI;
 
 internal static class PartyWatchHudVisibilityPolicy
 {
-    public static bool ShouldRenderHud(NHealthBar bar, Creature creature)
+    public static bool ShouldRenderHud(NHealthBar bar, Creature creature, out bool temporarilyCovered)
     {
+        temporarilyCovered = false;
         if (!PartyWatchUiSettings.HudEnabled
             || !GodotObject.IsInstanceValid(bar)
             || !bar.IsInsideTree()
@@ -47,6 +48,7 @@ internal static class PartyWatchHudVisibilityPolicy
             return false;
         }
 
-        return !PartyWatchNativeCoveringScreenTracker.HasNativeCombatCoveringScreenOpen();
+        temporarilyCovered = PartyWatchNativeCoveringScreenTracker.HasNativeCombatCoveringScreenOpen();
+        return !temporarilyCovered;
     }
 }

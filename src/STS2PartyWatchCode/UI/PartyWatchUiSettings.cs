@@ -10,6 +10,13 @@ internal static class PartyWatchUiSettings
     private static bool _showLocalHudInMultiplayer = true;
     private static bool _showBreakdownDetails;
     private static bool _freezeHudWithinPlayerTurn = true;
+    private static DamageDisplayMode _damageDisplayMode = DamageDisplayMode.ExpectedHpLossOnly;
+    private static IncomingDamagePlacement _incomingDamagePlacement = IncomingDamagePlacement.RightOfExpectedHpLoss;
+    private static bool _includeCurrentBlockInIncomingDamage;
+    private static bool _includePowerBlockInIncomingDamage;
+    private static bool _includeRelicBlockInIncomingDamage;
+    private static bool _includePowerHpLossModifiersInIncomingDamage;
+    private static bool _includeRelicHpLossModifiersInIncomingDamage;
     private static PartyWatchHudAnchor _hudAnchor = PartyWatchHudAnchor.HealthBarRight;
     private static float _offsetX;
     private static float _offsetY;
@@ -24,6 +31,20 @@ internal static class PartyWatchUiSettings
     public static bool ShowBreakdownDetails => _showBreakdownDetails;
 
     public static bool FreezeHudWithinPlayerTurn => _freezeHudWithinPlayerTurn;
+
+    public static DamageDisplayMode DamageDisplayMode => _damageDisplayMode;
+
+    public static IncomingDamagePlacement IncomingDamagePlacement => _incomingDamagePlacement;
+
+    public static bool IncludeCurrentBlockInIncomingDamage => _includeCurrentBlockInIncomingDamage;
+
+    public static bool IncludePowerBlockInIncomingDamage => _includePowerBlockInIncomingDamage;
+
+    public static bool IncludeRelicBlockInIncomingDamage => _includeRelicBlockInIncomingDamage;
+
+    public static bool IncludePowerHpLossModifiersInIncomingDamage => _includePowerHpLossModifiersInIncomingDamage;
+
+    public static bool IncludeRelicHpLossModifiersInIncomingDamage => _includeRelicHpLossModifiersInIncomingDamage;
 
     public static PartyWatchHudAnchor HudAnchor => _hudAnchor;
 
@@ -45,6 +66,20 @@ internal static class PartyWatchUiSettings
 
     public static void SetFreezeHudWithinPlayerTurn(bool value) => Set(ref _freezeHudWithinPlayerTurn, value);
 
+    public static void SetDamageDisplayMode(DamageDisplayMode value) => Set(ref _damageDisplayMode, value);
+
+    public static void SetIncomingDamagePlacement(IncomingDamagePlacement value) => Set(ref _incomingDamagePlacement, value);
+
+    public static void SetIncludeCurrentBlockInIncomingDamage(bool value) => Set(ref _includeCurrentBlockInIncomingDamage, value);
+
+    public static void SetIncludePowerBlockInIncomingDamage(bool value) => Set(ref _includePowerBlockInIncomingDamage, value);
+
+    public static void SetIncludeRelicBlockInIncomingDamage(bool value) => Set(ref _includeRelicBlockInIncomingDamage, value);
+
+    public static void SetIncludePowerHpLossModifiersInIncomingDamage(bool value) => Set(ref _includePowerHpLossModifiersInIncomingDamage, value);
+
+    public static void SetIncludeRelicHpLossModifiersInIncomingDamage(bool value) => Set(ref _includeRelicHpLossModifiersInIncomingDamage, value);
+
     public static void SetHudAnchor(PartyWatchHudAnchor value) => Set(ref _hudAnchor, value);
 
     public static void SetOffsetX(float value) => Set(ref _offsetX, Math.Clamp(value, -320f, 320f));
@@ -59,28 +94,86 @@ internal static class PartyWatchUiSettings
 
     public static void ResetDefaults()
     {
-        _hudEnabled = true;
-        _showLocalHudInMultiplayer = true;
-        _showBreakdownDetails = false;
-        _freezeHudWithinPlayerTurn = true;
-        _hudAnchor = PartyWatchHudAnchor.HealthBarRight;
-        _offsetX = 0f;
-        _offsetY = 0f;
-        _totalLossColor = Colors.White;
-        _blockableDetailColor = new Color(0.55f, 0.85f, 1f);
-        _directHpLossDetailColor = new Color(1f, 0.55f, 0.62f);
-        Changed?.Invoke();
+        Apply(
+            hudEnabled: true,
+            showLocalHudInMultiplayer: true,
+            showBreakdownDetails: false,
+            freezeHudWithinPlayerTurn: true,
+            damageDisplayMode: DamageDisplayMode.ExpectedHpLossOnly,
+            incomingDamagePlacement: IncomingDamagePlacement.RightOfExpectedHpLoss,
+            includeCurrentBlockInIncomingDamage: false,
+            includePowerBlockInIncomingDamage: false,
+            includeRelicBlockInIncomingDamage: false,
+            includePowerHpLossModifiersInIncomingDamage: false,
+            includeRelicHpLossModifiersInIncomingDamage: false,
+            hudAnchor: PartyWatchHudAnchor.HealthBarRight,
+            offsetX: 0f,
+            offsetY: 0f,
+            totalLossColor: Colors.White,
+            blockableDetailColor: new Color(0.55f, 0.85f, 1f),
+            directHpLossDetailColor: new Color(1f, 0.55f, 0.62f));
+    }
+
+    internal static void Apply(
+        bool hudEnabled,
+        bool showLocalHudInMultiplayer,
+        bool showBreakdownDetails,
+        bool freezeHudWithinPlayerTurn,
+        DamageDisplayMode damageDisplayMode,
+        IncomingDamagePlacement incomingDamagePlacement,
+        bool includeCurrentBlockInIncomingDamage,
+        bool includePowerBlockInIncomingDamage,
+        bool includeRelicBlockInIncomingDamage,
+        bool includePowerHpLossModifiersInIncomingDamage,
+        bool includeRelicHpLossModifiersInIncomingDamage,
+        PartyWatchHudAnchor hudAnchor,
+        float offsetX,
+        float offsetY,
+        Color totalLossColor,
+        Color blockableDetailColor,
+        Color directHpLossDetailColor)
+    {
+        var changed = false;
+        changed |= Apply(ref _hudEnabled, hudEnabled);
+        changed |= Apply(ref _showLocalHudInMultiplayer, showLocalHudInMultiplayer);
+        changed |= Apply(ref _showBreakdownDetails, showBreakdownDetails);
+        changed |= Apply(ref _freezeHudWithinPlayerTurn, freezeHudWithinPlayerTurn);
+        changed |= Apply(ref _damageDisplayMode, damageDisplayMode);
+        changed |= Apply(ref _incomingDamagePlacement, incomingDamagePlacement);
+        changed |= Apply(ref _includeCurrentBlockInIncomingDamage, includeCurrentBlockInIncomingDamage);
+        changed |= Apply(ref _includePowerBlockInIncomingDamage, includePowerBlockInIncomingDamage);
+        changed |= Apply(ref _includeRelicBlockInIncomingDamage, includeRelicBlockInIncomingDamage);
+        changed |= Apply(ref _includePowerHpLossModifiersInIncomingDamage, includePowerHpLossModifiersInIncomingDamage);
+        changed |= Apply(ref _includeRelicHpLossModifiersInIncomingDamage, includeRelicHpLossModifiersInIncomingDamage);
+        changed |= Apply(ref _hudAnchor, hudAnchor);
+        changed |= Apply(ref _offsetX, Math.Clamp(offsetX, -320f, 320f));
+        changed |= Apply(ref _offsetY, Math.Clamp(offsetY, -240f, 240f));
+        changed |= Apply(ref _totalLossColor, totalLossColor);
+        changed |= Apply(ref _blockableDetailColor, blockableDetailColor);
+        changed |= Apply(ref _directHpLossDetailColor, directHpLossDetailColor);
+        if (changed)
+        {
+            Changed?.Invoke();
+        }
     }
 
     private static void Set<T>(ref T field, T value)
     {
+        if (Apply(ref field, value))
+        {
+            Changed?.Invoke();
+        }
+    }
+
+    private static bool Apply<T>(ref T field, T value)
+    {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
-            return;
+            return false;
         }
 
         field = value;
-        Changed?.Invoke();
+        return true;
     }
 }
 
@@ -90,4 +183,17 @@ internal enum PartyWatchHudAnchor
     HealthBarLeft,
     HealthBarAbove,
     HealthBarBelow
+}
+
+internal enum DamageDisplayMode
+{
+    ExpectedHpLossOnly,
+    IncomingDamageOnly,
+    Both
+}
+
+internal enum IncomingDamagePlacement
+{
+    LeftOfExpectedHpLoss,
+    RightOfExpectedHpLoss
 }

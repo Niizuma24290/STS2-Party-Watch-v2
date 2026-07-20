@@ -15,10 +15,13 @@
 - D-013: HUD visibility is decided by a central UI policy and should conservatively hide behind full-screen or modal UI.
 - D-014: turn-scoped HUD freezing is display-only and must not change forecast mechanics.
 - D-015: until a verified official mod config API is available, Party Watch UI settings are session-only and must not be written into game saves or guessed game settings paths.
+  - Superseded for current behavior by Phase 12A: Damage Forecast settings are persisted through BaseLib config. D-015 remains unchanged as historical decision evidence.
 - D-016: enemy pre-action survival previews must be keyed by native enemy instance identity, never by enemy display name; unsupported Poison/lifecycle mechanics hide rather than guessing whether an enemy attacks.
 - D-017: the default HUD shows total `-N` because it answers the player-facing question first; `🛡` and `♥` remain advanced details because they are source explanations, not the primary decision number.
 - D-018: unsupported or untrusted prediction segments are hidden rather than guessed. A missing number is safer than a precise-looking wrong one.
 - D-019: Tungsten Rod is applied before Beating Remnant in Party Watch's forecast order for verified HP-loss events, so shared budget consumption is calculated after per-event rod reduction.
 - D-020: Beating Remnant forecasts must use ordered verified events plus the observed current-turn HP-loss budget; they must not assume a private native field is always readable or authoritative.
 - D-021: Party Watch settings must not occupy the native Settings or Modding main entry. The current entry belongs inside Party Watch's own native Modding info panel.
+  - Superseded for the current route by Phase 12A: Damage Forecast uses the main-menu BaseLib Mod Configuration page. D-021 remains unchanged as historical decision evidence.
 - D-022: `LocalSinglePlayerHud` and future `FormalMultiplayerHud` are separate products. Showing the local player's HUD in multiplayer does not imply teammate, shared, or network-aware HUD support.
+- D-023: the BaseLib left Mod list uses the stable English identity `Damage Forecast`; only the page title and setting text follow this Mod's English / Simplified Chinese config language. The page title is refreshed after BaseLib finishes loading the page so list lookup, highlighting, and controller focus keep one stable identity.

@@ -30,6 +30,11 @@ internal static class PartyWatchNativeCoveringScreenTracker
 
     public static void MarkOpened(Node node)
     {
+        if (!IsNativeCombatCoveringScreen(node))
+        {
+            return;
+        }
+
         Cleanup();
         if (ActiveScreens.Any(reference => reference.TryGetTarget(out var existing) && ReferenceEquals(existing, node)))
         {
@@ -52,6 +57,23 @@ internal static class PartyWatchNativeCoveringScreenTracker
         }
     }
 
+#if PARTY_WATCH_VISIBILITY_PROFILING
+    internal static bool IsTrackedOpenForVisibilityProfiling(Node node)
+    {
+        for (var i = ActiveScreens.Count - 1; i >= 0; i--)
+        {
+            if (ActiveScreens[i].TryGetTarget(out var existing)
+                && GodotObject.IsInstanceValid(existing)
+                && ReferenceEquals(existing, node))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+#endif
+
     public static bool HasNativeCombatCoveringScreenOpen()
     {
         Cleanup();
@@ -60,6 +82,19 @@ internal static class PartyWatchNativeCoveringScreenTracker
             && GodotObject.IsInstanceValid(node)
             && node.IsInsideTree()
             && (node is not CanvasItem canvasItem || canvasItem.IsVisibleInTree()));
+    }
+
+    public static bool IsNativeCombatCoveringScreen(Node node)
+    {
+        for (var type = node.GetType(); type is not null; type = type.BaseType)
+        {
+            if (type.FullName is { } fullName && CoveringScreenTypeNames.Contains(fullName))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static void Cleanup()

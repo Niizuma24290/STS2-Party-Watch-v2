@@ -12,15 +12,19 @@ internal static class VerifiedHpLossResultModifier
         Player player,
         Creature localCreature,
         IReadOnlyList<UpcomingHpLossEvent> events,
-        int observedDamageReceivedThisTurn)
+        int observedDamageReceivedThisTurn,
+        bool includePowerModifiers = true,
+        bool includeRelicModifiers = true)
     {
         try
         {
-            var hasIntangible = localCreature.GetPower<IntangiblePower>()?.Amount > 0;
-            var relics = player.Relics
-                .Where(relic => !relic.IsMelted && (relic is TungstenRod || relic is BeatingRemnant))
-                .OrderBy(relic => relic is TungstenRod ? 0 : 1)
-                .ToList();
+            var hasIntangible = includePowerModifiers && localCreature.GetPower<IntangiblePower>()?.Amount > 0;
+            var relics = includeRelicModifiers
+                ? player.Relics
+                    .Where(relic => !relic.IsMelted && (relic is TungstenRod || relic is BeatingRemnant))
+                    .OrderBy(relic => relic is TungstenRod ? 0 : 1)
+                    .ToList()
+                : [];
 
             if (!hasIntangible && relics.Count == 0)
             {

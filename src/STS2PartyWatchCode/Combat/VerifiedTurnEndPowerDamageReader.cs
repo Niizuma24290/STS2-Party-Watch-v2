@@ -51,7 +51,7 @@ internal static class VerifiedTurnEndPowerDamageReader
 
     private static int GetModifiedPowerDamage(Creature localCreature, int baseDamage)
     {
-        var modified = Hook.ModifyDamage(
+        var modified = HookDamageCompat.ModifyDamage(
             localCreature.CombatState!.RunState,
             localCreature.CombatState,
             localCreature,
@@ -60,8 +60,7 @@ internal static class VerifiedTurnEndPowerDamageReader
             DamageProps.nonCardUnpowered,
             null,
             ModifyDamageHookType.All,
-            CardPreviewMode.None,
-            out _);
+            CardPreviewMode.None);
 
         return Math.Max(0, (int)modified);
     }

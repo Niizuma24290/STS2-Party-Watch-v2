@@ -11,6 +11,7 @@ using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Models.Relics;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
 using MegaCrit.Sts2.Core.ValueProps;
+using STS2PartyWatch.Diagnostics;
 
 namespace STS2PartyWatch.Combat;
 
@@ -54,12 +55,45 @@ public sealed class LocalIncomingDamageReader
                 return IncomingDamageRead.Hidden;
             }
         }
-        catch
+        catch (Exception exception)
         {
+            PartyWatchDiagnostics.ReportOnce("incoming.local-context.expected", exception);
             return IncomingDamageRead.Unknown;
         }
 
         return ReadKnown(combatState, localCreature);
+    }
+
+    internal IncomingDamageDisplayRead ReadIncomingDamageForLocalCreature(
+        Creature? localCreature,
+        IncomingDamageDisplayOptions options)
+    {
+        var combatState = localCreature?.CombatState;
+        if (combatState is null || !combatState.IsLiveCombat())
+        {
+            return IncomingDamageDisplayRead.Hidden;
+        }
+
+        if (localCreature is null || !localCreature.IsAlive)
+        {
+            return IncomingDamageDisplayRead.Hidden;
+        }
+
+        try
+        {
+            var localPlayer = LocalContext.GetMe(combatState);
+            if (localPlayer is null || localCreature.Player?.NetId != localPlayer.NetId)
+            {
+                return IncomingDamageDisplayRead.Hidden;
+            }
+        }
+        catch (Exception exception)
+        {
+            PartyWatchDiagnostics.ReportOnce("incoming.local-context.display", exception);
+            return IncomingDamageDisplayRead.Unknown;
+        }
+
+        return ReadIncomingDamageKnown(combatState, localCreature, options);
     }
 
     private static IncomingDamageRead ReadKnown(ICombatState combatState, Creature localCreature)
@@ -98,11 +132,6 @@ public sealed class LocalIncomingDamageReader
             }
 
             var survivalPreview = EnemyPreActionSurvivalPreview.Preview(enemy, snapshotIndex, enemyIntentContribution);
-            if (!survivalPreview.Supported)
-            {
-                return ReadKnownWithUnsupportedEnemyDamage(localCreature);
-            }
-
             if (!survivalPreview.WillExecuteCurrentIntent)
             {
                 continue;
@@ -182,6 +211,190 @@ public sealed class LocalIncomingDamageReader
         }
 
         return IncomingDamageRead.Known(raw, localCreature.Block + preAttackBlock.Block, directHpLoss);
+    }
+
+    private static IncomingDamageDisplayRead ReadIncomingDamageKnown(
+        ICombatState combatState,
+        Creature localCreature,
+        IncomingDamageDisplayOptions options)
+    {
+        var player = localCreature.Player;
+        if (player is null)
+        {
+            return IncomingDamageDisplayRead.Unknown;
+        }
+
+        var events = new List<UpcomingHpLossEvent>();
+        var foundDamage = false;
+        var enemyAttackOrder = 0;
+        var enemySnapshotIndex = 0;
+
+        foreach (var enemy in combatState.Enemies)
+        {
+            var snapshotIndex = enemySnapshotIndex++;
+            if (enemy is null || !enemy.IsAlive || enemy.Monster?.NextMove?.Intents is null)
+            {
+                continue;
+            }
+
+            var attackIntents = enemy.Monster.NextMove.Intents.OfType<AttackIntent>().ToArray();
+            if (attackIntents.Length == 0)
+            {
+                continue;
+            }
+
+            var enemyIntentContribution = 0;
+            var intentTotals = new int[attackIntents.Length];
+            for (var i = 0; i < attackIntents.Length; i++)
+            {
+                intentTotals[i] = attackIntents[i].GetTotalDamage(new[] { localCreature }, enemy);
+                enemyIntentContribution += intentTotals[i];
+            }
+
+            var survivalPreview = EnemyPreActionSurvivalPreview.Preview(enemy, snapshotIndex, enemyIntentContribution);
+            if (!survivalPreview.WillExecuteCurrentIntent)
+            {
+                continue;
+            }
+
+            for (var i = 0; i < attackIntents.Length; i++)
+            {
+                var attackEvents = ReadEnemyAttackEvents(
+                    player,
+                    attackIntents[i],
+                    localCreature,
+                    enemy,
+                    survivalPreview.State.Identity,
+                    enemyAttackOrder,
+                    intentTotals[i],
+                    out var modificationState);
+                if (modificationState != EnemyDamageModificationState.Supported)
+                {
+                    return IncomingDamageDisplayRead.Unknown;
+                }
+
+                foreach (var attackEvent in attackEvents)
+                {
+                    foundDamage = foundDamage || attackEvent.Amount > 0;
+                    events.Add(new UpcomingHpLossEvent(
+                        attackEvent.Source,
+                        attackEvent.NativeExecutionOrder,
+                        HpLossDisplayLane.Blockable,
+                        attackEvent.Amount,
+                        attackEvent.IsSingleVerifiedEvent));
+                }
+
+                enemyAttackOrder++;
+            }
+        }
+
+        if (!TryReadOrderedHandTurnEndEvents(player, localCreature, out var handEvents, out _))
+        {
+            return IncomingDamageDisplayRead.Unknown;
+        }
+
+        foreach (var handEvent in handEvents)
+        {
+            foundDamage = foundDamage || handEvent.Amount > 0;
+            events.Add(new UpcomingHpLossEvent(
+                handEvent.Source,
+                handEvent.NativeExecutionOrder,
+                handEvent.DisplayLane,
+                handEvent.Amount,
+                handEvent.IsSingleVerifiedEvent));
+        }
+
+        if (!VerifiedTurnEndPowerDamageReader.TryRead(localCreature, out var powerEvents, out _))
+        {
+            return IncomingDamageDisplayRead.Unknown;
+        }
+
+        foreach (var powerEvent in powerEvents)
+        {
+            foundDamage = foundDamage || powerEvent.Amount > 0;
+            events.Add(new UpcomingHpLossEvent(
+                powerEvent.Source,
+                powerEvent.NativeExecutionOrder,
+                HpLossDisplayLane.Blockable,
+                powerEvent.Amount,
+                powerEvent.IsSingleVerifiedEvent));
+        }
+
+        if (!foundDamage)
+        {
+            return IncomingDamageDisplayRead.Hidden;
+        }
+
+        var selectedBlock = 0;
+        if (options.IncludeCurrentBlock)
+        {
+            selectedBlock += Math.Max(0, localCreature.Block);
+        }
+
+        if (options.IncludePowerBlock || options.IncludeRelicBlock)
+        {
+            var preAttackBlock = VerifiedPreAttackBlockReader.Read(player, localCreature);
+            if (preAttackBlock.State != PreAttackBlockReadState.Known)
+            {
+                return IncomingDamageDisplayRead.Unknown;
+            }
+
+            if (options.IncludePowerBlock)
+            {
+                selectedBlock += preAttackBlock.PowerBlock;
+            }
+
+            if (options.IncludeRelicBlock)
+            {
+                selectedBlock += preAttackBlock.RelicBlock;
+            }
+        }
+
+        var hpLossEvents = ApplySelectedBlock(events, selectedBlock);
+        if (options.IncludePowerHpLossModifiers || options.IncludeRelicHpLossModifiers)
+        {
+            var modified = VerifiedHpLossResultModifier.Apply(
+                player,
+                localCreature,
+                hpLossEvents,
+                ObservedHpLossBudgetTracker.GetSpent(player),
+                options.IncludePowerHpLossModifiers,
+                options.IncludeRelicHpLossModifiers);
+            return modified.State == HpLossResultModificationState.Supported
+                ? IncomingDamageDisplayRead.Known(modified.BlockableHpLoss + modified.DirectHpLoss)
+                : IncomingDamageDisplayRead.Unknown;
+        }
+
+        return IncomingDamageDisplayRead.Known(hpLossEvents.Sum(e => Math.Max(0, e.VerifiedHpLoss)));
+    }
+
+    private static List<UpcomingHpLossEvent> ApplySelectedBlock(
+        IReadOnlyList<UpcomingHpLossEvent> sourceEvents,
+        int selectedBlock)
+    {
+        var remainingBlock = Math.Max(0, selectedBlock);
+        var hpLossEvents = new List<UpcomingHpLossEvent>(sourceEvents.Count);
+        foreach (var sourceEvent in sourceEvents.OrderBy(e => e.NativeExecutionOrder))
+        {
+            if (sourceEvent.DisplayLane == HpLossDisplayLane.Blockable)
+            {
+                var amount = Math.Max(0, sourceEvent.VerifiedHpLoss);
+                var hpLoss = Math.Max(0, amount - remainingBlock);
+                remainingBlock = Math.Max(0, remainingBlock - amount);
+                hpLossEvents.Add(new UpcomingHpLossEvent(
+                    sourceEvent.Source,
+                    sourceEvent.NativeExecutionOrder,
+                    HpLossDisplayLane.Blockable,
+                    hpLoss,
+                    sourceEvent.IsSingleVerifiedEvent));
+            }
+            else
+            {
+                hpLossEvents.Add(sourceEvent);
+            }
+        }
+
+        return hpLossEvents;
     }
 
     private static IncomingDamageRead ReadKnownWithUnsupportedEnemyDamage(Creature localCreature)
@@ -421,25 +634,18 @@ public sealed class LocalIncomingDamageReader
             for (var i = 0; i < handPile.Cards.Count; i++)
             {
                 var card = handPile.Cards[i];
-                var foundBlockableDamageVar = false;
-                if (CardTurnEndDamageInspector.DoesTurnEndInHandCallDamage(card))
+                if (!CardTurnEndDamageInspector.TryGetVerifiedSingleBlockableDamageVar(card, out var damageVar))
                 {
-                    foreach (var damageVar in card.DynamicVars.Values.OfType<DamageVar>())
-                    {
-                        if (damageVar.Props.HasFlag(ValueProp.Unblockable))
-                        {
-                            continue;
-                        }
-
-                        foundBlockableDamageVar = true;
-                        var damage = GetModifiedIncomingCardDamage(player, localCreature, card, damageVar);
-                        blockableRaw += damage;
-                        events.Add(new HandTurnEndHpLossEvent(card.GetType().Name, i, HpLossDisplayLane.Blockable, damage, true));
-                    }
+                    return false;
                 }
 
-                if (!foundBlockableDamageVar
-                    && VerifiedFixedTurnEndHpLossReader.TryReadEvent(card, handCount, i, out var directHpLossEvent))
+                if (damageVar is not null)
+                {
+                    var damage = GetModifiedIncomingCardDamage(player, localCreature, card, damageVar);
+                    blockableRaw += damage;
+                    events.Add(new HandTurnEndHpLossEvent(card.GetType().Name, i, HpLossDisplayLane.Blockable, damage, true));
+                }
+                else if (VerifiedFixedTurnEndHpLossReader.TryReadEvent(card, handCount, i, out var directHpLossEvent))
                 {
                     events.Add(new HandTurnEndHpLossEvent(
                         directHpLossEvent.Source,
@@ -452,8 +658,9 @@ public sealed class LocalIncomingDamageReader
 
             return true;
         }
-        catch
+        catch (Exception exception)
         {
+            PartyWatchDiagnostics.ReportOnce("incoming.hand-events", exception);
             events.Clear();
             blockableRaw = 0;
             return false;
@@ -473,26 +680,22 @@ public sealed class LocalIncomingDamageReader
         {
             foreach (var card in handPile.Cards)
             {
-                if (!CardTurnEndDamageInspector.DoesTurnEndInHandCallDamage(card))
+                if (!CardTurnEndDamageInspector.TryGetVerifiedSingleBlockableDamageVar(card, out var damageVar))
                 {
-                    continue;
+                    return false;
                 }
 
-                foreach (var damageVar in card.DynamicVars.Values.OfType<DamageVar>())
+                if (damageVar is not null)
                 {
-                    if (damageVar.Props.HasFlag(ValueProp.Unblockable))
-                    {
-                        continue;
-                    }
-
                     damage += GetModifiedIncomingCardDamage(player, localCreature, card, damageVar);
                 }
             }
 
             return true;
         }
-        catch
+        catch (Exception exception)
         {
+            PartyWatchDiagnostics.ReportOnce("incoming.hand-total", exception);
             damage = 0;
             return false;
         }
@@ -500,17 +703,16 @@ public sealed class LocalIncomingDamageReader
 
     private static int GetModifiedIncomingCardDamage(Player player, Creature localCreature, CardModel card, DamageVar damageVar)
     {
-        var modified = Hook.ModifyDamage(
+        var modified = HookDamageCompat.ModifyDamage(
             player.RunState,
-            localCreature.CombatState,
+            localCreature.CombatState!,
             localCreature,
             localCreature,
             damageVar.BaseValue,
             damageVar.Props,
             card,
             ModifyDamageHookType.All,
-            CardPreviewMode.None,
-            out _);
+            CardPreviewMode.None);
 
         return Math.Max(0, (int)modified);
     }

@@ -17,14 +17,16 @@ internal static class VerifiedPreAttackBlockReader
     {
         try
         {
-            var block = 0;
-            block += ReadFrostBlock(player);
-            block += ReadPlatingBlock(localCreature);
-            block += ReadOrichalcumBlock(player, localCreature.Block);
-            block += ReadFakeOrichalcumBlock(player, localCreature.Block);
-            block += ReadRippleBasinBlock(player, localCreature.CombatState!);
-            block += ReadCloakClaspBlock(player);
-            return PreAttackBlockRead.Known(block);
+            var powerBlock = 0;
+            powerBlock += ReadFrostBlock(player);
+            powerBlock += ReadPlatingBlock(localCreature);
+
+            var relicBlock = 0;
+            relicBlock += ReadOrichalcumBlock(player, localCreature.Block);
+            relicBlock += ReadFakeOrichalcumBlock(player, localCreature.Block);
+            relicBlock += ReadRippleBasinBlock(player, localCreature.CombatState!);
+            relicBlock += ReadCloakClaspBlock(player);
+            return PreAttackBlockRead.Known(powerBlock, relicBlock);
         }
         catch
         {
@@ -127,7 +129,7 @@ internal static class VerifiedPreAttackBlockReader
     private static TRelic? FindRelic<TRelic>(Player player)
         where TRelic : RelicModel
     {
-        return player.Relics.OfType<TRelic>().FirstOrDefault();
+        return player.Relics.OfType<TRelic>().FirstOrDefault(relic => !relic.IsMelted);
     }
 
     private static int ReadBlockVar(RelicModel relic)
@@ -136,11 +138,20 @@ internal static class VerifiedPreAttackBlockReader
     }
 }
 
-internal readonly record struct PreAttackBlockRead(PreAttackBlockReadState State, int Block)
+internal readonly record struct PreAttackBlockRead(
+    PreAttackBlockReadState State,
+    int PowerBlock,
+    int RelicBlock)
 {
-    public static PreAttackBlockRead Unknown => new(PreAttackBlockReadState.Unknown, 0);
+    public int Block => PowerBlock + RelicBlock;
 
-    public static PreAttackBlockRead Known(int block) => new(PreAttackBlockReadState.Known, block);
+    public static PreAttackBlockRead Unknown => new(PreAttackBlockReadState.Unknown, 0, 0);
+
+    public static PreAttackBlockRead Known(int powerBlock, int relicBlock) =>
+        new(
+            PreAttackBlockReadState.Known,
+            Math.Max(0, powerBlock),
+            Math.Max(0, relicBlock));
 }
 
 internal enum PreAttackBlockReadState

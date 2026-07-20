@@ -20,8 +20,8 @@ This section is the reconciliation index for the currently implemented mod. Olde
 | IntangiblePower on local player | Implemented, Conditional | verified HP-loss result chain | `ModifyDamageCap`, `ModifyHpLostAfterOsty` | `VerifiedHpLossResultModifier.Apply(...)` | RuntimeVerified for supported direct HP-loss events | Aggregate direct HP loss with Intangible is unsupported. |
 | TungstenRod | Implemented, Conditional | verified HP-loss result chain | `HpLossReduction` dynamic var | `VerifiedHpLossResultModifier.Apply(...)` | Code evidence and historical notes; current order still needs subscription/runtime closure where noted | Requires single-event granularity. Aggregate enemy HP loss returns Unknown. |
 | BeatingRemnant | Implemented, Conditional | verified HP-loss result chain | `MaxHpLoss` dynamic var and turn budget | `ObservedHpLossBudgetTracker`, `VerifiedHpLossResultModifier.Apply(...)` | Code evidence and historical notes; current order still needs subscription/runtime closure where noted | Requires ordered verified events and non-negative remaining budget. |
-| Diamond Diadem / DiamondDiademPower | Implemented, Conditional | enemy attack damage, `🛡`, total `-N` | `DiamondDiademPower.ModifyDamageMultiplicative`, card threshold | `VerifiedEnemyDamageModifier.ApplyDiamondDiadem(...)` | RuntimeVerified for supported path | Aggregate enemy damage with per-hit rounding unknown returns Unknown. |
-| Ordinary Poison pre-action survival | Implemented, Conditional | enemy AttackIntent inclusion, total `-N` | `PoisonPower.AfterSideTurnStart`, `TriggerCount`, enemy action after side-turn start | `EnemyPreActionSurvivalPreview`, `PoisonTickPreview` | Code/build/publish evidence;专项 Steam matrix not fully backfilled | HardToKill, Slippery, enemy Intangible, TestSubject/Adaptable, Hatch/ToughEgg, HardenedShell/SewerClam unsupported. |
+| Diamond Diadem, legacy and v0.109 | Implemented, Conditional | enemy attack damage for the legacy mechanism; native Block for v0.109 | Runtime capability fingerprint: legacy `CardsPlayedThisTurn` + `DiamondDiademPower`; current `AfterSideTurnStart` first-turn 20 Block + one Blur | `VerifiedEnemyDamageModifier`, `LegacyDiamondDiademDamageForecast` | Historical RuntimeVerified for the old supported path; v0.109 build verified, runtime pending | Legacy-only Stampede correction is isolated. Unknown mechanisms keep native damage and do not hide the HUD. |
+| Ordinary / capped / Slippery / HardenedShell / Intangible Poison pre-action survival | Implemented, Conditional | enemy AttackIntent inclusion, total `-N` | `PoisonPower.AfterSideTurnStart`, `TriggerCount`, `CalculateTotalDamageNextTurn`, enemy action after side-turn start, `HardenedShellPower.DisplayAmount` | `EnemyPreActionSurvivalPreview`, `PoisonTickPreview` | Exoskeleton / HardToKill, Slippery / 墨宝, HardenedShell / SewerClam, and the representative TestSubject phase-3 Intangible exact-lethal boundary are RuntimeVerified in Phase 11C; full ordinary and special-combination matrices are not fully backfilled | Active enemy Intangible uses the narrow trigger-count rule unless combined with HardToKill, Slippery, or HardenedShell, in which case it keeps base Intent. Nemesis / ToughEgg remain pending family-specific runtime captures. |
 | Local HUD in multiplayer | Implemented, Conditional | display only | local health bar / local player identity | `PartyWatchHudVisibilityPolicy`, `ForecastRefreshPatch`, `PartyWatchUiSettings.ShowLocalHudInMultiplayer` | Workshop subscription runtime evidence for local `-6` HUD | Not teammate HUD, not shared HUD, no network behavior. |
 
 ## Status vocabulary
@@ -248,7 +248,7 @@ RegretLoss = 当前手牌总数 × 当前手牌中的 Regret 数量
 - `ConstrictPower.AfterSideTurnEnd` calls `CreatureCmd.Damage(owner, Amount, DamageProps.nonCardUnpowered, owner, null)`.
 - `KnowledgeDemon` can create the `Disintegration` choice; `Disintegration.OnChosen` applies `DisintegrationPower`.
 - `DisintegrationPower.AfterSideTurnEndLate` calls `CreatureCmd.Damage(owner, Amount, DamageProps.nonCardUnpowered, owner, null)`.
-- Party Watch treats both as verified blockable `🛡` sources. User Steam runtime validation has confirmed the basic HUD forecast path.
+- Damage Forecast treats both as verified blockable `🛡` sources. User Steam runtime validation has confirmed the basic HUD forecast path.
 
 ## IntangiblePower HP-loss result evidence
 
@@ -258,12 +258,12 @@ RegretLoss = 当前手牌总数 × 当前手牌中的 Regret 数量
 - 用户实测规则确认：无实体会让每个独立伤害 / HP loss 事件先变为 1；Block 可抵消该 1；多段攻击按每 hit 1 计算；多个 Burn / 腐朽 / Constrict 等独立事件各自为 1。
 - 用户实测规则确认：Beckon、Bad Luck、Regret 这类 direct HP loss 也分别变为每事件 1。
 - 用户实测规则确认：与 `TungstenRod` / `BeatingRemnant` 共存时，无实体先把事件压到 1，再进入棍子减免或残余预算。
-- Party Watch 当前实现只在已有逐事件 HP loss 结果修正链中接入 `IntangiblePower`：blockable damage 仍信任原生 `AttackIntent` / `Hook.ModifyDamage` 预览；direct HP loss 使用已验证单事件粒度先按无实体压到 1，再应用 `TungstenRod` / `BeatingRemnant`。
-- 若 direct HP loss 失去单事件粒度，Party Watch 不把聚合值猜测压成 1，改为 Unknown。
+- Damage Forecast 当前实现只在已有逐事件 HP loss 结果修正链中接入 `IntangiblePower`：blockable damage 仍信任原生 `AttackIntent` / `Hook.ModifyDamage` 预览；direct HP loss 使用已验证单事件粒度先按无实体压到 1，再应用 `TungstenRod` / `BeatingRemnant`。
+- 若 direct HP loss 失去单事件粒度，Damage Forecast 不把聚合值猜测压成 1，改为 Unknown。
 
 ## TungstenRod / BeatingRemnant forecast order
 
-- Party Watch 的 HP loss 结果修正预测顺序固定为：`IntangiblePower` -> `TungstenRod` -> `BeatingRemnant`。
+- Damage Forecast 的 HP loss 结果修正预测顺序固定为：`IntangiblePower` -> `TungstenRod` -> `BeatingRemnant`。
 - 本轮仅调整 Party Watch 预测顺序，让 `TungstenRod` 早于 `BeatingRemnant`；真实游戏原生结算顺序仍需 Steam 运行时验证。
 - 若未来总 HP loss 大于心脏剩余预算，HUD 将先应用棍子减免，再用心脏剩余预算封顶。
 
@@ -276,17 +276,17 @@ RegretLoss = 当前手牌总数 × 当前手牌中的 Regret 数量
 - 文件时间：`2026-06-19 18:57`
 - 程序集版本：`sts2, Version=0.1.0.0`
 
-| 机制 | 类 / 方法 / 字段 | 原生结算阶段 | 作用范围 | 是否影响 Poison | 与 Poison 的顺序 | 是否可被当前只读数据准确预览 | Party Watch 接入结论 |
+| 机制 | 类 / 方法 / 字段 | 原生结算阶段 | 作用范围 | 是否影响 Poison | 与 Poison 的顺序 | 是否可被当前只读数据准确预览 | Damage Forecast 接入结论 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Poison 基础 tick | `MegaCrit.Sts2.Core.Models.Powers.PoisonPower.AfterSideTurnStart`；`PoisonPower.TriggerCount`；`PoisonPower.CalculateTotalDamageNextTurn` | Enemy side `Hook.AfterSideTurnStart`，早于 `CombatManager.ExecuteEnemyTurn` | Power owner 自身 | 是 | 敌方行动前；每 tick 用当前 `PoisonPower.Amount`，若 owner 仍活着才 `PowerCmd.Decrement(this)` | 普通敌人、无特殊 damage/HP-loss/lifecycle power 时可预览 | 已接入：按单个 enemy instance 预览 Poison 致死，确定死于行动前时只排除该实例当前 Attack Intent |
 | 敌方行动取消 | `CombatManager.StartTurn`；`CombatManager.ExecuteEnemyTurn`；`CreatureCmd.Kill`；`Creature.IsAlive` / `CombatState.ContainsCreature(enemy)` | Enemy side start 后才执行敌人行动 | 每个原生 `Creature` 敌人对象 | 间接影响 | Poison death 发生在 `ExecuteEnemyTurn` 前；已移除敌人不会执行 `PerformIntent` / `TakeTurn` | 普通死亡移除可由 `CurrentHp`、`IsAlive`、`CurrentPoison` 和 unsupported 门判断 | 已接入普通场景；特殊死亡阻止/复活/阶段转换保持 Unknown |
 | Accelerant | `MegaCrit.Sts2.Core.Models.Powers.AccelerantPower`；`PoisonPower.TriggerCount` | PoisonPower 自己读取 opponent 的 Accelerant 层数 | Poison owner 的活着 opponents | 是 | 同一 Poison tick 阶段内增加触发次数，最大不超过当前 Poison 层数 | 单人本机战斗可读 opponents 的 `AccelerantPower.Amount` | 已接入为只读状态；不重放 `Accelerant` 卡或任何卡牌流程 |
 | 触媒 / 卡牌重放 | 当前类型列表未出现 `Catalyst`；当前 Poison 相关卡牌包括 `Accelerant`、`DeadlyPoison`、`PoisonedStab` | 卡牌打出时，不属于本预览 | 卡牌目标 / 命令队列 | 可能提前改变 Poison | 在预览读取前已经生效或未生效 | 不能安全重放，且任务禁止重放 | 不接入：只读取结束回合时已经存在的 `PoisonPower.Amount` / `AccelerantPower.Amount` |
-| 单次伤害上限 9 | `MegaCrit.Sts2.Core.Models.Monsters.Exoskeleton.AfterAddedToRoom` 施加 `HardToKillPower(9)`；`HardToKillPower.ModifyDamageCap` | `Hook.ModifyDamage` cap 阶段 | Power owner 收到的 damage | 是，Poison 走 `CreatureCmd.Damage` / `Hook.ModifyDamage` | Poison HP loss 前的 damage cap | 类名和 hook 已确认，但本轮未验证完整 Poison 致死/行动取消矩阵 | 未接入；敌人有 `HardToKillPower` 且有 Poison 时返回 Unknown |
-| Slippery | `MegaCrit.Sts2.Core.Models.Powers.SlipperyPower.ModifyHpLostAfterOsty`；`AfterDamageReceived` | `Hook.ModifyHpLost` AfterOsty；damage received 后消耗层数 | Power owner 的 HP loss | 是 | Poison damage 扣 Block 后进入 HP loss 修改；每次实际 damage received 后 decrement | 规则已定位，但逐 tick 消耗和多触发矩阵未运行时验证 | 未接入；敌人有 `SlipperyPower` 且有 Poison 时返回 Unknown |
-| Intangible | `MegaCrit.Sts2.Core.Models.Powers.IntangiblePower.ModifyDamageCap`；`ModifyHpLostAfterOsty` | damage cap 与 HP loss AfterOsty | Power owner | 是 | Poison 先经 damage cap，再经 HP loss cap | 已知会影响 Poison，但敌方 Poison 致死矩阵未验证 | 未接入敌人 Poison 预览；敌人有 `IntangiblePower` 且有 Poison 时返回 Unknown |
-| TestSubject 阶段 / 复活 | `MegaCrit.Sts2.Core.Models.Monsters.TestSubject`；`AdaptablePower.AfterDeath`；`AdaptablePower.ShouldCreatureBeRemovedFromCombatAfterDeath`; `RESPAWN_MOVE` | death hook 后进入 respawn move / revive | TestSubject enemy | 是，影响“是否真的不行动”结论 | Poison 可触发 death，但 `AdaptablePower` 阻止移除并安排复活阶段 | 当前无法只靠普通 HP<=0 判断其本次行动结论 | 未接入；`TestSubject` / `AdaptablePower` 返回 Unknown |
-| ToughEgg hatch lifecycle | `MegaCrit.Sts2.Core.Models.Monsters.ToughEgg`；`HatchPower.AfterSideTurnEnd`；`HATCH_MOVE` / `SetMaxAndCurrentHp` | enemy move / side turn end | ToughEgg enemy | 可能影响生命周期 | 不属于普通死亡模型 | 当前未验证 Poison 致死与 hatch 状态组合 | 未接入；`ToughEgg` / `HatchPower` 返回 Unknown |
+| 单次伤害上限 9 | `MegaCrit.Sts2.Core.Models.Monsters.Exoskeleton.AfterAddedToRoom` 施加 `HardToKillPower(9)`；`HardToKillPower.ModifyDamageCap` | `Hook.ModifyDamage` cap 阶段 | Power owner 收到的 damage | 是，Poison 走 `CreatureCmd.Damage` / `Hook.ModifyDamage` | Poison HP loss 前的 damage cap | Phase 11C 用户 Steam 验证：54 Poison 单段只预览 9；额外两段触发后 9+9+9=27 可杀 26 HP；安装版在遗物和诅咒影响下仍显示正确 `-N` | 已接入；Damage Forecast 使用 native `PoisonPower.CalculateTotalDamageNextTurn()`，仅当 previewed damage >= current HP 时移除该 enemy instance 的当前 Intent |
+| Slippery | `MegaCrit.Sts2.Core.Models.Powers.SlipperyPower.ModifyHpLostAfterOsty`；`AfterDamageReceived` | `Hook.ModifyHpLost` AfterOsty；damage received 后消耗层数 | Power owner 的 HP loss | 是 | Poison damage 扣 Block 后进入 HP loss 修改；每次实际 damage received 后 decrement | 用户确认：每层 Slippery 将一次伤害压到 1，且收到一次伤害消耗一层；30 Poison + 1 额外触发 + 1 Slippery 对 16 HP 应在行动前死亡 | Phase 11C 已实现并验证：逐 tick 预览 Poison，每层 Slippery 将一个正伤害 tick 的 HP loss 压到 1 并在预览中消耗；Steam 复测显示中间 3x3 墨宝被移除，HUD 为 `-8` |
+| Intangible | `MegaCrit.Sts2.Core.Models.Powers.IntangiblePower.ModifyDamageCap`；`ModifyHpLostAfterOsty` | damage cap 与 HP loss AfterOsty | Power owner | 是 | Poison 先经 damage cap，再经 HP loss cap | 已知会影响 Poison；用户确认实验体第三阶段只需窄规则 | Phase 11C 于 2026-07-18 恢复并 RuntimeVerified 代表性边界：没有 HardToKill / Slippery / HardenedShell 组合时，每段 Poison 最多 1 HP loss，只有 `min(PoisonPower.Amount, 1 + opponent AccelerantPower sum) >= current HP` 才移除当前 Intent。截图场景为 9 HP、20 Poison、Intangible(1)、Accelerant(8)、原生 45 Intent，触发次数恰好为 9 |
+| TestSubject 阶段 / 复活 | `MegaCrit.Sts2.Core.Models.Monsters.TestSubject`；`AdaptablePower.AfterDeath`；`AdaptablePower.ShouldCreatureBeRemovedFromCombatAfterDeath`; `RESPAWN_MOVE` | death hook 后进入 respawn move / revive | TestSubject enemy | 是，影响“是否真的不行动”结论 | Poison 可触发 death，`AdaptablePower` 阻止移除并安排复活阶段 | 用户确认复活 / 转阶段后不会立即攻击 | Phase 11C 已放开并在第三阶段 Intangible exact-lethal 场景中 RuntimeVerified：Poison 预测可移除旧 Intent；用户确认成功，旧攻击不会在阶段转换后立即执行 |
+| ToughEgg hatch lifecycle | `MegaCrit.Sts2.Core.Models.Monsters.ToughEgg`；`HatchPower.AfterSideTurnEnd`；`HATCH_MOVE` / `SetMaxAndCurrentHp` | enemy move / side turn end | ToughEgg enemy | 可能影响生命周期 | 不属于普通死亡模型 | 用户确认复活 / 转阶段 / hatch 后不会立即攻击 | Phase 11C 已放开：支持路径中 Poison 足以触发 hatch / lifecycle 时可移除当前 Intent；待专项运行时验证 |
 
 普通 Poison 接入所需字段：
 
@@ -314,11 +314,11 @@ RegretLoss = 当前手牌总数 × 当前手牌中的 Regret 数量
 
 更新后的特殊敌人证据与接入结论：
 
-| 机制 | 类 / 方法 / 字段 | 原生结算 / 预览证据 | 是否影响 Poison | Party Watch 接入结论 |
+| 机制 | 类 / 方法 / 字段 | 原生结算 / 预览证据 | 是否影响 Poison | Damage Forecast 接入结论 |
 | --- | --- | --- | --- | --- |
 | Accelerant / 触发次数 | `MegaCrit.Sts2.Core.Models.Cards.Accelerant`；`AccelerantPower`；`PoisonPower.TriggerCount` | `Accelerant` 是 Rare Power，基础施加 1 层 `AccelerantPower`，升级多 1 层；Poison owner 从 alive opponents 读取 `AccelerantPower` 总层数 | 是，增加 Poison tick 段数，最大不超过当前 Poison 层数 | 只读取已生效 `AccelerantPower.Amount`；不重放卡牌。当前类型列表未发现 `Catalyst` |
-| 外骨骼虫单次 9 | `MegaCrit.Sts2.Core.Models.Monsters.Exoskeleton`；`HardToKillPower(9)`；`HardToKillPower.ModifyDamageCap` | `HardToKillPower` 对 owner 返回 damage cap = `Amount`；`CalculateTotalDamageNextTurn()` 每段走 `Hook.ModifyDamage` | 是；例如 12 毒 + 3 段可按 `min(12,9)+min(11,9)+min(10,9)=27` | 下一优先候选；可用原生总毒伤接入后单独 Steam 验证 |
-| Slippery | `SlipperyPower.ModifyHpLostAfterOsty`；`SlipperyPower.AfterDamageReceived` | HP loss >= 1 时压到 1；收到未格挡伤害后 decrement | 是，但属于 HP loss 结果修正，不由 `CalculateTotalDamageNextTurn()` 完整证明 | 用户要求：当前仍有 `SlipperyPower.Amount > 0` 时禁用该敌人的 Poison survival 修正，保留其 Intent；层数消失后再恢复已支持 Poison 计算 |
-| 敌方无实体 | `IntangiblePower.ModifyDamageCap`；`IntangiblePower.ModifyHpLostAfterOsty` | damage cap 与 HP loss cap 均压到 1；`CalculateTotalDamageNextTurn()` 可反映 damage cap 侧 | 是，每个 Poison tick 通常至多 1 | 与 `TestSubject` 生命周期分开验证；先证实每段 Poison 结果，再证实当前 Intent 是否取消 |
-| 鬼祟珊瑚群限伤 | `MegaCrit.Sts2.Core.Models.Monsters.SewerClam`；`HardenedShellPower` | `HardenedShellPower.DisplayAmount = Amount - damageReceivedThisTurn`；`ModifyHpLostBeforeOstyLate` 将 HP loss 限到剩余预算；`AfterDamageReceived` 累加 `result.UnblockedDamage`；`BeforeSideTurnStart` 重置预算 | 是，但属于 HP loss budget，不是单纯 damage cap | 暂不接入。需要先验证预算重置时机和 enemy side Poison tick 前的剩余预算 |
-| 实验体生命周期 | `MegaCrit.Sts2.Core.Models.Monsters.TestSubject`；`AdaptablePower`；`IntangiblePower` | 用户观察复活 / 阶段敌人当前回合不会继续攻击；原生仍需确认 death / respawn 后当前 Intent 取消点 | 是，影响“是否执行当前 Intent” | 暂不接入；后续单独验证生命周期后可从 Unknown 改为确定排除 Intent |
+| 外骨骼虫单次 9 | `MegaCrit.Sts2.Core.Models.Monsters.Exoskeleton`；`HardToKillPower(9)`；`HardToKillPower.ModifyDamageCap` | `HardToKillPower` 对 owner 返回 damage cap = `Amount`；`CalculateTotalDamageNextTurn()` 每段走 `Hook.ModifyDamage` | 是；例如 54 毒无额外触发只预览 9，额外两段触发后按 `9+9+9=27` 可杀 26 HP | Phase 11C 已接入并 RuntimeVerified；用户确认遗物和诅咒影响下也不再隐藏 `-N` |
+| Slippery | `SlipperyPower.ModifyHpLostAfterOsty`；`SlipperyPower.AfterDamageReceived` | HP loss >= 1 时压到 1；收到未格挡伤害后 decrement | 是，且多段 Poison 会逐段消耗 Slippery | Phase 11C 已实现逐 tick / 逐层预览并由用户 Steam 验证：示例中墨宝中间敌人的 `3x3` Intent 被移除，HUD 从 `-17` 变为 `-8` |
+| 敌方无实体 | `IntangiblePower.ModifyDamageCap`；`IntangiblePower.ModifyHpLostAfterOsty` | damage cap 与 HP loss cap 均压到 1；`CalculateTotalDamageNextTurn()` 可反映 damage cap 侧 | 是，每个 Poison tick 通常至多 1 | Phase 11C 窄规则已恢复；TestSubject 第三阶段 exact-lethal 等号边界由用户截图和运行时确认验证。组合机制仍保守保留基础 Intent |
+| 鬼祟珊瑚群限伤 | `MegaCrit.Sts2.Core.Models.Monsters.SewerClam`；`HardenedShellPower` | `HardenedShellPower.DisplayAmount = Amount - damageReceivedThisTurn`；`ModifyHpLostBeforeOstyLate` 将 HP loss 限到剩余预算；`AfterDamageReceived` 累加 `result.UnblockedDamage`；`BeforeSideTurnStart` 重置预算 | 是，但属于 HP loss budget，不是单纯 damage cap | Phase 11C 已条件接入并由用户 Steam 验证成功：只读 `DisplayAmount` 作为剩余预算；读不到或剩余预算小于当前 HP 时保留基础 Intent；否则 Poison HP loss 先按预算封顶，再判断是否移除当前 Intent |
+| 实验体生命周期 | `MegaCrit.Sts2.Core.Models.Monsters.TestSubject`；`AdaptablePower`；`IntangiblePower` | 用户观察复活 / 阶段敌人当前回合不会继续攻击；第三阶段 `IntangiblePower` 仍影响 Poison 每段伤害 | 是，影响“是否执行当前 Intent” | Phase 11C 已放开复活 / 转阶段并恢复第三阶段 Intangible 窄预览；9 HP / 20 Poison / Intangible(1) / Accelerant(8) / 45 Intent 的 exact-lethal 场景已由用户 RuntimeVerified |

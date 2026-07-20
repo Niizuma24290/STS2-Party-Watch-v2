@@ -1,10 +1,14 @@
 # Project State
 
-Last reconciled: 2026-07-03
+Last reconciled: 2026-07-21
+
+## Product Naming
+
+The current player-facing name is `Damage Forecast` / `伤害预测`; `Party Watch` is the former player-facing name. Technical identifiers such as `sts2-party-watch-v2`, `STS2PartyWatch`, `PartyWatch*`, assembly and project names, paths, and the diagnostic prefix `[STS2 Party Watch]` are intentionally retained. Historical evidence below is not rewritten.
 
 ## Positioning
 
-STS2 Party Watch v2 is a read-only Slay the Spire 2 combat HUD mod. Its primary supported surface is the local player's forecast HUD. The default display is a single total expected HP loss value:
+Damage Forecast is a read-only Slay the Spire 2 combat HUD mod. Its primary supported surface is the local player's forecast HUD. The default display is a single total expected HP loss value:
 
 ```text
 -N
@@ -16,17 +20,21 @@ The total is display-only composition of trusted forecast fields:
 N = ForecastResult.OutDamage + ForecastResult.DirectHpLoss
 ```
 
-Party Watch does not simulate a full turn, does not call real damage or command execution paths, and does not modify combat state, saves, network state, cards, powers, relics, or room state.
+Damage Forecast does not simulate a full turn, does not call real damage or command execution paths, and does not modify combat state, saves, network state, cards, powers, relics, or room state.
 
 ## Current HUD Behavior
 
 - Default HUD line: total expected HP loss `-N`.
+- Phase 13A adds optional incoming damage `N`, disabled by default. `N` is a separate display value and does not change the existing `-N` calculation.
+- Damage display modes are `ExpectedHpLossOnly` (default), `IncomingDamageOnly`, and `Both`.
+- When both values are shown, `N` can be placed left or right of `-N`; the existing `-N` label remains the anchor when it is visible.
+- Incoming damage `N` can optionally include current Block, Power/Orb pre-attack Block, relic pre-attack Block, Power HP-loss result modifiers, and relic HP-loss result modifiers.
 - Advanced details: optional `🛡 N` and `♥ N`, disabled by default.
 - `🛡 N`: trusted final blockable HP loss after verified block and supported HP-loss result modifiers.
 - `♥ N`: trusted direct HP loss that does not go through Block.
 - Unknown, unsupported, non-combat, zero-output, hidden UI, or untrusted partial values are hidden rather than guessed.
 - HUD refreshes from health-bar lifecycle hooks, hand pile changes, relic add/remove/melt, selected turn lifecycle hooks, and settings changes.
-- `FreezeHudWithinPlayerTurn` is enabled by default. It freezes a display snapshot within the player turn and commits a final snapshot at `Hook.BeforeTurnEnd`; it does not alter forecast mechanics.
+- `FreezeHudWithinPlayerTurn` is enabled by default. It freezes a display snapshot within the player turn and commits a final snapshot through the compatible turn-end hook surface: `Hook.BeforeTurnEnd` on stable v0.107.1 or `Hook.BeforeSideTurnEnd` on beta v0.108.0; it does not alter forecast mechanics.
 - Covering native pages, modal/popup/overlay screens, combat end, invalid player state, or disabled HUD settings hide and clear relevant display state.
 - The temporary local health-bar center guide, HUD text center guide, and alignment runtime log have been removed after the alignment observation task.
 - Default `HealthBarRight` HUD placement now centers the main HUD label on the same local health-bar center line used by the temporary guide. User X/Y offsets still apply after the default position is calculated.
@@ -59,9 +67,13 @@ Status tags:
 | ConstrictPower / DisintegrationPower self-damage | Implemented, RuntimeVerified | Treated as blockable turn-end Power damage based on code evidence and user Steam verification. |
 | IntangiblePower on local player direct HP loss | Implemented, RuntimeVerified, Conditional | Applies to verified single HP-loss events before Tungsten Rod and Beating Remnant. Aggregate direct HP loss remains unsupported. |
 | TungstenRod | Implemented, Conditional | Applies only to verified single HP-loss events. Aggregate enemy HP loss with Tungsten Rod returns Unknown. |
-| BeatingRemnant | Implemented, Conditional | Uses observed current-window HP loss budget and verified event order. Tungsten Rod is applied before Beating Remnant in Party Watch forecast. |
-| DiamondDiademPower / Diamond Diadem | Implemented, RuntimeVerified, Conditional | Existing Power trusts native intent preview. Future Power is forecast only when card-count and per-hit conditions are readable. |
-| Ordinary Poison pre-action enemy survival preview | Implemented, Conditional | Code integrated for ordinary enemies with readable `PoisonPower` and `AccelerantPower`; build/publish evidence exists, but the专项 Steam matrix is not fully backfilled. |
+| BeatingRemnant | Implemented, Conditional | Uses observed current-window HP loss budget and verified event order. Tungsten Rod is applied before Beating Remnant in the Damage Forecast result. |
+| Diamond Diadem, legacy and v0.109 | Implemented, Conditional | Capability routing selects the preserved legacy card-count damage-reduction strategy only when `CardsPlayedThisTurn` and `DiamondDiademPower` exist. v0.109 first-turn Block + Blur and unknown future mechanisms keep native attack damage. Runtime re-verification is pending. |
+| Ordinary Poison pre-action enemy survival preview | Implemented, Conditional | Code integrated for ordinary enemies with readable `PoisonPower` and `AccelerantPower`; existing multi-enemy behavior retained, but the full专项 Steam matrix is not fully backfilled. |
+| `HardToKillPower` / Exoskeleton Poison pre-action preview | Implemented, RuntimeVerified, Conditional | Phase 11C uses native `PoisonPower.CalculateTotalDamageNextTurn()` for capped Poison damage; user Steam verification confirmed Exoskeleton no longer hides `-N`, including with relic and curse modifiers active. |
+| `SlipperyPower` / 墨宝 Poison preview | Implemented, RuntimeVerified, Conditional | Active Slippery is previewed as a per-damage-event cap: each Slippery layer caps one Poison tick to 1 HP loss and is consumed for the next tick. User Steam verification confirmed the middle 墨宝's `3x3` Intent was removed and HUD showed only the remaining `-8`. |
+| `HardenedShellPower` / SewerClam Poison preview | Implemented, RuntimeVerified, Conditional | Phase 11C reads `DisplayAmount` as remaining HP-loss budget, caps Poison HP loss to that budget, and removes current Intent only when the readable budget is at least current HP and capped Poison reaches current HP. User reported the SewerClam / coral test succeeded on 2026-07-17. |
+| Enemy `IntangiblePower` Poison preview | Implemented, RuntimeVerified, Conditional | Phase 11C narrow support was restored on 2026-07-18. Without HardToKill, Slippery, or HardenedShell combinations, each Poison tick contributes at most 1 HP loss and the current Intent is removed only when the readable trigger count reaches current HP. User Steam verification confirmed the exact-lethal TestSubject phase-3 boundary: 9 HP, 20 Poison, Intangible(1), opponent Accelerant(8), native 45 Intent. |
 | Local HUD in multiplayer battles | Implemented, RuntimeVerified, Conditional | Workshop subscription runtime screenshot confirmed local player's `-6` HUD under the local character health bar. This is still local-player HUD, not teammate HUD. |
 | Formal multiplayer HUD, teammate HUD, shared party HUD | Unsupported | Explicitly frozen. No target-aware multiplayer forecast is claimed. |
 
@@ -72,8 +84,14 @@ Current implementation:
 - `EnemyPreActionSurvivalPreview` / `PoisonTickPreview` run inside `LocalIncomingDamageReader` before an enemy instance's current `AttackIntent` is added to the forecast.
 - Enemy identity is per native instance: prefer `Creature.CombatId`, otherwise native object reference plus same-snapshot enemy index. Enemy display name is not used as a key.
 - Supported ordinary path reads current `PoisonPower.Amount`, current enemy HP, current intent contribution, and opponent `AccelerantPower.Amount`.
-- `AccelerantPower` is read only if it is already active at the forecast moment. Party Watch does not replay `Accelerant` cards or command queues.
-- If ordinary Poison is predicted to kill that enemy before its action, that enemy instance's current Attack Intent is excluded from final `-N`.
+- `AccelerantPower` is read only if it is already active at the forecast moment. Damage Forecast does not replay `Accelerant` cards or command queues.
+- If supported Poison preview is predicted to kill that enemy before its action, that enemy instance's current Attack Intent is excluded from final `-N`.
+- `HardToKillPower` / Exoskeleton uses native `PoisonPower.CalculateTotalDamageNextTurn()` so per-tick damage caps are reflected before deciding whether to exclude current Intent.
+- `SlipperyPower` / 墨宝 now previews current Slippery layers as per-tick caps consumed by Poison damage events.
+- `HardenedShellPower` / SewerClam now reads current `DisplayAmount` as remaining HP-loss budget. If the budget is unreadable or smaller than current HP, Damage Forecast keeps base Intent; otherwise it caps Poison HP loss by that budget before deciding whether current Intent is removed.
+- Enemy `IntangiblePower` now has narrow support: when not combined with HardToKill, Slippery, or HardenedShell, each Poison tick is treated as at most 1 HP loss, so current Intent is removed only when `min(PoisonPower.Amount, 1 + opponent AccelerantPower sum)` reaches current HP.
+- Revive / phase / hatch enemies (`TestSubject` / `AdaptablePower`, `NemesisPower`, `HatchPower` / ToughEgg) may now remove current Intent when supported Poison preview reaches current HP, because user confirmed they do not immediately attack after death, revive, or phase transition.
+- Unsupported Poison-sensitive HP-loss or budget mechanics still conservatively keep base Intent instead of hiding the whole forecast.
 - The preview does not execute real Poison, damage, death, removal, enemy action, RNG, save, or network behavior.
 
 Native poison-bar evidence recorded from the final task notes:
@@ -83,32 +101,37 @@ Native poison-bar evidence recorded from the final task notes:
 - Native poison preview calls `Hook.ModifyDamage(...)` per tick, so it can reflect damage-cap style powers such as `HardToKillPower` or damage-cap side of `IntangiblePower`.
 - Native `NHealthBar.IsPoisonLethal(...)` and `_poisonForeground` are UI preview signals only. They do not prove enemy Intent cancellation, death lifecycle, revive, phase behavior, or HP-loss budget behavior.
 
-Current unsupported / research-only Poison boundaries:
+Current conservative / unsupported Poison boundaries:
 
-- `HardToKillPower` / Exoskeleton: native poison bar evidence is documented, but Party Watch does not yet use `CalculateTotalDamageNextTurn()` for this case.
-- `SlipperyPower`: when active, Poison survival preview must not remove that enemy's Intent; the enemy should keep contributing until a supported rule is implemented.
-- Enemy `IntangiblePower`: poison damage cap / HP-loss cap interaction is documented but not yet verified for enemy pre-action survival.
-- `TestSubject` / `AdaptablePower`: phase, revive, and current Intent cancellation timing are not yet implemented.
-- `ToughEgg` / `HatchPower`: hatch lifecycle remains unsupported.
-- `SewerClam` / `HardenedShellPower`: per-turn HP-loss budget and reset timing remain unsupported.
+- `HardToKillPower` / Exoskeleton: implemented and RuntimeVerified for the Phase 11C user-provided scenes; still conditional on native `CalculateTotalDamageNextTurn()` being available.
+- `SlipperyPower`: implemented and RuntimeVerified as narrow support. When active, each Slippery layer caps one Poison tick to 1 HP loss and is consumed in the preview.
+- `HardenedShellPower` / SewerClam: implemented and RuntimeVerified as narrow budget support. It requires readable `DisplayAmount`; remaining budget must be at least current HP, and effective Poison HP loss is capped by remaining budget.
+- Enemy `IntangiblePower`: narrow support is active and RuntimeVerified for the representative exact-lethal TestSubject phase-3 boundary. It remains conditional: HardToKill, Slippery, or HardenedShell combinations keep the already-read base Intent.
+- `TestSubject` / `AdaptablePower`: supported Poison may remove the current Intent. User runtime confirmation covers the phase-3 Intangible exact-lethal scene and the established rule that revive / phase transition does not immediately execute the old attack. Other lifecycle families remain without separate captures.
+- `NemesisPower`: Poison override is enabled for supported poison damage. Runtime verification is pending for this enemy family.
+- `ToughEgg` / `HatchPower`: Poison override is enabled for supported poison damage. Runtime verification is pending for this enemy family.
 
 Verification state:
 
-- Implemented: ordinary Poison pre-action survival code path exists.
-- Built / publish evidenced: recorded in Phase 9B task notes.
-- RuntimeVerified: not yet fully backfilled for the ordinary Poison matrix.
-- DocumentedOnly: native poison bar details and special enemy strategy notes.
+- Implemented: ordinary Poison pre-action survival code path exists; Phase 11C adds native Poison preview for supported capped-damage cases, narrow Slippery tick/layer preview, narrow HardenedShell remaining-budget preview, and conservative keep for active enemy Intangible / unsupported special blockers.
+- Built / publish / local install evidenced: recorded in Phase 11C task note.
+- RuntimeVerified: Exoskeleton / `HardToKillPower` Phase 11C scene passed user Steam verification, including relic and curse interactions; 墨宝 / `SlipperyPower` narrow tick/layer preview passed user Steam verification; HardenedShell / SewerClam budget support passed user Steam verification.
+- Pending runtime verification: TestSubject phase 3 damage-display behavior with enemy Intangible Poison override disabled again; revive / phase / hatch enemies after enabling Poison override.
+- DocumentedOnly: no remaining Phase 11C Poison special case is only documented, but unsupported combinations still keep base Intent.
 
 ## Front-End Capabilities
 
 - HUD label is anchored to the local player's `NHealthBar.HpBarContainer` parent or equivalent health-bar node parent.
-- Main label and detail label are separate nodes.
+- Main expected-loss label, incoming-damage label, and detail label are separate nodes.
 - The temporary health-bar center guide and HUD text guide were removed after the alignment observation task. The remaining HUD labels continue to use the local health-bar lifecycle and parent node.
 - Native covering screen lifecycle is tracked by `PartyWatchNativeCoveringScreenTracker` and `NativeCoveringScreenLifecyclePatch`.
-- Settings live in `PartyWatchUiSettings` for the current game session.
-- Settings include HUD enabled, local HUD in multiplayer, advanced details, freeze behavior, anchor preset, X/Y offset, total color, shield detail color, heart detail color, and restore defaults.
-- Current settings are session-only. No verified official per-mod persistence API is used, and Party Watch does not write guessed settings files or game saves.
-- The settings entry no longer occupies the native Settings or Modding entry. It appears only inside the native Modding screen's Party Watch mod-info panel by patching `NModInfoContainer.Fill(Mod)` for `sts2-party-watch-v2`.
+- Settings are defined through `PartyWatchBaseLibConfig : BaseLib.Config.SimpleModConfig` and registered with `ModConfigRegistry.Register("sts2-party-watch-v2", config)`.
+- The business-facing HUD code still reads settings only through `PartyWatchUiSettings`; `PartyWatchSettingsAdapter` syncs BaseLib config changes into that existing settings surface.
+- Settings include HUD enabled, local HUD in multiplayer, advanced details, freeze behavior, damage display mode, incoming damage placement, incoming damage calculation switches, anchor preset, X/Y offset, total color, shield detail color, heart detail color, and BaseLib restore-defaults behavior.
+- The old Party Watch-owned `NModInfoContainer.Fill(Mod)` settings route has been removed.
+- The current supported settings route is the BaseLib generated page under the main-menu Mod Configuration flow. User runtime verification on 2026-07-03 confirmed `STS2PartyWatch` appears, opens, and generated controls are usable.
+- Phase 13A settings-page smoke verification on 2026-07-16 confirmed the installed incoming-damage settings surface is OK. The full Phase 13A combat HUD matrix is not fully runtime verified.
+- The in-combat built-in `模组配置（BaseLib）` / `打开配置` entry is visible but currently unusable; this is recorded as a Phase 12A known limitation, not a Phase 12A blocker.
 
 ## Multiplayer Definition
 
@@ -127,14 +150,146 @@ Current multiplayer behavior:
 
 ## Known Limitations
 
-- Ordinary Poison pre-action survival preview still needs a dedicated Steam runtime matrix for ordinary Poison, multiple enemies, same-name enemies, and unsupported special enemies.
-- `HardToKillPower` / Exoskeleton Poison interaction is documented from native poison-bar evidence but not implemented in Party Watch.
-- `SlipperyPower`, enemy `IntangiblePower`, `TestSubject` / `AdaptablePower`, `ToughEgg` / `HatchPower`, and `SewerClam` / `HardenedShellPower` Poison survival cases are unsupported or research-only as listed in the Phase 9B Poison total record.
+- Ordinary Poison pre-action survival preview still needs a full dedicated Steam runtime matrix for ordinary Poison, multiple enemies, and same-name enemies, although user reports the existing multi-enemy behavior is currently correct.
+- `HardToKillPower` / Exoskeleton Poison interaction is implemented and RuntimeVerified in Phase 11C, but remains conditional on native poison preview availability.
+- `SlipperyPower` / 墨宝 is implemented and RuntimeVerified as narrow tick/layer Poison preview.
+- Enemy `IntangiblePower` narrow Poison cancellation was restored on 2026-07-18 and RuntimeVerified for the representative TestSubject phase-3 exact-lethal equality boundary. The full special-combination matrix is not separately captured.
+- `SewerClam` / `HardenedShellPower` Poison cancellation is implemented only when current `DisplayAmount` is readable and enough remaining budget exists; user runtime verification passed on 2026-07-17.
+- `TestSubject` / `AdaptablePower`, `NemesisPower`, and `ToughEgg` / `HatchPower` are enabled for supported Poison override based on user-confirmed revive / phase behavior, but still need dedicated runtime verification.
 - Tungsten Rod with aggregate enemy HP loss remains unsupported because per-hit or per-event granularity is required.
-- Diamond Diadem aggregate enemy damage with per-hit rounding unknown remains unsupported.
-- Settings persistence is session-only.
+- Legacy Diamond Diadem aggregate damage without verified per-hit rounding keeps native attack damage; it no longer makes the whole HUD Unknown. The v0.109 first-turn Block + Blur mechanism never applies the legacy damage modifier or its Stampede correction.
+- Settings persistence is handled by BaseLib config.
 - The health-bar center guide, HUD text center guide, `[HUD Align]` runtime log, and `PartyWatchHudDebugGuide` helper were removed in commit `070774b70ef07a5ead50f3e82ad60f1a6a3c6c0f`, Built and locally installed. The main `-N` alignment is RuntimeVerified by post-clamp logs. Post-removal smoke verification passed: user confirmed the HUD view is OK, and latest log inspection found no temporary guide or `[HUD Align]` debug noise. Installed DLL SHA256: `A7E87950FDF19C8BE3985894F988B009CDA188BB341733EC27C415F5E5B4A02D`.
 - Workshop state must not be described as a public release unless a public publish is explicitly recorded.
+- Phase 12A uses BaseLib's automatic config UI, so labels currently show code-style property names such as `EnablePartyWatchHud` and enum values such as `HealthBarRight`. Friendly labels, language selection, and HUD color polish are now planned as Phase 12B while preserving BaseLib's automatic layout.
+- The in-combat built-in `模组配置（BaseLib）` / `打开配置` route is currently unusable from the native in-combat settings panel. The main-menu Mod Configuration route is the verified supported route for Phase 12A.
+
+## Phase 11A v1.08 Beta Smoke State
+
+Phase 11A quick compatibility smoke retargeted the local development build to the installed STS2 v1.08 beta / `v0.108.0` game API (`release_info.json` version `v0.108.0`, branch `v0.108.0`, commit `58694f64`).
+
+Result boundary:
+
+- Built against v1.08: Release build passed with `C:\sts2\dotnet\dotnet.exe`, 0 warnings, 0 errors.
+- Required code changes: `Hook.BeforeTurnEnd` retargeted to `Hook.BeforeSideTurnEnd`; read-only `Hook.ModifyDamage(...)` preview calls now pass the v0.108.0 nullable `CardPlay` argument; registered HUD bars refresh after local `Hook.AfterPlayerTurnStart`; known covering screens refresh HUD bars after `Show` / `Hide` / `set_Visible`.
+- Local development artifact installed after the covering-screen hide fix: `mods\sts2-party-watch-v2\sts2-party-watch-v2.dll`, SHA256 `781B555A5161BBEFDAB19A74A20D3301211B297880CECB854DBB1486BC1A85D0`, timestamp `2026-07-04 01:30:54`.
+- Load smoke verified: running `SlayTheSpire2.exe` loaded `sts2-party-watch-v2.dll` from the intended local mods directory.
+- Core HUD smoke verified: first v1.08 runtime screenshot showed no HUD; after adding the local `AfterPlayerTurnStart` refresh, user screenshot confirmed `-13` next to the local health bar against a 13 enemy attack intent.
+- Core damage update smoke verified: user screenshot confirmed a reduced `-8` forecast after block.
+- HUD lifecycle smoke verified: user confirmed turn-start refresh works normally and end-turn freeze behavior is good.
+- Covering-screen hide smoke verified after the visibility refresh fix: user confirmed the HUD now hides when opening deck, settings, and map screens.
+- Settings entry smoke: not reverified from the final HUD screenshot; the native `NModInfoContainer.Fill(Mod)` patch target remains present in v0.108.0 and builds.
+- Not reverified in Phase 11A: full v1.08 compatibility, formal Poison matrix, Workshop release/upload, formal multiplayer HUD, teammate HUD, and shared party HUD.
+
+Key Phase 11A lesson: confirm the loaded artifact path first, reflect the installed v1.08 API instead of guessing from v1.07 names, and treat HUD display failures separately from covering-screen visibility failures. The successful compatibility fixes live in `ForecastRefreshPatch`, the three read-only `Hook.ModifyDamage(...)` callers, `NativeCoveringScreenLifecyclePatch`, and `PartyWatchNativeCoveringScreenTracker`.
+
+Phase 11A is closed as a partial v1.08 smoke. Do not describe this as full v1.08 certification.
+
+## Phase 11B Stable DLL Initialization State
+
+Phase 11B repaired stable branch loading after the local game was switched back to public stable `v0.107.1` (`release_info.json` version `v0.107.1`, branch `v0.107.1`, commit `59260271`).
+
+Result boundary:
+
+- Root cause: stable API incompatibility introduced by the v0.108.0 beta retarget. Stable `Hook` does not expose `BeforeSideTurnEnd`, and stable `Hook.ModifyDamage(...)` does not expose the beta 11-argument signature with nullable `CardPlay`.
+- BuiltAgainstStable: Release build passed with `C:\sts2\dotnet\dotnet.exe`, 0 warnings, 0 errors.
+- Required code changes: turn-end final snapshot commit is shared and attached through optional Harmony patches for `BeforeTurnEnd` or `BeforeSideTurnEnd`; read-only damage previews now call `HookDamageCompat`, which detects the current 10-argument or 11-argument `Hook.ModifyDamage(...)` signature.
+- Local development artifact installed: `mods\sts2-party-watch-v2\sts2-party-watch-v2.dll`, SHA256 `4B324F5B76A96322B3AD660F21EE04DA241D4DA83B26CC64F25235606FBA899A`, timestamp `2026-07-04 02:08:28`.
+- StableLoadVerified: user launched stable after the repaired local artifact was installed and reported success.
+- StableSettingsSmokeVerified: not reverified in Phase 11B.
+- StableHudSmokeVerified: not reverified in Phase 11B.
+- Beta after the compatibility wrapper: intended to remain supported through optional hook/signature detection, but not rerun after the local install was switched back to stable.
+
+Key Phase 11B lesson: prove the failure layer first, then isolate version drift behind small compatibility points. The successful fix lives in `ForecastRefreshPatch`, `HookDamageCompat`, and the three read-only `Hook.ModifyDamage(...)` forecast callers.
+
+## Phase 11E Dual Target Build Baseline
+
+Phase 11E is closed as `BuildVerified / RuntimeUnverified`.
+
+- Frozen reference snapshots exist for stable v0.107.1 and beta v0.109.0 outside the repository.
+- `scripts/Build-DualTargets.ps1` reads snapshot `release_info.json` files and rebuilds both targets with one no-argument command.
+- Both targets build and publish with 0 warnings and 0 errors into independent `work/publish/stable/` and `work/publish/beta/` directories.
+- The shared mod manifest has `min_game_version` `0.107.1`; no target-specific JSON is required for this baseline.
+- No matching-branch installation, loaded DLL path/hash proof, startup smoke, or HUD smoke was performed for these two generated artifacts.
+- Do not describe this baseline as stable/beta runtime compatibility. Runtime verification must be recorded separately for each matching game branch.
+
+## Phase 12A BaseLib Config State
+
+Phase 12A migrated the Party Watch settings baseline to BaseLib automatic `SimpleModConfig`.
+
+Result boundary:
+
+- Implemented: `PartyWatchBaseLibConfig` static properties define the automatic BaseLib config surface.
+- Implemented: `PartyWatchSettingsAdapter` listens for BaseLib config changes and applies them to `PartyWatchUiSettings`.
+- Implemented: `MainFile.Initialize()` registers the config with BaseLib before Harmony patches run.
+- Removed: the old Party Watch-owned `PartyWatchSettingsPatch.cs` route.
+- Dependency: project pins BaseLib `3.3.4` as a direct compile-only reference restored from the official release with a required SHA256 check; manifest requires `BaseLib` `min_version` `3.3.4`.
+- Build/publish: Release build and publish passed with 0 warnings and 0 errors in Phase 12A notes.
+- RuntimeVerified: user screenshot and report on 2026-07-03 confirmed the main-menu Mod Configuration flow shows `STS2PartyWatch`, opens the generated page, and controls are usable.
+- Known limitation: the in-combat built-in BaseLib config entry is visible but currently unusable; this is recorded and deferred.
+- Out of scope for Phase 12A: friendly labels/localization polish, language selector, HUD color polish, Poison logic changes, and formal multiplayer HUD work.
+
+## Phase 12B BaseLib Config Polish State
+
+Phase 12B is implemented, built, published, and locally installed for user runtime verification.
+
+Task note:
+
+```text
+docs/task-notes/phase-12b-config-localization-language-color.md
+```
+
+Implemented scope:
+
+- Friendly English / Simplified Chinese labels for Party Watch BaseLib config groups, settings, and closed dropdown values.
+- Persisted Party Watch-only `ConfigLanguage` setting with `English` and `简体中文`.
+- Existing `TotalExpectedLossColor` is reused as the player-facing `HUD Color`; no duplicate HUD color setting was added.
+- BaseLib's automatic rows and controls are still used through `GenerateOptionFromProperty(...)`.
+- BaseLib's section headers, restore-defaults button, focus-neighbor setup, scrolling, left mod list, and fullscreen shell remain in use.
+
+Layout rule:
+
+- Continue using BaseLib's automatic page layout, rows, controls, scrolling, spacing, and fullscreen shell.
+- Do not implement the hand-drawn/mockup text layout because it can wrap poorly and produce row alignment problems.
+- Do not replace the BaseLib page with a fully custom right-side UI.
+
+If an older note uses "Phase 12B" to mean a custom full right-side UI, that custom-UI idea is postponed behind this Phase 12B task.
+
+Current evidence:
+
+- Release build passed with 0 warnings and 0 errors.
+- Publish succeeded.
+- Local install copied only `sts2-party-watch-v2.dll` and `sts2-party-watch-v2.json` to the Party Watch mod directory.
+
+Runtime status:
+
+- RuntimeVerified through Phase 12C-B G4 from `Main Menu -> Mod Configuration -> Damage Forecast`.
+- English and Simplified Chinese titles, labels, closed values, and live language switching passed user runtime verification.
+- Language persistence passed a complete restart cycle: the user selected English, closed the game, reopened it, and confirmed English remained selected.
+
+Known Phase 12B limitations:
+
+- The language selector is a standard BaseLib row, not a top-right header control. This preserves BaseLib alignment and avoids fragile custom header layout.
+- Hover descriptions are not implemented in this pass because BaseLib's documented hover path expects `settings_ui.json` localization resources, while Party Watch remains code-only.
+- Dropdown popup item text still needs runtime verification; closed dropdown text is relabeled after BaseLib row generation and config changes.
+
+## Phase 12C-B Surface Rename Runtime State
+
+- G3: complete / StaticVerified / BuildVerified / ContractVerified.
+- G4: complete / Installed / RuntimeVerified.
+- Player-facing name: `Damage Forecast` / `伤害预测`.
+- Left BaseLib Mod list identity: stable `Damage Forecast`.
+- BaseLib page title: follows this Mod's English or Simplified Chinese config language, including first open after launch.
+- Technical identities remain unchanged: `sts2-party-watch-v2`, `STS2PartyWatch`, `PartyWatch*`, assembly/project/file names, persistence keys, paths, and `[STS2 Party Watch]` diagnostics.
+- Loader evidence: one `Damage Forecast [sts2-party-watch-v2]` initialization and one matching installed manifest.
+- Config persistence: RuntimeVerified across full restart.
+- Core single-player HUD: RuntimeVerified after the rename/title fixes.
+- Local-player multiplayer boundary: unchanged and covered by the earlier Workshop subscription runtime evidence; no formal teammate/shared HUD is claimed.
+- Final installed DLL: 112,128 bytes; SHA256 `1BAC85248FD83B62BE9867FD3A2F8F3B54D676D96D3F6B25F71B720A62D544F0`.
+- Final manifest: 375 bytes; SHA256 `A0CCDE08C2C7C0DB1C5D3BFC374C7523DFF0ECF492D00E6F154BF1AE1DAC5E11`.
+- Verification: stable/beta Release builds 0 warnings / 0 errors; 28/28 contract assertions pass on each frozen target.
+- Runtime BaseLib: Workshop v3.3.7; frozen build/contract baseline remains v3.3.4.
+- G5 is not approved: current changes remain local and uncommitted; no push, Workshop update, or remote-documentation update was performed.
 
 ## Release State
 
@@ -154,4 +309,4 @@ Current multiplayer behavior:
 
 ## Next Single Task
 
-Next Phase 11 supplement can proceed. Keep formal multiplayer HUD work frozen.
+Phase 12C-B G3 Surface Rename and G4 runtime verification are complete. The next gate is G5; commit, push, Workshop changes, and remote-documentation updates require separate approval. Keep formal multiplayer HUD work frozen unless explicitly reopened.

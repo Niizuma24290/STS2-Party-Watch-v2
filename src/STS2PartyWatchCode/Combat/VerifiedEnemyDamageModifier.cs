@@ -1,17 +1,18 @@
-using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
-using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Models;
-using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Models.Relics;
 using MegaCrit.Sts2.Core.MonsterMoves.Intents;
-using MegaCrit.Sts2.Core.ValueProps;
+using STS2PartyWatch.Diagnostics;
 
 namespace STS2PartyWatch.Combat;
 
 internal static class VerifiedEnemyDamageModifier
 {
+    private const string DiamondDiademTypeName = "MegaCrit.Sts2.Core.Models.Relics.DiamondDiadem";
+    private const string DiamondDiademPowerTypeName = "MegaCrit.Sts2.Core.Models.Powers.DiamondDiademPower";
+    private static readonly DiamondDiademMechanismKind DiamondDiademMechanism = DetectDiamondDiademMechanism();
+
     public static EnemyDamageModificationResult ApplyDiamondDiadem(
         Player player,
         Creature localCreature,
@@ -22,138 +23,59 @@ internal static class VerifiedEnemyDamageModifier
     {
         try
         {
-            var state = ReadDiamondDiademState(player, localCreature);
-            if (state == DiamondDiademForecastState.NotActiveOrAlreadyNative)
-            {
-                return EnemyDamageModificationResult.Supported(nativeAmount);
-            }
-
-            if (state == DiamondDiademForecastState.Unknown)
-            {
-                return EnemyDamageModificationResult.Unsupported(
-                    EnemyDamageModificationState.UnsupportedBecauseDiamondDiademStateUnknown);
-            }
-
-            if (!isSingleVerifiedEvent && nativeAmount > 0)
-            {
-                return EnemyDamageModificationResult.Unsupported(
-                    EnemyDamageModificationState.UnsupportedBecauseAggregateEnemyDamageWithPerHitRounding);
-            }
-
-            return EnemyDamageModificationResult.Supported(
-                ReadFutureDiamondDiademSingleDamage(player, localCreature, attackIntent, enemy));
+            return DiamondDiademMechanism == DiamondDiademMechanismKind.LegacyCardCountDamageReduction
+                ? LegacyDiamondDiademDamageForecast.Apply(
+                    player,
+                    localCreature,
+                    attackIntent,
+                    enemy,
+                    nativeAmount,
+                    isSingleVerifiedEvent)
+                : EnemyDamageModificationResult.Supported(nativeAmount);
         }
-        catch
+        catch (Exception exception)
         {
-            return EnemyDamageModificationResult.Unsupported(
-                EnemyDamageModificationState.UnsupportedBecauseDiamondDiademStateUnknown);
+            PartyWatchDiagnostics.ReportOnce("diamond.apply", exception);
+            return EnemyDamageModificationResult.Supported(nativeAmount);
         }
     }
 
-    private static DiamondDiademForecastState ReadDiamondDiademState(Player player, Creature localCreature)
+    private static DiamondDiademMechanismKind DetectDiamondDiademMechanism()
     {
-        if (localCreature.GetPower<DiamondDiademPower>() is not null)
-        {
-            return DiamondDiademForecastState.NotActiveOrAlreadyNative;
-        }
-
-        var relic = player.Relics.OfType<DiamondDiadem>().FirstOrDefault(relic => !relic.IsMelted);
-        if (relic is null)
-        {
-            return DiamondDiademForecastState.NotActiveOrAlreadyNative;
-        }
-
-        if (!TryReadCardThreshold(relic, out var threshold))
-        {
-            return DiamondDiademForecastState.Unknown;
-        }
-
-        var cardsPlayed = relic.CardsPlayedThisTurn;
-        if (cardsPlayed == threshold && HasPendingStampedeAttack(player, localCreature))
-        {
-            cardsPlayed++;
-        }
-
-        return cardsPlayed <= threshold
-            ? DiamondDiademForecastState.ShouldApplyFuturePower
-            : DiamondDiademForecastState.NotActiveOrAlreadyNative;
-    }
-
-    private static bool TryReadCardThreshold(DiamondDiadem relic, out int threshold)
-    {
-        threshold = 0;
         try
         {
-            threshold = (int)relic.DynamicVars["CardThreshold"].BaseValue;
-            return true;
+            var gameAssembly = typeof(RelicModel).Assembly;
+            var relicType = gameAssembly.GetType(DiamondDiademTypeName, throwOnError: false);
+            if (relicType is null)
+            {
+                return DiamondDiademMechanismKind.NativeOnlyFallback;
+            }
+
+            var hasLegacyCounter = relicType.GetProperty("CardsPlayedThisTurn") is not null;
+            var hasLegacyPower = gameAssembly.GetType(DiamondDiademPowerTypeName, throwOnError: false) is not null;
+            if (hasLegacyCounter && hasLegacyPower)
+            {
+                return DiamondDiademMechanismKind.LegacyCardCountDamageReduction;
+            }
+
+            var hasFirstTurnStartHook = relicType.GetMethods()
+                .Any(method => method.Name == "AfterSideTurnStart");
+            return hasFirstTurnStartHook
+                ? DiamondDiademMechanismKind.FirstTurnBlockAndBlur
+                : DiamondDiademMechanismKind.NativeOnlyFallback;
         }
-        catch
+        catch (Exception exception)
         {
-            return false;
+            PartyWatchDiagnostics.ReportOnce("diamond.detect-mechanism", exception);
+            return DiamondDiademMechanismKind.NativeOnlyFallback;
         }
     }
 
-    private static bool HasPendingStampedeAttack(Player player, Creature localCreature)
+    private enum DiamondDiademMechanismKind
     {
-        var stampede = localCreature.GetPower<StampedePower>();
-        if (stampede is null || stampede.Amount <= 0)
-        {
-            return false;
-        }
-
-        var handPile = CardPile.Get(PileType.Hand, player);
-        return handPile is not null && handPile.Cards.Any(card => card.Owner == player && card.Type == CardType.Attack);
-    }
-
-    private static int ReadFutureDiamondDiademSingleDamage(
-        Player player,
-        Creature localCreature,
-        AttackIntent attackIntent,
-        Creature enemy)
-    {
-        var damageCalc = attackIntent.DamageCalc;
-        if (damageCalc is null)
-        {
-            throw new InvalidOperationException("AttackIntent.DamageCalc is not readable.");
-        }
-
-        var baseDamage = damageCalc();
-        var props = DamageProps.monsterMove;
-        var additiveAndMultiplicative = ModifyDamageHookType.Additive | ModifyDamageHookType.Multiplicative;
-
-        var beforeCap = Hook.ModifyDamage(
-            player.RunState,
-            localCreature.CombatState!,
-            localCreature,
-            enemy,
-            baseDamage,
-            props,
-            null,
-            additiveAndMultiplicative,
-            CardPreviewMode.None,
-            out _);
-
-        var afterDiamondDiadem = beforeCap * 0.5m;
-        var afterCap = Hook.ModifyDamage(
-            player.RunState,
-            localCreature.CombatState!,
-            localCreature,
-            enemy,
-            afterDiamondDiadem,
-            props,
-            null,
-            ModifyDamageHookType.Cap,
-            CardPreviewMode.None,
-            out _);
-
-        return Math.Max(0, (int)afterCap);
-    }
-
-    private enum DiamondDiademForecastState
-    {
-        NotActiveOrAlreadyNative,
-        ShouldApplyFuturePower,
-        Unknown
+        LegacyCardCountDamageReduction,
+        FirstTurnBlockAndBlur,
+        NativeOnlyFallback
     }
 }
 

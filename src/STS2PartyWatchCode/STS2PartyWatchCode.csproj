@@ -10,26 +10,48 @@
     <DebugSymbols>false</DebugSymbols>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PartyWatchVisibilityProfiling Condition="'$(PartyWatchVisibilityProfiling)' == ''">false</PartyWatchVisibilityProfiling>
+    <PartyWatchDisableGlobalVisibilityPatches Condition="'$(PartyWatchDisableGlobalVisibilityPatches)' == ''">false</PartyWatchDisableGlobalVisibilityPatches>
+    <BaseLibVersion>3.3.4</BaseLibVersion>
+    <BaseLibReferencePath Condition="'$(BaseLibReferencePath)' == ''">$(MSBuildProjectDirectory)\..\..\work\dependencies\BaseLib\$(BaseLibVersion)\BaseLib.dll</BaseLibReferencePath>
     <Sts2GameRoot Condition="'$(Sts2GameRoot)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2</Sts2GameRoot>
-    <Sts2ManagedDir>$(Sts2GameRoot)\data_sts2_windows_x86_64</Sts2ManagedDir>
+    <Sts2ReferenceRoot Condition="'$(Sts2ReferenceRoot)' == ''">$(Sts2GameRoot)\data_sts2_windows_x86_64</Sts2ReferenceRoot>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(PartyWatchVisibilityProfiling)' == 'true'">
+    <DefineConstants>$(DefineConstants);PARTY_WATCH_VISIBILITY_PROFILING</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(PartyWatchDisableGlobalVisibilityPatches)' == 'true'">
+    <DefineConstants>$(DefineConstants);PARTY_WATCH_DISABLE_GLOBAL_VISIBILITY_PATCHES</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="BaseLib">
+      <HintPath>$(BaseLibReferencePath)</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="sts2">
-      <HintPath>$(Sts2ManagedDir)\sts2.dll</HintPath>
+      <HintPath>$(Sts2ReferenceRoot)\sts2.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="GodotSharp">
-      <HintPath>$(Sts2ManagedDir)\GodotSharp.dll</HintPath>
+      <HintPath>$(Sts2ReferenceRoot)\GodotSharp.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="0Harmony">
-      <HintPath>$(Sts2ManagedDir)\0Harmony.dll</HintPath>
+      <HintPath>$(Sts2ReferenceRoot)\0Harmony.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="bin\**\*.cs" />
+    <Compile Remove="obj\**\*.cs" />
     <None Include="sts2-party-watch-v2.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="STS2PartyWatchCode.ContractTests" />
   </ItemGroup>
 </Project>

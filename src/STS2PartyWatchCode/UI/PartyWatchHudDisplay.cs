@@ -1,4 +1,5 @@
 using Godot;
+using STS2PartyWatch.Combat;
 using STS2PartyWatch.Forecast;
 
 namespace STS2PartyWatch.UI;
@@ -10,6 +11,7 @@ internal static class PartyWatchHudDisplay
     private const int DetailShieldFontSize = 15;
     private const int DetailHeartFontSize = 22;
     private const float HealthBarRightPadding = 6f;
+    private const float SegmentGap = 10f;
     private const float DetailRightGap = 12f;
 
     public static string BuildMainHudDisplay(ForecastResult result)
@@ -20,9 +22,31 @@ internal static class PartyWatchHudDisplay
 
     public static string BuildHudDetails(ForecastResult result)
     {
-        return PartyWatchUiSettings.ShowBreakdownDetails
+        return PartyWatchUiSettings.ShowBreakdownDetails && IsExpectedHpLossDisplayable(result)
             ? BuildForecastDetails(result.OutDamage, result.DirectHpLoss)
             : string.Empty;
+    }
+
+    public static string BuildIncomingHudDisplay(IncomingDamageDisplayRead read)
+    {
+        return read.State == IncomingDamageDisplayReadState.Known ? read.Damage.ToString() : string.Empty;
+    }
+
+    public static bool ShouldShowExpectedHpLoss(ForecastHudSnapshot snapshot)
+    {
+        return PartyWatchUiSettings.DamageDisplayMode != DamageDisplayMode.IncomingDamageOnly
+            && IsExpectedHpLossDisplayable(snapshot.ExpectedHpLoss);
+    }
+
+    public static bool ShouldShowIncomingDamage(ForecastHudSnapshot snapshot)
+    {
+        return PartyWatchUiSettings.DamageDisplayMode != DamageDisplayMode.ExpectedHpLossOnly
+            && snapshot.IncomingDamage.State == IncomingDamageDisplayReadState.Known;
+    }
+
+    public static bool HasDisplayableSnapshot(ForecastHudSnapshot snapshot)
+    {
+        return ShouldShowExpectedHpLoss(snapshot) || ShouldShowIncomingDamage(snapshot);
     }
 
     public static void ApplyMainHudStyle(Label label)
@@ -39,7 +63,17 @@ internal static class PartyWatchHudDisplay
         label.AddThemeConstantOverride("shadow_offset_y", 2);
     }
 
+    public static void ApplyIncomingHudStyle(Label label)
+    {
+        ApplyMainHudStyle(label);
+    }
+
     public static void ApplyMainHudTextBounds(Label label)
+    {
+        ApplyHudTextBounds(label);
+    }
+
+    public static void ApplyHudTextBounds(Label label)
     {
         var textSize = GetMainTextSize(label);
         label.CustomMinimumSize = textSize;
@@ -62,13 +96,17 @@ internal static class PartyWatchHudDisplay
 
     public static void ApplyHudPosition(
         Control healthBar,
-        Control mainLabel,
+        Control expectedLabel,
+        Control incomingLabel,
         Control? detailLabel,
         Vector2? containerSize,
         bool forceBelowHealthBar)
     {
         var size = containerSize ?? healthBar.Size;
-        var labelSize = mainLabel.Size;
+        var expectedVisible = !string.IsNullOrEmpty(GetControlText(expectedLabel));
+        var incomingVisible = !string.IsNullOrEmpty(GetControlText(incomingLabel));
+        var anchorLabel = expectedVisible ? expectedLabel : incomingLabel;
+        var labelSize = anchorLabel.Size;
         var center = GetHealthBarCenter(healthBar, size);
         var offset = new Vector2(PartyWatchUiSettings.OffsetX, PartyWatchUiSettings.OffsetY);
         var anchor = forceBelowHealthBar ? PartyWatchHudAnchor.HealthBarBelow : PartyWatchUiSettings.HudAnchor;
@@ -89,13 +127,37 @@ internal static class PartyWatchHudDisplay
         };
 
         position += offset;
-        mainLabel.Position = new Vector2(MathF.Max(0f, position.X), position.Y);
+        var anchorPosition = new Vector2(MathF.Max(0f, position.X), position.Y);
+        if (expectedVisible)
+        {
+            expectedLabel.Position = anchorPosition;
+            if (incomingVisible)
+            {
+                if (PartyWatchUiSettings.IncomingDamagePlacement == IncomingDamagePlacement.LeftOfExpectedHpLoss)
+                {
+                    incomingLabel.Position = new Vector2(
+                        expectedLabel.Position.X - incomingLabel.Size.X - SegmentGap,
+                        expectedLabel.Position.Y);
+                }
+                else
+                {
+                    incomingLabel.Position = new Vector2(
+                        expectedLabel.Position.X + expectedLabel.Size.X + SegmentGap,
+                        expectedLabel.Position.Y);
+                }
+            }
+        }
+        else if (incomingVisible)
+        {
+            incomingLabel.Position = anchorPosition;
+        }
 
         if (detailLabel is not null)
         {
+            var rightEdge = GetRightEdge(expectedVisible, expectedLabel, incomingVisible, incomingLabel);
             detailLabel.Position = new Vector2(
-                mainLabel.Position.X + mainLabel.Size.X + DetailRightGap,
-                mainLabel.Position.Y + ((mainLabel.Size.Y - detailLabel.Size.Y) * 0.5f));
+                rightEdge + DetailRightGap,
+                anchorPosition.Y + ((labelSize.Y - detailLabel.Size.Y) * 0.5f));
         }
     }
 
@@ -135,6 +197,42 @@ internal static class PartyWatchHudDisplay
         var fontSize = label.GetThemeFontSize("font_size");
         var textSize = font.GetStringSize(label.Text, fontSize: fontSize);
         return new Vector2(GetMainWidth(), MathF.Max(1f, textSize.Y));
+    }
+
+    private static bool IsExpectedHpLossDisplayable(ForecastResult result)
+    {
+        return result.State == ForecastResultState.KnownDamage
+            && (result.OutDamage > 0 || result.DirectHpLoss > 0);
+    }
+
+    private static string GetControlText(Control control)
+    {
+        return control switch
+        {
+            Label label => label.Text,
+            RichTextLabel richTextLabel => richTextLabel.Text,
+            _ => string.Empty
+        };
+    }
+
+    private static float GetRightEdge(
+        bool expectedVisible,
+        Control expectedLabel,
+        bool incomingVisible,
+        Control incomingLabel)
+    {
+        var rightEdge = 0f;
+        if (expectedVisible)
+        {
+            rightEdge = MathF.Max(rightEdge, expectedLabel.Position.X + expectedLabel.Size.X);
+        }
+
+        if (incomingVisible)
+        {
+            rightEdge = MathF.Max(rightEdge, incomingLabel.Position.X + incomingLabel.Size.X);
+        }
+
+        return rightEdge;
     }
 
     private static float GetDetailWidth() => 240f;

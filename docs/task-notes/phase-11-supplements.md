@@ -1,5 +1,7 @@
 # Phase 11｜补充与维护
 
+> 当前玩家可见名称为 `Damage Forecast` / `伤害预测`。本文件中的 `Party Watch`、`PartyWatch*`、路径与诊断前缀属于历史或技术身份，按原证据保留。
+
 ## 定位
 
 Phase 11 是 Workshop 上传完成后的后续补充 / 维护阶段。

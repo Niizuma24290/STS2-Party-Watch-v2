@@ -4,6 +4,8 @@ Date: 2026-07-02
 
 This is the current total task note for the project. It backfills the documentation state after several implementation and release-prep commits landed faster than the full docs could be kept synchronized.
 
+Historical snapshot notice: this note records the former player-facing `Party Watch` name as it existed on 2026-07-02. The current player-facing name is `Damage Forecast` / `伤害预测`; current authority is `docs/project-state.md` and the Phase 12C audit notes. Technical and historical identities remain unchanged.
+
 ## Audit Sources
 
 - `git status`, `git log --oneline --decorate --all -80`, `git log --stat --oneline -40`, `git diff --check`.
@@ -88,8 +90,8 @@ Verification classification:
 - Phase 11 local HUD alignment cleanup is closed at the code level: the temporary cyan health-bar guide, magenta HUD text guide, `[HUD Align]` runtime log, and `PartyWatchHudDebugGuide` helper were removed in commit `070774b70ef07a5ead50f3e82ad60f1a6a3c6c0f`.
 - The main `-N` alignment was RuntimeVerified by pre-removal runtime logs (`main.deltaY=0`, `guide.deltaY=0`). The debug-guide-removal build is RuntimeVerified for local smoke: user confirmed the HUD view is OK and latest log inspection found no temporary guide lines or `[HUD Align]` noise. Installed DLL SHA256: `A7E87950FDF19C8BE3985894F988B009CDA188BB341733EC27C415F5E5B4A02D`.
 - Formal multiplayer HUD remains frozen.
-- Poison special enemies and special HP-loss budgets remain unsupported or research-only.
-- Settings are session-only.
+- Poison special enemies remain conditional rather than generally simulated: HardToKill, Slippery, HardenedShell, and the representative TestSubject phase-3 Intangible exact-lethal boundary are RuntimeVerified; unsupported combinations conservatively keep base Intent.
+- Settings are persisted through BaseLib config.
 - Public Workshop release is not claimed.
 - Unsupported or untrusted mechanics hide rather than displaying guessed numbers.
 
@@ -114,4 +116,4 @@ Verification classification:
 
 ## Next Single Task
 
-Record new supplements under Phase 11. The first candidate is the ordinary Poison Steam runtime matrix. Keep formal multiplayer HUD frozen.
+Phase 12C-B G3 Surface Rename and the separately approved G4 install/runtime gate are closed and RuntimeVerified. Proceed to commit, push, Workshop changes, or remote-documentation updates only after separate G5 approval. Keep formal multiplayer HUD frozen.
