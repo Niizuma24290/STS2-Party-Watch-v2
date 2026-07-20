@@ -26,15 +26,16 @@ Current player-facing name: `Damage Forecast` / `伤害预测`. Completed-phase 
 
 ## Current Phase
 
-### Phase 12C-B G3/G4 - Surface Rename and Runtime Closure
+### Phase 12C G2-G5 - Audit, Surface Rename, Runtime And Repository Closure
 
-Status: completed / StaticVerified / BuildVerified / ContractVerified / RuntimeVerified. G2 audit closure and AUD-0007 performance measurement were complete before G3; the separately approved G4 runtime gate is now closed.
+Status: completed / StaticVerified / BuildVerified / ContractVerified / RuntimeVerified / CommitVerified / PushVerified / TagVerified. G2 audit closure and AUD-0007 performance measurement were complete before G3; G3 Surface Rename, G4 runtime verification, and G5 repository closure are now closed.
 
 Task note:
 
 ```text
 docs/task-notes/phase-12c-surface-rename.md
 docs/task-notes/phase-12c-g4-runtime-verification.md
+docs/task-notes/phase-12c-g5-repository-closure.md
 ```
 
 Authorized scope:
@@ -115,4 +116,4 @@ Not implemented:
 
 ## Next Single Direction
 
-G4 is closed. Request separate G5 approval before any commit, push, Workshop update, or remote-documentation update. Keep formal multiplayer HUD frozen unless explicitly reopened.
+Phase 12C G0-G5 is closed; no required audit follow-up remains. Workshop changes require separate explicit approval. G6 Full Technical Identity Migration remains optional future work and requires a dedicated approval and compatibility plan. Keep formal multiplayer HUD frozen unless explicitly reopened.

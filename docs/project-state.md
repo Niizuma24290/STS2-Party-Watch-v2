@@ -289,13 +289,17 @@ Known Phase 12B limitations:
 - Final manifest: 375 bytes; SHA256 `A0CCDE08C2C7C0DB1C5D3BFC374C7523DFF0ECF492D00E6F154BF1AE1DAC5E11`.
 - Verification: stable/beta Release builds 0 warnings / 0 errors; 28/28 contract assertions pass on each frozen target.
 - Runtime BaseLib: Workshop v3.3.7; frozen build/contract baseline remains v3.3.4.
-- G5 is not approved: current changes remain local and uncommitted; no push, Workshop update, or remote-documentation update was performed.
+- G5: complete / CommitVerified / PushVerified / TagVerified.
+- The complete 36-commit development history was fast-forward pushed without squash or history rewrite; the audited product/source tip is `0de7d74`.
+- Repository closure is recorded in `docs/task-notes/phase-12c-g5-repository-closure.md` and identified remotely by the annotated tag `g5-repository-closure`.
+- Workshop item `3755598583` was not updated during G5.
 
 ## Release State
 
 - Branch: `main`.
-- Remote: `https://github.com/Niizuma24290/STS2-Party-Watch-v2.git`.
-- GitHub: local `main` currently contains commits ahead of `origin/main` before this reconciliation is pushed.
+- Remote: `https://github.com/Niizuma24290/Damage-Forecast.git`.
+- GitHub: the repository was renamed to `Damage-Forecast`; local `main` and `origin/main` are synchronized after the G5 fast-forward push and documentation closure.
+- Published markers: `milestone-poison-preview`, `milestone-local-multiplayer-hud`, `milestone-hud-alignment-cleanup`, `phase-12c-audit-complete`, `v0.1.0`, and `g5-repository-closure`.
 - Workshop workspace: prepared under ignored `work/`.
 - Workshop item status from task notes: private / subscription test work exists, including item `3755598583`, uploaded DLL hash, cover/preview upload records, and local multiplayer HUD subscription validation. The repository state is not documented as a public Workshop release.
 - Not committed by policy: DLL, PDB, PCK, logs, `bin/`, `obj/`, `publish/`, `work/`, uploader files, cover assets, `mod_id.txt`, and game directory files.
@@ -309,4 +313,4 @@ Known Phase 12B limitations:
 
 ## Next Single Task
 
-Phase 12C-B G3 Surface Rename and G4 runtime verification are complete. The next gate is G5; commit, push, Workshop changes, and remote-documentation updates require separate approval. Keep formal multiplayer HUD work frozen unless explicitly reopened.
+Phase 12C G0-G5 is closed; there is no required follow-up for this audit project. Any Workshop update requires separate explicit approval. G6 Full Technical Identity Migration remains optional future work and requires a dedicated approval and compatibility plan. Keep formal multiplayer HUD work frozen unless explicitly reopened.

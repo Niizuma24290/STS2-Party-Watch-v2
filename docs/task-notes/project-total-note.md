@@ -107,6 +107,7 @@ Verification classification:
 - `docs/task-notes/README.md`
 - `docs/task-notes/project-total-note.md`
 - `docs/task-notes/phase-11-supplements.md`
+- `docs/task-notes/phase-12c-g5-repository-closure.md`
 
 ## Verification State For This Documentation Task
 
@@ -116,4 +117,4 @@ Verification classification:
 
 ## Next Single Task
 
-Phase 12C-B G3 Surface Rename and the separately approved G4 install/runtime gate are closed and RuntimeVerified. Proceed to commit, push, Workshop changes, or remote-documentation updates only after separate G5 approval. Keep formal multiplayer HUD frozen.
+Phase 12C G0-G5 is closed, including the separately approved G4 runtime gate and G5 repository review, full-history push, GitHub rename, and annotated tags. There is no required follow-up for this audit project. Workshop changes and optional G6 Full Technical Identity Migration each require separate explicit approval. Keep formal multiplayer HUD frozen.
