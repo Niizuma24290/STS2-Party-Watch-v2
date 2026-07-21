@@ -9,10 +9,10 @@
 
 - Phase 12C G0-G5 已收口；仓库、运行时验证和 tags 以
   [`docs/project-state.md`](../project-state.md) 及对应 Phase 12C closure note 为准。
-- 当前任务：Documentation Authority Consolidation。DC0/DC1/DC2 已完成；
-  下一 Gate 是用户审查并单独决定是否批准 DC3 historical routing/banner。
-  DC3 尚未批准。当前 task card 见
+- Documentation Authority Consolidation 已完成 DC0-DC6 并正式关闭；DC3 采用最小范围，
+  DC4 经评估后跳过。关闭记录见
   [`documentation-authority-consolidation-master-task-card.md`](documentation-authority-consolidation-master-task-card.md)。
+- 当前没有已批准的 active task。
 - [`forecast-engine-architecture-stabilization-master-task-card.md`](forecast-engine-architecture-stabilization-master-task-card.md) 仍是
   `Proposed / Queued`，没有获得 AR1 或代码实施授权。
 - G6 Full Technical Identity Migration、Workshop 和正式多人 HUD 均未获本任务授权。
@@ -22,8 +22,9 @@
 普通新 Session 默认只读：
 
 1. 本文件；
-2. [`docs/project-state.md`](../project-state.md)；
-3. [当前已批准任务卡](documentation-authority-consolidation-master-task-card.md)。
+2. [`docs/project-state.md`](../project-state.md)。
+
+仅当未来存在已批准任务时，再读取该任务卡。
 
 然后按任务主题读取对应 Tier 1 或精确历史证据。不要默认加载全部 Phase、audit 或 handoff note。
 
@@ -65,13 +66,13 @@
 ## Task-note classification
 
 - `CURRENT_AUTHORITY`：本文件。
-- `ACTIVE_TASK`：[`documentation-authority-consolidation-master-task-card.md`](documentation-authority-consolidation-master-task-card.md)，仅在已批准 Gate 内有效。
+- `ACTIVE_TASK`：无。
 - `PROPOSED_TASK`：[`forecast-engine-architecture-stabilization-master-task-card.md`](forecast-engine-architecture-stabilization-master-task-card.md)，保持 queued，尚未获得 AR1。
 - `SUPERSEDED_HANDOFF`：所有 `*handoff*` 文件；保留 hash、工作区和当时 next-step。
 - `RAW_EVIDENCE`：`phase-12c-aud-0007-*` 和 `phase-12c-audit/*`。
-- `HISTORICAL_RECORD`：`project-total-note.md` 及其余 completed Phase、runtime、Workshop 和 compatibility note。
+- `HISTORICAL_RECORD`：已关闭的 Documentation Authority Consolidation task card、`project-total-note.md` 及其余 completed Phase、runtime、Workshop 和 compatibility note。
 
-完整 41 文件逐项 disposition 见[当前任务卡](documentation-authority-consolidation-master-task-card.md)。
+完整 41 文件逐项 disposition 见[已关闭的 consolidation task card](documentation-authority-consolidation-master-task-card.md)。
 所有历史 note 默认不读、不移动、不删除，正文中的旧 next-step 只代表其原日期。
 
 ## 禁止事项

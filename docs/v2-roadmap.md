@@ -33,7 +33,7 @@ Current player-facing name: `Damage Forecast` / `伤害预测`. Completed-phase 
 
 ### Documentation Authority Consolidation
 
-Status: `DC2 Complete / DC3 Pending Separate Approval`.
+Status: `Closed — DC0-DC6 Complete / DC4 Skipped`.
 
 Current authority and exact scope:
 
@@ -92,13 +92,12 @@ Not implemented:
 
 ## Next Single Direction
 
-Review the completed Documentation Authority Consolidation DC2 authority layer,
-then separately decide whether to approve DC3 historical routing/banners. Do
-not automatically continue into DC3, physical archive, deletion, commit, push,
-or tag.
+There is no active approved task. Documentation Authority Consolidation is
+closed: DC5 validation passed, minimal DC3 affected only six superseded
+handoffs, and DC4 physical archive was skipped.
 
-After documentation closure, the Forecast Engine architecture card remains
-Proposed/Queued and must restart from its read-only AR0 revalidation before any
-AR1 implementation approval. G6 Full Technical Identity Migration remains an
-independent optional decision. Workshop changes and formal multiplayer HUD stay
-separately gated and frozen unless explicitly reopened.
+The next candidate is read-only AR0 revalidation of the Forecast Engine
+architecture card. It remains Proposed/Queued and requires separate approval
+before AR1 implementation. G6 Full Technical Identity Migration remains an
+independent optional decision. Workshop changes and formal multiplayer HUD
+stay separately gated and frozen unless explicitly reopened.

@@ -319,12 +319,16 @@ Known Phase 12B limitations:
 
 ## Next Single Task
 
-Documentation Authority Consolidation is the current documentation-only task.
-DC0, DC1, and DC2 are complete. The next Gate is user review and a separate
-decision on DC3 historical routing/banners; DC3 is not approved by DC2 closure.
-No code, test, script, manifest, Workshop, install, game, commit, push, tag,
-Forecast Engine, or G6 work is authorized.
+Documentation Authority Consolidation is closed after DC0-DC6. Minimal DC3
+added historical banners only to the six superseded handoffs; DC4 physical
+archive was evaluated and skipped, and DC5 final validation passed. No files
+were moved or deleted.
 
-The Forecast Engine architecture task remains Proposed/Queued. G6 Full
-Technical Identity Migration remains optional and separately gated. Keep formal
-multiplayer HUD work frozen unless explicitly reopened.
+There is no active approved task. No code, test, script, manifest, Workshop,
+install, game, Forecast Engine, or G6 work is authorized. Any further commit,
+push, or tag requires separate approval.
+
+The Forecast Engine architecture task remains Proposed/Queued; its next
+candidate Gate is read-only AR0 revalidation. G6 Full Technical Identity
+Migration remains optional and separately gated. Keep formal multiplayer HUD
+work frozen unless explicitly reopened.
