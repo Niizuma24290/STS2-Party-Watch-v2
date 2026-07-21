@@ -1,5 +1,8 @@
 # Session Handoff - Dual Target Build Complete, Runtime Unverified
 
+> Historical / Superseded handoff. Preserve as dated evidence.
+> Current task and authority: [`README.md`](README.md) + [`docs/project-state.md`](../project-state.md).
+
 Date: 2026-07-18
 
 ## Project Position

@@ -1,5 +1,8 @@
 # Phase 12A Completion Handoff - 2026-07-03
 
+> Historical / Superseded handoff. Preserve as dated evidence.
+> Current task and authority: [`README.md`](README.md) + [`docs/project-state.md`](../project-state.md).
+
 ## 当前结论
 
 Phase 12A 已完成：Party Watch 设置已经迁移到 BaseLib 自动生成的 `SimpleModConfig` 配置页，并完成主菜单路径的用户侧运行时验证。

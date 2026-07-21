@@ -1,5 +1,8 @@
 # 专项交接任务卡｜Poison × 实验体第三阶段 Intangible
 
+> Historical / Superseded handoff. Preserve as dated evidence.
+> Current task and authority: [`README.md`](README.md) + [`docs/project-state.md`](../project-state.md).
+
 日期：2026-07-18
 
 ## 1. 专项目标

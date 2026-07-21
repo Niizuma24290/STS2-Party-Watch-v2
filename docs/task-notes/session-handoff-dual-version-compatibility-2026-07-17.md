@@ -1,5 +1,8 @@
 # Session 交接卡｜Mod 双版本适配
 
+> Historical / Superseded handoff. Preserve as dated evidence.
+> Current task and authority: [`README.md`](README.md) + [`docs/project-state.md`](../project-state.md).
+
 ## 1. 项目定位
 
 ```text
