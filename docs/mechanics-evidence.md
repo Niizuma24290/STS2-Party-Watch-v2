@@ -1,8 +1,11 @@
 # Mechanics Evidence
 
-## 2026-07-02 Current mechanism ledger
+## Current mechanism ledger
 
-This section is the reconciliation index for the currently implemented mod. Older phase notes below remain historical evidence.
+Last reconciled: 2026-07-21.
+
+This section is the reconciliation index for the currently implemented mod.
+Older phase notes below remain historical evidence.
 
 | Mechanism | Current support | Affects | Core native evidence or hook | Current implementation entry | Runtime verification status | Known unsupported boundary |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -22,7 +25,30 @@ This section is the reconciliation index for the currently implemented mod. Olde
 | BeatingRemnant | Implemented, Conditional | verified HP-loss result chain | `MaxHpLoss` dynamic var and turn budget | `ObservedHpLossBudgetTracker`, `VerifiedHpLossResultModifier.Apply(...)` | Code evidence and historical notes; current order still needs subscription/runtime closure where noted | Requires ordered verified events and non-negative remaining budget. |
 | Diamond Diadem, legacy and v0.109 | Implemented, Conditional | enemy attack damage for the legacy mechanism; native Block for v0.109 | Runtime capability fingerprint: legacy `CardsPlayedThisTurn` + `DiamondDiademPower`; current `AfterSideTurnStart` first-turn 20 Block + one Blur | `VerifiedEnemyDamageModifier`, `LegacyDiamondDiademDamageForecast` | Historical RuntimeVerified for the old supported path; v0.109 build verified, runtime pending | Legacy-only Stampede correction is isolated. Unknown mechanisms keep native damage and do not hide the HUD. |
 | Ordinary / capped / Slippery / HardenedShell / Intangible Poison pre-action survival | Implemented, Conditional | enemy AttackIntent inclusion, total `-N` | `PoisonPower.AfterSideTurnStart`, `TriggerCount`, `CalculateTotalDamageNextTurn`, enemy action after side-turn start, `HardenedShellPower.DisplayAmount` | `EnemyPreActionSurvivalPreview`, `PoisonTickPreview` | Exoskeleton / HardToKill, Slippery / 墨宝, HardenedShell / SewerClam, and the representative TestSubject phase-3 Intangible exact-lethal boundary are RuntimeVerified in Phase 11C; full ordinary and special-combination matrices are not fully backfilled | Active enemy Intangible uses the narrow trigger-count rule unless combined with HardToKill, Slippery, or HardenedShell, in which case it keeps base Intent. Nemesis / ToughEgg remain pending family-specific runtime captures. |
+| Phase 13A incoming-damage projection | Implemented, Conditional | optional positive `N` display | Same trusted source readers; user-selected current Block, Power/Orb Block, relic Block, Power modifier, and relic modifier categories | `LocalIncomingDamageReader.ReadIncomingDamageForLocalCreature(...)`, `IncomingDamageDisplayOptions`, `ForecastHudSnapshot` | Built, installed, and settings-page RuntimeVerified; full combat/lifecycle matrix not fully backfilled | `N` is a forward projection, not a reverse calculation from `-N`; unsupported selected paths hide `N` instead of showing a partial total. |
 | Local HUD in multiplayer | Implemented, Conditional | display only | local health bar / local player identity | `PartyWatchHudVisibilityPolicy`, `ForecastRefreshPatch`, `PartyWatchUiSettings.ShowLocalHudInMultiplayer` | Workshop subscription runtime evidence for local `-6` HUD | Not teammate HUD, not shared HUD, no network behavior. |
+
+## Phase 13A incoming-damage projection
+
+Phase 13A keeps the existing expected HP-loss result `-N` and adds a separate
+optional positive incoming-damage value:
+
+```text
+N = known incoming damage after the user-selected local defense/reduction categories
+```
+
+- `N` is built forward from the same trusted enemy, hand, Power, direct-HP-loss,
+  Block, and modifier readers; it is not derived by reversing `-N`.
+- Display modes are `ExpectedHpLossOnly` (default), `IncomingDamageOnly`, and
+  `Both`; placement may be left or right when both values are visible.
+- Inclusion switches independently select current Block, Power/Orb Block,
+  relic Block, Power HP-loss modifiers, and relic HP-loss modifiers.
+- All inclusion switches default off, preserving the previous upgrade behavior.
+- Unsupported or incomplete selected paths return Unknown and hide `N`; they do
+  not publish a trusted-looking partial total.
+- Settings-page behavior is RuntimeVerified. The complete combat, modifier,
+  covering-screen, and frozen-snapshot matrix remains only partially runtime
+  verified and is not promoted beyond the Phase 13A task-note evidence.
 
 ## Status vocabulary
 

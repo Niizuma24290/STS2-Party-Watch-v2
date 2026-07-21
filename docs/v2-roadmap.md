@@ -19,73 +19,49 @@ Current player-facing name: `Damage Forecast` / `伤害预测`. Completed-phase 
 | Phase 8 - Non-Block damage modifiers | Complete within documented scope | Diamond Diadem / DiamondDiademPower implemented and runtime verified in supported single-player cases. |
 | Phase 9 - Single-player release cleanup | Complete | Default total `-N`, optional advanced `🛡/♥`, documentation, and single-player scope cleanup completed. |
 | Phase 9A - HUD lifecycle and settings | Complete | HUD visibility policy, turn freezing, settings panel, position, and colors implemented. |
-| Modding settings entry fix | Complete | Party Watch no longer occupies native Settings/Modding main entry; settings now live inside Party Watch's own mod info panel. |
+| Modding settings entry fix | Complete, historical route | Party Watch stopped occupying the native Settings/Modding main entry. The later Phase 12A/12B BaseLib route supersedes the former own-mod-info-panel route. |
 | Local HUD in multiplayer | Complete for local-player HUD only | Workshop subscription runtime evidence shows local player's Party Watch HUD in multiplayer combat. |
 | Phase 10 - Workshop upload / subscription milestone | Complete as private/subscription milestone | Workshop item `3755598583`, private visibility, cover/preview uploads, uploaded DLL hash, and subscription local-HUD validation are recorded in `workshop-private-rc-2026-07-01.md`. |
+| Phase 11C - Poison safe expansion | Complete within documented scope | HardToKill, Slippery, HardenedShell, and the representative TestSubject phase-3 Intangible exact-lethal boundary are RuntimeVerified; broader matrices remain deferred. |
+| Phase 11E - Dual-version build baseline | Complete / BuildVerified | Stable v0.107.1 and beta v0.109.0 frozen-reference builds are reproducible; this phase did not claim complete dual-branch runtime coverage. |
 | Phase 12A - BaseLib automatic config baseline | Complete | Party Watch settings migrated to BaseLib automatic `SimpleModConfig`; main-menu Mod Configuration route user-verified usable; in-combat BaseLib route remains a known limitation. |
+| Phase 12B - BaseLib config polish | Complete / RuntimeVerified | Damage Forecast English/Simplified Chinese labels, language switching, restart persistence, colors, and BaseLib-compatible layout are verified. |
+| Phase 13A - Incoming damage display | Implemented / partially RuntimeVerified | Optional incoming damage `N`, display modes, placement, and calculation switches are implemented; the full combat/lifecycle matrix is not fully backfilled. |
+| Phase 12C G0-G5 - Audit, rename, runtime and repository closure | Complete | Audit, Surface Rename, G4 runtime verification, full-history push, GitHub rename, and annotated tags are closed; Workshop was not updated. |
 
-## Current Phase
+## Current Initiative
 
-### Phase 12C G2-G5 - Audit, Surface Rename, Runtime And Repository Closure
+### Documentation Authority Consolidation
 
-Status: completed / StaticVerified / BuildVerified / ContractVerified / RuntimeVerified / CommitVerified / PushVerified / TagVerified. G2 audit closure and AUD-0007 performance measurement were complete before G3; G3 Surface Rename, G4 runtime verification, and G5 repository closure are now closed.
+Status: `DC2 Complete / DC3 Pending Separate Approval`.
 
-Task note:
+Current authority and exact scope:
 
-```text
-docs/task-notes/phase-12c-surface-rename.md
-docs/task-notes/phase-12c-g4-runtime-verification.md
-docs/task-notes/phase-12c-g5-repository-closure.md
-```
+[`docs/task-notes/documentation-authority-consolidation-master-task-card.md`](task-notes/documentation-authority-consolidation-master-task-card.md)
 
-Authorized scope:
+This task establishes one current authority per subject and routes Phase/audit/
+handoff documents as historical evidence. It does not authorize code, tests,
+scripts, manifest, Workshop, install, game runtime, Forecast Engine, G6,
+commit, push, tag, file moves, or deletions.
 
-- rename the player-visible product to `Damage Forecast` / `伤害预测`;
-- update manifest display metadata, BaseLib labels, and current product documentation;
-- explicitly label multiplayer visibility as local-player only;
-- retain Mod ID, BaseLib persistence key, Harmony ID, namespaces, `PartyWatch*` symbols, project/assembly/file identities, paths, Workshop ID, diagnostic prefix, and historical evidence.
+## Deferred Validation Candidates
 
-Hard boundary:
+### Poison matrix expansion
 
-- no behavior, forecast, persistence, layout, or performance logic changes;
-- no technical-identity or filename migration;
-- no install or game runtime verification inside G3.
-
-Runtime note:
-
-- G3 ended at static verification and stable/beta build evidence;
-- G4 installed the artifact and verified single-load identity, the Mod list, BaseLib English/Chinese titles and labels, restart persistence, and the core single-player HUD;
-- the final installed DLL is 112,128 bytes with SHA256 `1BAC85248FD83B62BE9867FD3A2F8F3B54D676D96D3F6B25F71B720A62D544F0`;
-- the in-combat BaseLib config route remains a known limitation.
-
-Historical note: Phase 9B Poison and several `phase-9*` follow-ups were named before the Phase 11 numbering correction. Keep those files as evidence. Poison matrix work remains deferred unless explicitly reopened.
-
-Deferred candidate:
-
-- ordinary Poison pre-action survival Steam runtime matrix.
-
-## Legacy Follow-Up Needing Validation
-
-### Phase 9B - Poison pre-action survival preview
-
-Status: implemented in code and build/publish evidenced, but专项 Steam runtime matrix remains the next validation task.
+Status: optional future validation, not the current task.
 
 Current supported scope:
 
-- ordinary enemy instance with readable `PoisonPower`;
-- readable opponent `AccelerantPower`;
-- no unsupported special damage cap, HP-loss cap, revive, hatch, phase, or special lifecycle Power;
-- only decides whether that enemy instance's current Attack Intent should contribute to the local forecast.
+- ordinary Poison pre-action survival remains implemented;
+- HardToKill, Slippery, HardenedShell, and the representative TestSubject
+  phase-3 Intangible exact-lethal boundary have narrow RuntimeVerified support;
+- unsupported combinations conservatively keep base Intent.
 
-Current unsupported/research scope:
+Deferred evidence:
 
-- `HardToKillPower` / Exoskeleton;
-- `SlipperyPower`;
-- enemy `IntangiblePower`;
-- `TestSubject` / `AdaptablePower`;
-- `ToughEgg` / `HatchPower`;
-- `SewerClam` / `HardenedShellPower`;
-- generic enemy HP-loss budgets and lifecycle simulation.
+- full ordinary Poison, multi-enemy, and same-name matrix;
+- family-specific Nemesis and ToughEgg/Hatch captures;
+- special-power combination matrices outside the documented narrow support.
 
 ## Workshop State
 
@@ -116,4 +92,13 @@ Not implemented:
 
 ## Next Single Direction
 
-Phase 12C G0-G5 is closed; no required audit follow-up remains. Workshop changes require separate explicit approval. G6 Full Technical Identity Migration remains optional future work and requires a dedicated approval and compatibility plan. Keep formal multiplayer HUD frozen unless explicitly reopened.
+Review the completed Documentation Authority Consolidation DC2 authority layer,
+then separately decide whether to approve DC3 historical routing/banners. Do
+not automatically continue into DC3, physical archive, deletion, commit, push,
+or tag.
+
+After documentation closure, the Forecast Engine architecture card remains
+Proposed/Queued and must restart from its read-only AR0 revalidation before any
+AR1 implementation approval. G6 Full Technical Identity Migration remains an
+independent optional decision. Workshop changes and formal multiplayer HUD stay
+separately gated and frozen unless explicitly reopened.

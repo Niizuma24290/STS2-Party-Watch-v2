@@ -2,7 +2,36 @@
 
 Date: 2026-07-02
 
-This is the current total task note for the project. It backfills the documentation state after several implementation and release-prep commits landed faster than the full docs could be kept synchronized.
+Classification: `HISTORICAL_RECORD`
+
+> Historical reconciliation record. Preserved as evidence for its original
+> date; superseded as current authority.
+>
+> Current authority: [`docs/project-state.md`](../project-state.md) for project state,
+> [`docs/task-notes/README.md`](README.md) for task routing, and
+> [`docs/v2-roadmap.md`](../v2-roadmap.md) for
+> future direction. Do not use historical current-state or next-step wording in
+> this file as the current task.
+
+## Authority Extraction Result — 2026-07-21
+
+DC2 对本文件按主题逐段复核后的结果如下：
+
+| 本文件中的主题 | 当前 authority / 路由 |
+| --- | --- |
+| 玩家产品名称、安装、功能边界 | [`README.md`](../../README.md) + [`docs/project-state.md`](../project-state.md) |
+| 当前实现、设置、配置与验证状态 | [`docs/project-state.md`](../project-state.md) + [`docs/architecture.md`](../architecture.md) |
+| Poison、Tungsten Rod、伤害修正等机制结论 | [`docs/mechanics-evidence.md`](../mechanics-evidence.md) + [`docs/project-state.md`](../project-state.md) |
+| 构建、依赖、stable/beta 与版本兼容 | [`docs/build-environment.md`](../build-environment.md) + [`docs/project-state.md`](../project-state.md) |
+| Phase 编号、已完成里程碑与未来方向 | [`docs/v2-roadmap.md`](../v2-roadmap.md) + [`docs/task-notes/README.md`](README.md) |
+| repository、release、tags 与 Workshop 状态 | [`docs/project-state.md`](../project-state.md) + 对应 G5 / Workshop 历史记录 |
+| 当前任务与历史证据路由 | [`docs/task-notes/README.md`](README.md) |
+
+结论：没有仅存在于本文件、仍需作为 current fact 保留的独有事实。本文件正文完整保留为
+2026-07-02 时点的 reconciliation evidence；其中的 `current`、`next task`、未支持矩阵和
+Phase 排序均只代表原日期，不得覆盖上表所列当前 authority。
+
+At creation, this was the total task note for the project. It backfilled the documentation state after several implementation and release-prep commits landed faster than the full docs could be kept synchronized.
 
 Historical snapshot notice: this note records the former player-facing `Party Watch` name as it existed on 2026-07-02. The current player-facing name is `Damage Forecast` / `伤害预测`; current authority is `docs/project-state.md` and the Phase 12C audit notes. Technical and historical identities remain unchanged.
 

@@ -34,7 +34,7 @@ Damage Forecast does not simulate a full turn, does not call real damage or comm
 - `♥ N`: trusted direct HP loss that does not go through Block.
 - Unknown, unsupported, non-combat, zero-output, hidden UI, or untrusted partial values are hidden rather than guessed.
 - HUD refreshes from health-bar lifecycle hooks, hand pile changes, relic add/remove/melt, selected turn lifecycle hooks, and settings changes.
-- `FreezeHudWithinPlayerTurn` is enabled by default. It freezes a display snapshot within the player turn and commits a final snapshot through the compatible turn-end hook surface: `Hook.BeforeTurnEnd` on stable v0.107.1 or `Hook.BeforeSideTurnEnd` on beta v0.108.0; it does not alter forecast mechanics.
+- `FreezeHudWithinPlayerTurn` is enabled by default. It freezes a display snapshot within the player turn and commits a final snapshot through the compatible turn-end hook surface: `Hook.BeforeTurnEnd` on stable v0.107.1 or `Hook.BeforeSideTurnEnd` on the current frozen beta v0.109.0 capability surface; it does not alter forecast mechanics.
 - Covering native pages, modal/popup/overlay screens, combat end, invalid player state, or disabled HUD settings hide and clear relevant display state.
 - The temporary local health-bar center guide, HUD text center guide, and alignment runtime log have been removed after the alignment observation task.
 - Default `HealthBarRight` HUD placement now centers the main HUD label on the same local health-bar center line used by the temporary guide. User X/Y offsets still apply after the default position is calculated.
@@ -116,7 +116,11 @@ Verification state:
 - Implemented: ordinary Poison pre-action survival code path exists; Phase 11C adds native Poison preview for supported capped-damage cases, narrow Slippery tick/layer preview, narrow HardenedShell remaining-budget preview, and conservative keep for active enemy Intangible / unsupported special blockers.
 - Built / publish / local install evidenced: recorded in Phase 11C task note.
 - RuntimeVerified: Exoskeleton / `HardToKillPower` Phase 11C scene passed user Steam verification, including relic and curse interactions; 墨宝 / `SlipperyPower` narrow tick/layer preview passed user Steam verification; HardenedShell / SewerClam budget support passed user Steam verification.
-- Pending runtime verification: TestSubject phase 3 damage-display behavior with enemy Intangible Poison override disabled again; revive / phase / hatch enemies after enabling Poison override.
+- Pending runtime verification: dedicated family-specific captures for
+  `NemesisPower` and `ToughEgg` / `HatchPower`, plus broader ordinary and
+  special-combination matrices. The representative TestSubject phase-3
+  Intangible exact-lethal boundary is already RuntimeVerified and must not be
+  described as disabled or pending.
 - DocumentedOnly: no remaining Phase 11C Poison special case is only documented, but unsupported combinations still keep base Intent.
 
 ## Front-End Capabilities
@@ -161,7 +165,9 @@ Current multiplayer behavior:
 - Settings persistence is handled by BaseLib config.
 - The health-bar center guide, HUD text center guide, `[HUD Align]` runtime log, and `PartyWatchHudDebugGuide` helper were removed in commit `070774b70ef07a5ead50f3e82ad60f1a6a3c6c0f`, Built and locally installed. The main `-N` alignment is RuntimeVerified by post-clamp logs. Post-removal smoke verification passed: user confirmed the HUD view is OK, and latest log inspection found no temporary guide or `[HUD Align]` debug noise. Installed DLL SHA256: `A7E87950FDF19C8BE3985894F988B009CDA188BB341733EC27C415F5E5B4A02D`.
 - Workshop state must not be described as a public release unless a public publish is explicitly recorded.
-- Phase 12A uses BaseLib's automatic config UI, so labels currently show code-style property names such as `EnablePartyWatchHud` and enum values such as `HealthBarRight`. Friendly labels, language selection, and HUD color polish are now planned as Phase 12B while preserving BaseLib's automatic layout.
+- Historical Phase 12A used BaseLib's raw automatic labels. Phase 12B later
+  completed the approved friendly English/Simplified Chinese labels, language
+  selection, and HUD color polish while preserving BaseLib's automatic layout.
 - The in-combat built-in `模组配置（BaseLib）` / `打开配置` route is currently unusable from the native in-combat settings panel. The main-menu Mod Configuration route is the verified supported route for Phase 12A.
 
 ## Phase 11A v1.08 Beta Smoke State
@@ -313,4 +319,12 @@ Known Phase 12B limitations:
 
 ## Next Single Task
 
-Phase 12C G0-G5 is closed; there is no required follow-up for this audit project. Any Workshop update requires separate explicit approval. G6 Full Technical Identity Migration remains optional future work and requires a dedicated approval and compatibility plan. Keep formal multiplayer HUD work frozen unless explicitly reopened.
+Documentation Authority Consolidation is the current documentation-only task.
+DC0, DC1, and DC2 are complete. The next Gate is user review and a separate
+decision on DC3 historical routing/banners; DC3 is not approved by DC2 closure.
+No code, test, script, manifest, Workshop, install, game, commit, push, tag,
+Forecast Engine, or G6 work is authorized.
+
+The Forecast Engine architecture task remains Proposed/Queued. G6 Full
+Technical Identity Migration remains optional and separately gated. Keep formal
+multiplayer HUD work frozen unless explicitly reopened.

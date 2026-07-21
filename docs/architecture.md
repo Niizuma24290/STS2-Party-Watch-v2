@@ -5,8 +5,8 @@ v2 keeps a narrow read-only chain:
 ```text
 game state readers
 => LocalIncomingDamageReader
-=> LocalDamageForecast
-=> ForecastResult
+=> LocalDamageForecast / IncomingDamageDisplayRead
+=> ForecastResult / ForecastHudSnapshot
 => health-bar HUD labels
 ```
 
@@ -28,7 +28,16 @@ It reads:
 - verified hand turn-end damage, fixed direct HP loss, verified turn-end Power damage, verified pre-attack Block, and supported HP-loss result modifiers;
 - ordinary enemy Poison pre-action survival state before deciding whether a specific enemy instance contributes its current Attack Intent.
 
-It returns `IncomingDamageRead.Known`, `Hidden`, or `Unknown`. Unsupported mechanics return Unknown or a trusted direct-only result when that boundary is explicitly supported.
+The expected-HP-loss path returns `IncomingDamageRead.Known`, `Hidden`, or
+`Unknown`. Unsupported mechanics return Unknown or a trusted direct-only result
+when that boundary is explicitly supported.
+
+Phase 13A adds `ReadIncomingDamageForLocalCreature(...)`, which builds the
+optional positive incoming-damage value `N` from the same trusted source
+readers. It applies only the user-selected current Block, Power/Orb Block,
+relic Block, Power modifier, and relic modifier categories. It does not derive
+`N` by reversing `-N`, and an unsupported selected path makes `N` Unknown
+rather than exposing a partial total.
 
 ## Forecast Calculation
 
@@ -40,6 +49,11 @@ Total display loss = OutDamage + DirectHpLoss
 ```
 
 If blockable damage is unknown but direct HP loss is trusted, the forecast can return a direct-only known result. If both are untrusted or zero, the HUD hides.
+
+`ForecastHudSnapshot` carries the existing expected HP-loss result and the
+separate incoming-damage display result through one display/freezing snapshot.
+The default remains `ExpectedHpLossOnly`; `IncomingDamageOnly` and `Both` are
+optional Phase 13A projections and do not change `ForecastResult` semantics.
 
 ## HP-Loss Event Modifiers
 
@@ -78,18 +92,25 @@ This preview only decides whether a specific enemy instance's current Attack Int
 
 `Patches/ForecastRefreshPatch` owns the health-bar label lifecycle:
 
-- creates one main `Label` and one detail `RichTextLabel`;
+- creates one expected-loss `Label`, one incoming-damage `Label`, and one
+  advanced-detail `RichTextLabel`;
 - hooks `NHealthBar.SetCreature`, `NHealthBar.RefreshValues`, and health-bar container resize;
 - refreshes on hand pile changes, relic changes, native covering screen lifecycle, turn lifecycle, and settings changes;
-- commits final snapshots through compatible stable/beta turn-end hooks: `Hook.BeforeTurnEnd` on stable v0.107.1 or `Hook.BeforeSideTurnEnd` on beta v0.108.0;
+- commits final snapshots through compatible stable/beta turn-end hooks:
+  `Hook.BeforeTurnEnd` on stable v0.107.1 or `Hook.BeforeSideTurnEnd` on the
+  current frozen beta v0.109.0 capability surface;
 - clears snapshots at player turn start, combat end, or hidden UI states as appropriate.
 
 `ForecastRefreshPatch` may call the reader and forecast calculator. It must not calculate mechanics itself.
 
 ## Display Helpers
 
-- `PartyWatchHudDisplay` builds text, applies font/color styling, and positions the main/detail labels.
-- Main display is `-N`.
+- `PartyWatchHudDisplay` builds text, applies font/color styling, and positions
+  the expected-loss, incoming-damage, and detail labels.
+- Expected HP loss is `-N`; optional incoming damage is positive `N`.
+- Display modes are `ExpectedHpLossOnly`, `IncomingDamageOnly`, and `Both`.
+- When both values are visible, `-N` remains the anchor and incoming `N` may be
+  placed to its left or right. Incoming-only mode uses the same anchor point.
 - Advanced detail display is optional `🛡 N` / `♥ N`, drawn from the same trusted `ForecastResult` fields.
 - In multiplayer combat, positioning forces the HUD below the local health bar so it does not imply teammate HUD support.
 
@@ -121,6 +142,12 @@ PartyWatchBaseLibConfig : SimpleModConfig
 `PartyWatchBaseLibConfig` owns BaseLib-facing persisted values and the generated configuration page.
 
 `PartyWatchSettingsAdapter` copies persisted BaseLib values into `PartyWatchUiSettings`, which remains the business-facing settings API read by HUD, visibility, positioning, and display code.
+
+Phase 13A settings add the damage display mode, incoming-value placement, and
+five independently persisted inclusion switches for current Block, Power/Orb
+Block, relic Block, Power HP-loss modifiers, and relic HP-loss modifiers. Their
+defaults preserve the pre-Phase-13A behavior: expected HP loss only, incoming
+placement on the right, and all incoming-defense switches off.
 
 Phase 12B keeps BaseLib's automatic rows and controls. It overrides `SetupConfigUI(...)` only to order rows and apply Damage Forecast-local English / Simplified Chinese text after BaseLib creates standard rows. It does not replace the BaseLib fullscreen shell, left mod list, scrolling, spacing, or controls.
 

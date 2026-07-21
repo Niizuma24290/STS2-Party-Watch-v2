@@ -150,14 +150,25 @@ Phase 9 task cards use only the explicit commands above. Do not use `STS2PartyWa
 
 ## Contract tests
 
-The dependency-light executable harness currently covers conservative verified turn-end card-shape rules and forecast-result clamping. Run it once against each supported reference root:
+The dependency-light executable harness currently covers conservative verified
+turn-end card-shape rules, forecast-result clamping, configuration text,
+BaseLib title compatibility, and the approved audit/Phase 13A seams. Run it once
+against each supported reference root:
 
 ```powershell
 C:\sts2\dotnet\dotnet.exe run --project .\tests\STS2PartyWatchCode.ContractTests\STS2PartyWatchCode.ContractTests.csproj -c Release -p:Sts2ReferenceRoot=C:\Users\ROG\Documents\Codex\STS2-reference-snapshots\v0.107.1-stable-59260271\data_sts2_windows_x86_64
 C:\sts2\dotnet\dotnet.exe run --project .\tests\STS2PartyWatchCode.ContractTests\STS2PartyWatchCode.ContractTests.csproj -c Release -p:Sts2ReferenceRoot=C:\Users\ROG\Documents\Codex\STS2-reference-snapshots\v0.109.0-beta-c12f634d\data_sts2_windows_x86_64
 ```
 
-Each run must report `10 contract tests passed.` This harness does not replace the game runtime matrix for Harmony, Godot UI, combat lifecycle, or BaseLib integration.
+Each run must report `28 contract tests passed.` The 28/28 stable and beta
+closure evidence is recorded in
+[`phase-12c-g4-runtime-verification.md`](task-notes/phase-12c-g4-runtime-verification.md)
+and
+[`phase-12c-g5-repository-closure.md`](task-notes/phase-12c-g5-repository-closure.md).
+Historical audit notes
+retain earlier 7/10/17/21-test checkpoints as evidence of their original dates.
+This harness does not replace the game runtime matrix for Harmony, Godot UI,
+combat lifecycle, or BaseLib integration.
 
 ## Not verified in this task
 

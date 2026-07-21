@@ -16,6 +16,14 @@ The default HUD shows one total expected HP-loss number:
 -18
 ```
 
+Phase 13A also provides an optional incoming-damage value `N`, disabled by
+default. It is separate from the existing expected HP-loss value `-N` and does
+not change that calculation. Available display modes are:
+
+- `ExpectedHpLossOnly` (default);
+- `IncomingDamageOnly`;
+- `Both`, with `N` placed to the left or right of `-N`.
+
 Advanced details are available but disabled by default:
 
 - `🛡 N`: trusted blockable incoming HP loss after verified Block and supported HP-loss result modifiers.
@@ -55,6 +63,10 @@ Settings are persisted by BaseLib:
 
 - enable Damage Forecast HUD;
 - show the local-player Damage Forecast HUD in multiplayer;
+- select the expected-HP-loss/incoming-damage display mode;
+- place incoming damage to the left or right when both values are shown;
+- choose whether incoming damage includes current Block, supported Power/Orb
+  Block, relic Block, Power modifiers, and relic modifiers;
 - show advanced `🛡 / ♥` details;
 - freeze HUD numbers after turn end;
 - position preset and X/Y offset;
