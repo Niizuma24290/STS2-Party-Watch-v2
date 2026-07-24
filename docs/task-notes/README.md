@@ -6,6 +6,7 @@
 ## Task routing
 
 - 收口规则：[`task-closure-standard.md`](task-closure-standard.md)。
+- 最近关闭的状态/诅咒 HUD 修复：[`damaging-status-curse-hud-hidden-master-task-card.md`](damaging-status-curse-hud-hidden-master-task-card.md)。
 - 最近关闭任务：[`post-g6-full-name-unification-master-task-card.md`](post-g6-full-name-unification-master-task-card.md)。
 - 已关闭测试护栏：[`forecast-engine-test-guardrails-master-task-card.md`](forecast-engine-test-guardrails-master-task-card.md)。
 - 已关闭 G6：[`full-technical-identity-migration-master-task-card.md`](full-technical-identity-migration-master-task-card.md)。
@@ -56,12 +57,13 @@
 | Workshop | [`workshop-private-rc-2026-07-01.md`](workshop-private-rc-2026-07-01.md) + [`docs/project-state.md`](../project-state.md) |
 | G6（已关闭） | [`full-technical-identity-migration-master-task-card.md`](full-technical-identity-migration-master-task-card.md) + [`name-migration-inventory.md`](phase-12c-audit/name-migration-inventory.md) |
 | Post-G6 C1-C4 | [`post-g6-full-name-unification-master-task-card.md`](post-g6-full-name-unification-master-task-card.md) |
+| Damage-dealing Status / Curse HUD 修复（已关闭） | [`damaging-status-curse-hud-hidden-master-task-card.md`](damaging-status-curse-hud-hidden-master-task-card.md) |
 
 ## Task-note classification
 
 - `CURRENT_AUTHORITY`：本文件。
 - `CHECKPOINT_TASK`：无。
-- `CLOSED_TASK`：[`post-g6-full-name-unification-master-task-card.md`](post-g6-full-name-unification-master-task-card.md)，C1-C4 已关闭；[`forecast-engine-test-guardrails-master-task-card.md`](forecast-engine-test-guardrails-master-task-card.md)，TG0-TG7 已关闭；[`full-technical-identity-migration-master-task-card.md`](full-technical-identity-migration-master-task-card.md)，G6-0..G6-7 已关闭。
+- `CLOSED_TASK`：[`damaging-status-curse-hud-hidden-master-task-card.md`](damaging-status-curse-hud-hidden-master-task-card.md)，HC0-HC5 已关闭；[`post-g6-full-name-unification-master-task-card.md`](post-g6-full-name-unification-master-task-card.md)，C1-C4 已关闭；[`forecast-engine-test-guardrails-master-task-card.md`](forecast-engine-test-guardrails-master-task-card.md)，TG0-TG7 已关闭；[`full-technical-identity-migration-master-task-card.md`](full-technical-identity-migration-master-task-card.md)，G6-0..G6-7 已关闭。
 - `PROPOSED_TASK`：[`forecast-engine-architecture-stabilization-master-task-card.md`](forecast-engine-architecture-stabilization-master-task-card.md)，保持 queued，尚未获得 AR1。
 - `SUPERSEDED_HANDOFF`：所有 `*handoff*` 文件；保留 hash、工作区和当时 next-step。
 - `RAW_EVIDENCE`：`phase-12c-aud-0007-*` 和 `phase-12c-audit/*`。

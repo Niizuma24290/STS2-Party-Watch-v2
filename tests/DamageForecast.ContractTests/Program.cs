@@ -369,6 +369,7 @@ var cases = new List<ContractCase>
 };
 
 cases.AddRange(ForecastResultContractCases.Create());
+cases.AddRange(HandCardDamageContractCases.Create());
 cases.AddRange(ProjectionContractCases.Create());
 cases.AddRange(BlockPolicyContractCases.Create());
 cases.AddRange(HpLossModifierContractCases.Create());

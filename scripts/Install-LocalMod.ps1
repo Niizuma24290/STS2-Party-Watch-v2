@@ -56,6 +56,27 @@ $resolvedConfigRoot = [System.IO.Path]::GetFullPath($ConfigRoot)
 $resolvedConfigMigrationRoot = [System.IO.Path]::GetFullPath($ConfigMigrationRoot)
 $legacyConfigPath = [System.IO.Path]::GetFullPath((Join-Path $resolvedConfigRoot "STS2PartyWatch.cfg"))
 $currentConfigPath = [System.IO.Path]::GetFullPath((Join-Path $resolvedConfigRoot "DamageForecast.cfg"))
+$currentConfigSchemaMinimumVersion = [Version]"0.3.0"
+
+function Test-UsesCurrentConfigSchema {
+    param([string]$ManifestVersion)
+
+    if ([string]::IsNullOrWhiteSpace($ManifestVersion)) {
+        return $false
+    }
+
+    $normalized = $ManifestVersion.Trim()
+    if ($normalized.StartsWith("v", [System.StringComparison]::OrdinalIgnoreCase)) {
+        $normalized = $normalized.Substring(1)
+    }
+
+    [Version]$parsedVersion = [Version]"0.0"
+    if (-not [Version]::TryParse($normalized, [ref]$parsedVersion)) {
+        return $false
+    }
+
+    return $parsedVersion -ge $currentConfigSchemaMinimumVersion
+}
 
 function Assert-PathWithinRoot {
     param([string]$Root, [string]$Candidate, [string]$Label)
@@ -408,6 +429,9 @@ $legacyConfig = if ($inspectConfigs) { Get-StrictConfigSnapshot -Path $legacyCon
 $currentConfig = if ($inspectConfigs) { Get-StrictConfigSnapshot -Path $currentConfigPath -Schema Current } else { $null }
 $configRollbackAction = if ($effectiveOperation -ne "Rollback") {
     "not-applicable"
+} elseif ($rollbackBackup.Id -eq $modId -and
+    (Test-UsesCurrentConfigSchema -ManifestVersion $rollbackBackup.Version)) {
+    "target-direct"
 } elseif ($null -eq $currentConfig -and $null -eq $legacyConfig) {
     "no-config"
 } elseif ($null -eq $currentConfig -and $null -ne $legacyConfig) {

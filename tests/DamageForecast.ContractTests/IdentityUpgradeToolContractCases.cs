@@ -188,6 +188,49 @@ internal static class IdentityUpgradeToolContractCases
                 "same identity v0.2.0 upgrades to v0.3.0, rolls back to v0.2.0, then re-upgrades with one active identity",
                 $"plan={plan.Error}; install={install.Error}; rollbackPlan={rollbackPlan.Error}; rollback={rollback.Error}; reupgrade={reupgrade.Error}");
         });
+        yield return new("IU-010", "IdentityUpgradeTool", "TargetRollback.CurrentSchemaOnlyConfig_DoesNotRequireLegacyConfig", assert =>
+        {
+            using var fixture = UpgradeFixture.Create(
+                targetActive: true,
+                targetVersion: "v0.3.0",
+                currentConfigOnly: true);
+            var configBefore = File.ReadAllBytes(fixture.CurrentConfigPath);
+            var activeDllBefore = File.ReadAllBytes(Path.Combine(fixture.TargetInstallPath, "damage-forecast.dll"));
+            var plan = fixture.Run("Plan", transactionId: "current-schema-upgrade");
+            using var planJson = JsonDocument.Parse(plan.Output);
+            var root = planJson.RootElement;
+            var backup = root.GetProperty("plannedActiveBackupPath").GetString()
+                ?? throw new InvalidOperationException("Current-schema target upgrade Plan has no active backup path.");
+            var install = fixture.Run("Install", execute: true, transactionId: root.GetProperty("transactionId").GetString(),
+                expectedManifestSha256: root.GetProperty("stagingManifestSha256").GetString(),
+                expectedDllSha256: root.GetProperty("stagingDllSha256").GetString(),
+                expectedActiveManifestSha256: root.GetProperty("activeManifestSha256").GetString(),
+                expectedActiveDllSha256: root.GetProperty("activeDllSha256").GetString());
+
+            var rollbackPlan = fixture.Run("Plan", planOperation: "Rollback", backupPath: backup,
+                transactionId: "current-schema-rollback");
+            using var rollbackJson = JsonDocument.Parse(rollbackPlan.Output);
+            var rollbackRoot = rollbackJson.RootElement;
+            var rollback = fixture.Run("Rollback", execute: true, backupPath: backup,
+                transactionId: rollbackRoot.GetProperty("transactionId").GetString(),
+                expectedActiveManifestSha256: rollbackRoot.GetProperty("activeManifestSha256").GetString(),
+                expectedActiveDllSha256: rollbackRoot.GetProperty("activeDllSha256").GetString(),
+                expectedBackupManifestSha256: rollbackRoot.GetProperty("rollbackBackupManifestSha256").GetString(),
+                expectedBackupDllSha256: rollbackRoot.GetProperty("rollbackBackupDllSha256").GetString());
+
+            assert.True(plan.ExitCode == 0 && root.GetProperty("action").GetString() == "target-upgrade"
+                && root.GetProperty("activeVersion").GetString() == "v0.3.0"
+                && root.GetProperty("stagingVersion").GetString() == "v0.3.0"
+                && install.ExitCode == 0
+                && rollbackPlan.ExitCode == 0 && rollbackRoot.GetProperty("action").GetString() == "rollback-target"
+                && rollbackRoot.GetProperty("configRollbackAction").GetString() == "target-direct"
+                && rollback.ExitCode == 0
+                && File.ReadAllBytes(fixture.CurrentConfigPath).SequenceEqual(configBefore)
+                && File.ReadAllBytes(Path.Combine(fixture.TargetInstallPath, "damage-forecast.dll")).SequenceEqual(activeDllBefore)
+                && fixture.LoaderVisibleJsonFiles().SequenceEqual(["damage-forecast/damage-forecast.json"], StringComparer.Ordinal),
+                "current-schema same-version binary upgrade rolls back directly with one active identity and unchanged current config",
+                $"plan={plan.Error}; install={install.Error}; rollbackPlan={rollbackPlan.Error}; rollback={rollback.Error}");
+        });
     }
 
     private sealed class UpgradeFixture : IDisposable
@@ -208,8 +251,14 @@ internal static class IdentityUpgradeToolContractCases
         public string ModsRoot => Path.Combine(GameRoot, "mods");
         public IReadOnlyList<string> LegacyInstallPaths { get; }
         public string TargetInstallPath => Path.Combine(GameRoot, "mods", "damage-forecast");
+        public string CurrentConfigPath => Path.Combine(Root, "appdata", "mod_configs", "DamageForecast.cfg");
 
-        public static UpgradeFixture Create(int legacyCopies = 0, bool stagingExtra = false, bool targetActive = false)
+        public static UpgradeFixture Create(
+            int legacyCopies = 0,
+            bool stagingExtra = false,
+            bool targetActive = false,
+            string targetVersion = "v0.2.0",
+            bool currentConfigOnly = false)
         {
             var root = Path.Combine(IdentityContractFixture.RepositoryRoot, "work", "identity-upgrade-contracts", Guid.NewGuid().ToString("N"));
             var gameRoot = Path.Combine(root, "game");
@@ -235,8 +284,20 @@ internal static class IdentityUpgradeToolContractCases
             {
                 var targetPath = Path.Combine(modsRoot, "damage-forecast");
                 Directory.CreateDirectory(targetPath);
-                File.WriteAllText(Path.Combine(targetPath, "damage-forecast.json"), Manifest("damage-forecast", "v0.2.0"));
+                File.WriteAllText(Path.Combine(targetPath, "damage-forecast.json"), Manifest("damage-forecast", targetVersion));
                 File.WriteAllBytes(Path.Combine(targetPath, "damage-forecast.dll"), [0x44, 0x46, 0x00, 0x01]);
+            }
+            if (currentConfigOnly)
+            {
+                Directory.CreateDirectory(Path.Combine(root, "appdata", "mod_configs"));
+                File.Copy(
+                    Path.Combine(
+                        IdentityContractFixture.RepositoryRoot,
+                        "tests",
+                        "DamageForecast.ContractTests",
+                        "fixtures",
+                        "config-new-default.cfg"),
+                    Path.Combine(root, "appdata", "mod_configs", "DamageForecast.cfg"));
             }
             return new(root, gameRoot, stagingRoot, backupRoot, legacyPaths);
         }

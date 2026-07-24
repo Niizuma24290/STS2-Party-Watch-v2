@@ -605,18 +605,36 @@ public sealed class LocalIncomingDamageReader
             for (var i = 0; i < handPile.Cards.Count; i++)
             {
                 var card = handPile.Cards[i];
-                if (!CardTurnEndDamageInspector.TryGetVerifiedSingleBlockableDamageVar(card, out var damageVar))
+                var hasVerifiedDirectHpLoss = VerifiedFixedTurnEndHpLossReader.TryReadEvent(
+                    card,
+                    handCount,
+                    i,
+                    out var directHpLossEvent);
+                var genericAccepted = false;
+                DamageVar? damageVar = null;
+                if (!hasVerifiedDirectHpLoss)
+                {
+                    genericAccepted =
+                        CardTurnEndDamageInspector.TryGetVerifiedSingleBlockableDamageVar(card, out damageVar);
+                }
+
+                var classification = HandCardDamageClassificationPolicy.Classify(
+                    new HandCardDamageClassificationInput(
+                        genericAccepted,
+                        damageVar is not null,
+                        hasVerifiedDirectHpLoss));
+                if (classification == HandCardDamageClassification.UnsupportedDamage)
                 {
                     return false;
                 }
 
-                if (damageVar is not null)
+                if (classification == HandCardDamageClassification.VerifiedBlockable)
                 {
-                    var damage = GetModifiedIncomingCardDamage(player, localCreature, card, damageVar);
+                    var damage = GetModifiedIncomingCardDamage(player, localCreature, card, damageVar!);
                     blockableRaw += damage;
                     events.Add(new HandTurnEndHpLossEvent(card.GetType().Name, i, HpLossDisplayLane.Blockable, damage, true));
                 }
-                else if (VerifiedFixedTurnEndHpLossReader.TryReadEvent(card, handCount, i, out var directHpLossEvent))
+                else if (classification == HandCardDamageClassification.VerifiedDirect)
                 {
                     events.Add(new HandTurnEndHpLossEvent(
                         directHpLossEvent.Source,
@@ -649,16 +667,36 @@ public sealed class LocalIncomingDamageReader
 
         try
         {
-            foreach (var card in handPile.Cards)
+            var handCount = handPile.Cards.Count;
+            for (var i = 0; i < handPile.Cards.Count; i++)
             {
-                if (!CardTurnEndDamageInspector.TryGetVerifiedSingleBlockableDamageVar(card, out var damageVar))
+                var card = handPile.Cards[i];
+                var hasVerifiedDirectHpLoss = VerifiedFixedTurnEndHpLossReader.TryReadEvent(
+                    card,
+                    handCount,
+                    i,
+                    out _);
+                var genericAccepted = false;
+                DamageVar? damageVar = null;
+                if (!hasVerifiedDirectHpLoss)
+                {
+                    genericAccepted =
+                        CardTurnEndDamageInspector.TryGetVerifiedSingleBlockableDamageVar(card, out damageVar);
+                }
+
+                var classification = HandCardDamageClassificationPolicy.Classify(
+                    new HandCardDamageClassificationInput(
+                        genericAccepted,
+                        damageVar is not null,
+                        hasVerifiedDirectHpLoss));
+                if (classification == HandCardDamageClassification.UnsupportedDamage)
                 {
                     return false;
                 }
 
-                if (damageVar is not null)
+                if (classification == HandCardDamageClassification.VerifiedBlockable)
                 {
-                    damage += GetModifiedIncomingCardDamage(player, localCreature, card, damageVar);
+                    damage += GetModifiedIncomingCardDamage(player, localCreature, card, damageVar!);
                 }
             }
 
