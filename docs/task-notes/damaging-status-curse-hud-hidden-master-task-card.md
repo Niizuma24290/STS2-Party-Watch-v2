@@ -7,11 +7,11 @@
 ## Current Control
 
 State: `Closed`
-Last completed: `HC5 — full runtime attestation, authority reconciliation and Git checkpoint`
+Last completed: `HC5 — runtime, authority, checkpoint, origin/main push and annotated closure tag`
 Next: `None — future Mod-card compatibility remains a separate proposed task`
-Approved: `Yes — HC5 Git checkpoint; no push/tag/Workshop`
-Evidence: `§28`
-Repository: `Checkpoint — the commit containing this closure record`
+Approved: `Yes — HC5 checkpoint, GitHub push and marker tag; no Workshop`
+Evidence: `§29`
+Repository: `GitHub — closure tag points to 739b4f5`
 
 ---
 
@@ -1676,4 +1676,27 @@ commit 即为本任务 checkpoint，因此最终状态为 `Closed`。该 checkpo
 `forecast-engine-architecture-stabilization-master-task-card.md` 与
 `sts2sim-damage-forecast-evaluation-master-task-card.md`，只 stage 本任务
 的 production、contracts、installer fix 与四份已同步 authority 文件。
-未授权 push、tag 或 Workshop 修改。
+checkpoint 已在后续单独批准后推送并建立 annotated marker tag，远端
+证据见 §29。Workshop 保持未修改。
+
+---
+
+## 29. GitHub push 与 marker tag 证据
+
+- Result: `Complete — atomic main + annotated tag push verified`
+- Remote:
+  `https://github.com/Niizuma24290/Damage-Forecast.git`
+- Closure checkpoint:
+  `739b4f59a61c5665952c4d29e94802c56f49b9fc`
+- Atomic push result: `main` 从 `32df9ae` 前进到 `739b4f5`。
+- Annotated tag:
+  `hc5-damaging-status-curse-hud-closure`
+- Remote tag object:
+  `3d6b0f9b764a519a2867c337d3c50869a88bf594`
+- Remote peeled tag target:
+  `739b4f59a61c5665952c4d29e94802c56f49b9fc`
+- 远端只读复核确认 `refs/heads/main` 与 peeled tag target 均为
+  `739b4f5`。
+- 本节作为 push 后的 docs-only record 提交到 `main`；marker tag
+  不移动，继续固定指向实际实现/验证/authority closure checkpoint。
+- 未创建其他 tag，未修改 Workshop，未执行 release publish。

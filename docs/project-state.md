@@ -318,9 +318,10 @@ Known Phase 12B limitations:
 
 - Branch: `main`.
 - Remote: `https://github.com/Niizuma24290/Damage-Forecast.git`.
-- GitHub: the repository is `Damage-Forecast`; local `main` and `origin/main` are synchronized at the Post-G6 C1-C4 closure checkpoint.
+- GitHub: the repository is `Damage-Forecast`; HC5 implementation/verification/authority checkpoint `739b4f5` was pushed to `origin/main`, followed only by its docs-only remote evidence record.
 - Post-G6 C1-C4 implementation checkpoint: `8d3c734`; final closure marker: annotated tag `post-g6-c1-c4-closure`.
-- Published markers: `milestone-poison-preview`, `milestone-local-multiplayer-hud`, `milestone-hud-alignment-cleanup`, `phase-12c-audit-complete`, `v0.1.0`, `g5-repository-closure`, and `post-g6-c1-c4-closure`.
+- Damage-dealing Status/Curse HUD closure checkpoint: `739b4f5`; annotated marker tag: `hc5-damaging-status-curse-hud-closure`.
+- Published markers: `milestone-poison-preview`, `milestone-local-multiplayer-hud`, `milestone-hud-alignment-cleanup`, `phase-12c-audit-complete`, `v0.1.0`, `g5-repository-closure`, `post-g6-c1-c4-closure`, and `hc5-damaging-status-curse-hud-closure`.
 - Workshop workspace: prepared under ignored `work/`.
 - Workshop item status from task notes: private / subscription test work exists, including item `3755598583`, uploaded DLL hash, cover/preview upload records, and local multiplayer HUD subscription validation. The repository state is not documented as a public Workshop release.
 - Not committed by policy: DLL, PDB, PCK, logs, `bin/`, `obj/`, `publish/`, `work/`, uploader files, cover assets, `mod_id.txt`, and game directory files.
