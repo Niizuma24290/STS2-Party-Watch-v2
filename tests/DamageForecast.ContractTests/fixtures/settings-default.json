@@ -1,0 +1,25 @@
+{
+  "fixture": "all-default",
+  "persistenceOwnerRootNamespace": "STS2PartyWatch",
+  "persistenceFileName": "STS2PartyWatch.cfg",
+  "settings": {
+    "ConfigLanguage": "English",
+    "EnablePartyWatchHud": true,
+    "ShowAdvancedShieldHeartDetails": false,
+    "FreezeHudNumbersAfterTurnEnd": true,
+    "DamageDisplayMode": "ExpectedHpLossOnly",
+    "IncomingDamagePlacement": "RightOfExpectedHpLoss",
+    "IncludeCurrentBlockInIncomingDamage": false,
+    "IncludePowerBlockInIncomingDamage": false,
+    "IncludeRelicBlockInIncomingDamage": false,
+    "IncludePowerHpLossModifiersInIncomingDamage": false,
+    "IncludeRelicHpLossModifiersInIncomingDamage": false,
+    "ShowLocalPlayerHudInMultiplayer": true,
+    "HudAnchorPreset": "HealthBarRight",
+    "HorizontalOffset": 0.0,
+    "VerticalOffset": 0.0,
+    "TotalExpectedLossColor": [1.0, 1.0, 1.0, 1.0],
+    "ShieldDetailColor": [0.55, 0.85, 1.0, 1.0],
+    "HeartDetailColor": [1.0, 0.55, 0.62, 1.0]
+  }
+}

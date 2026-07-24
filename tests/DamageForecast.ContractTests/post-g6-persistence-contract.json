@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 2,
+  "status": "c4-complete",
+  "approval": {
+    "gate": "C2",
+    "approvedAt": "2026-07-22",
+    "scope": "source and temporary fixtures only"
+  },
+  "closure": {
+    "gate": "C4",
+    "approvedAt": "2026-07-24",
+    "scope": "Active-scope legacy-name guardrails, current authority updates, derived-artifact refresh, and final closure only.",
+    "rollbackEvidence": "closed",
+    "installedIdentity": "one-damage-forecast-v0.3.0",
+    "activeConfig": "DamageForecast.cfg",
+    "workshopDisposition": "external-unchanged",
+    "historicalEvidenceDisposition": "preserved"
+  },
+  "release": {
+    "version": "v0.3.0",
+    "modId": "damage-forecast",
+    "workshopDisposition": "external-unchanged"
+  },
+  "legacy": {
+    "schema": "pre-damage-forecast-v1",
+    "type": "STS2PartyWatch.Settings.PartyWatchBaseLibConfig",
+    "file": "STS2PartyWatch.cfg",
+    "hudKey": "EnablePartyWatchHud"
+  },
+  "current": {
+    "schema": "damage-forecast-v1",
+    "type": "DamageForecast.Settings.DamageForecastBaseLibConfig",
+    "file": "DamageForecast.cfg",
+    "hudKey": "EnableDamageForecastHud"
+  },
+  "propertyCount": 18,
+  "keyMap": {
+    "EnablePartyWatchHud": "EnableDamageForecastHud"
+  },
+  "successGrades": ["ExactSuccess", "RecoveredSuccess"],
+  "failureGrades": ["Salvaged", "FailedSafe"],
+  "schemaGraph": {
+    "pre-damage-forecast-v1": "damage-forecast-v1",
+    "damage-forecast-v1": "damage-forecast-v1"
+  },
+  "compatibilityRoot": "src/DamageForecast/Compatibility",
+  "compatibilityFiles": [
+    "CompatibilityBootstrap.cs",
+    "ConfigMigrationPipeline.cs",
+    "ConfigMigrationResult.cs",
+    "ConfigMigrationTransaction.cs",
+    "ConfigSchemaDetector.cs",
+    "ConfigSchemaRegistry.cs",
+    "DamageForecastSchemaV1.cs",
+    "LegacyIdentityDescriptor.cs",
+    "PreDamageForecastSchemaV1.cs"
+  ],
+  "ordinaryLegacyMarkers": [
+    "PartyWatch",
+    "STS2PartyWatch",
+    "sts2-party-watch-v2"
+  ],
+  "runtimeTokenInventory": [
+    {
+      "token": "STS2PartyWatch.cfg",
+      "originVersion": "v0.2.0-and-earlier",
+      "purpose": "Recognize the legacy BaseLib configuration file for direct upgrade and rollback reverse-sync.",
+      "retirementGate": "C5-or-explicit-support-drop",
+      "locations": [
+        "scripts/Install-LocalMod.ps1",
+        "src/DamageForecast/Compatibility/LegacyIdentityDescriptor.cs"
+      ],
+      "verificationIds": ["C4-005", "C2-002", "C2-003"]
+    },
+    {
+      "token": "EnablePartyWatchHud",
+      "originVersion": "v0.2.0-and-earlier",
+      "purpose": "Map the single renamed legacy HUD setting to EnableDamageForecastHud.",
+      "retirementGate": "C5-or-explicit-support-drop",
+      "locations": [
+        "scripts/Install-LocalMod.ps1",
+        "src/DamageForecast/Compatibility/LegacyIdentityDescriptor.cs"
+      ],
+      "verificationIds": ["C4-005", "C2-003", "C2-004"]
+    },
+    {
+      "token": "sts2-party-watch-v2",
+      "originVersion": "v0.2.0-and-earlier",
+      "purpose": "Detect the legacy loader identity and support recoverable upgrade or rollback without duplicate loading.",
+      "retirementGate": "C5-or-explicit-support-drop",
+      "locations": [
+        "scripts/Install-LocalMod.ps1",
+        "src/DamageForecast/Compatibility/LegacyIdentityDescriptor.cs"
+      ],
+      "verificationIds": ["C4-005", "IP-017", "IU-001"]
+    }
+  ],
+  "ordinaryLayerRoots": [
+    "src/DamageForecast/Combat",
+    "src/DamageForecast/Diagnostics",
+    "src/DamageForecast/Forecast",
+    "src/DamageForecast/Identity",
+    "src/DamageForecast/Patches",
+    "src/DamageForecast/Settings",
+    "src/DamageForecast/UI"
+  ],
+  "currentAuthorityRules": [
+    {
+      "path": "README.md",
+      "requiredTokens": ["DamageForecast.cfg", "Compatibility/**", "legacy migration source"],
+      "forbiddenTokens": ["permanent persistence file"]
+    },
+    {
+      "path": "docs/architecture.md",
+      "requiredTokens": ["DamageForecastBaseLibConfig", "DamageForecastSettingsAdapter", "DamageForecastUiSettings", "DamageForecast.cfg"],
+      "forbiddenTokens": ["PartyWatch"]
+    },
+    {
+      "path": "docs/build-environment.md",
+      "requiredTokens": ["DamageForecast.cfg", "legacy migration source"],
+      "forbiddenTokens": ["Persistent config owner/file: `STS2PartyWatch`"]
+    },
+    {
+      "path": "docs/interface-map.md",
+      "requiredTokens": ["DamageForecastBaseLibConfig", "DamageForecastSettingsAdapter", "DamageForecastHudVisibilityPolicy"],
+      "forbiddenTokens": ["PartyWatch"]
+    },
+    {
+      "path": "docs/mechanics-evidence.md",
+      "requiredTokens": ["DamageForecastHudVisibilityPolicy", "DamageForecastUiSettings.ShowLocalHudInMultiplayer"],
+      "forbiddenTokens": ["PartyWatch"]
+    },
+    {
+      "path": "docs/project-state.md",
+      "requiredTokens": ["Post-G6 Product State", "DamageForecast.cfg", "legacy migration source"],
+      "forbiddenTokens": ["remain permanent persistence compatibility identities", "Permanent compatibility island:"]
+    },
+    {
+      "path": "docs/task-notes/README.md",
+      "requiredTokens": ["task-closure-standard.md", "post-g6-full-name-unification-master-task-card.md"],
+      "forbiddenTokens": ["稳定 full migration matrix", "226/226"]
+    },
+    {
+      "path": "docs/v2-roadmap.md",
+      "requiredTokens": ["DamageForecast.cfg", "compatibility subsystem", "C4"],
+      "forbiddenTokens": ["permanent config compatibility island", "permanent persistence compatibility island"]
+    }
+  ],
+  "historicalEvidencePrefixes": [
+    "docs/task-notes/"
+  ],
+  "migrationRootName": "damage-forecast-migration",
+  "realBaseline": {
+    "file": "STS2PartyWatch.cfg",
+    "length": 797,
+    "sha256": "783C0B880EB1851D813801A6FD35F4D266AE4A2FE69BE50C4812FC7BEA714553",
+    "propertyCount": 18,
+    "mutationAllowedInC2": false
+  },
+  "runtimeExecutedInC2": false
+}

@@ -1,0 +1,126 @@
+using System.Reflection;
+using BaseLib.Config;
+using BaseLib.Config.UI;
+using HarmonyLib;
+using Godot;
+using MegaCrit.Sts2.addons.mega_text;
+using DamageForecast.Settings;
+
+namespace DamageForecast.Patches;
+
+[HarmonyPatch]
+internal static class DamageForecastBaseLibTitlePatch
+{
+    private static IEnumerable<MethodBase> TargetMethods()
+    {
+        var target = ResolveTargetMethod();
+        if (target is not null)
+        {
+            yield return target;
+        }
+    }
+
+    private static MethodBase? ResolveTargetMethod()
+    {
+        return AccessTools.DeclaredMethod(
+            typeof(NModConfigSubmenu),
+            "GetModTitle",
+            [typeof(ModConfig)]);
+    }
+
+    internal static bool HasCompatibleTarget()
+    {
+        return ResolveTargetMethod() is not null
+            && ResolvePageLoadTarget() is not null
+            && ResolvePageTitleField() is not null;
+    }
+
+    private static void Postfix(ModConfig __0, ref string __result)
+    {
+        __result = ResolveListTitle(__0.ModId, __result);
+    }
+
+    internal static string ResolveListTitle(
+        string? modId,
+        string fallbackTitle)
+    {
+        return string.Equals(modId, MainFile.ModId, StringComparison.Ordinal)
+            ? DamageForecastConfigText.EnglishProductName
+            : fallbackTitle;
+    }
+
+    internal static string ResolvePageTitle(
+        string? modId,
+        DamageForecastConfigLanguage language,
+        string fallbackTitle)
+    {
+        return string.Equals(modId, MainFile.ModId, StringComparison.Ordinal)
+            ? DamageForecastConfigText.ProductName(language)
+            : fallbackTitle;
+    }
+
+    internal static bool RefreshPageTitle(
+        Control? optionContainer,
+        DamageForecastConfigLanguage language)
+    {
+        if (FindSubmenu(optionContainer) is not { } submenu
+            || ResolvePageTitleField()?.GetValue(submenu) is not MegaRichTextLabel pageTitle)
+        {
+            return false;
+        }
+
+        pageTitle.SetTextAutoSize($"[center]{DamageForecastConfigText.ProductName(language)}[/center]");
+        return true;
+    }
+
+    private static NModConfigSubmenu? FindSubmenu(Node? node)
+    {
+        while (node is not null)
+        {
+            if (node is NModConfigSubmenu submenu)
+            {
+                return submenu;
+            }
+
+            node = node.GetParent();
+        }
+
+        return null;
+    }
+
+    private static FieldInfo? ResolvePageTitleField()
+    {
+        return AccessTools.DeclaredField(typeof(NModConfigSubmenu), "_modTitle");
+    }
+
+    internal static MethodBase? ResolvePageLoadTarget()
+    {
+        return AccessTools.DeclaredMethod(
+            typeof(NModConfigSubmenu),
+            "LoadModConfig",
+            [typeof(ModConfig)]);
+    }
+}
+
+[HarmonyPatch]
+internal static class DamageForecastBaseLibPageTitlePatch
+{
+    private static IEnumerable<MethodBase> TargetMethods()
+    {
+        var target = DamageForecastBaseLibTitlePatch.ResolvePageLoadTarget();
+        if (target is not null)
+        {
+            yield return target;
+        }
+    }
+
+    private static void Postfix(NModConfigSubmenu __instance, ModConfig __0)
+    {
+        if (string.Equals(__0.ModId, MainFile.ModId, StringComparison.Ordinal))
+        {
+            DamageForecastBaseLibTitlePatch.RefreshPageTitle(
+                __instance,
+                DamageForecastBaseLibConfig.ConfigLanguage);
+        }
+    }
+}

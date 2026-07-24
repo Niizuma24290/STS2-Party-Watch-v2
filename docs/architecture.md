@@ -105,7 +105,7 @@ This preview only decides whether a specific enemy instance's current Attack Int
 
 ## Display Helpers
 
-- `PartyWatchHudDisplay` builds text, applies font/color styling, and positions
+- `DamageForecastHudDisplay` builds text, applies font/color styling, and positions
   the expected-loss, incoming-damage, and detail labels.
 - Expected HP loss is `-N`; optional incoming damage is positive `N`.
 - Display modes are `ExpectedHpLossOnly`, `IncomingDamageOnly`, and `Both`.
@@ -116,9 +116,9 @@ This preview only decides whether a specific enemy instance's current Attack Int
 
 ## Visibility and Freezing
 
-- `PartyWatchHudVisibilityPolicy.ShouldRenderHud(...)` decides whether the HUD should render.
-- `PartyWatchNativeCoveringScreenTracker` tracks native screens that cover combat.
-- `PartyWatchHudSnapshotStore` controls display-only freezing. It chooses which already-calculated `ForecastResult` is shown; it never changes how the result is calculated.
+- `DamageForecastHudVisibilityPolicy.ShouldRenderHud(...)` decides whether the HUD should render.
+- `DamageForecastNativeCoveringScreenTracker` tracks native screens that cover combat.
+- `DamageForecastHudSnapshotStore` controls display-only freezing. It chooses which already-calculated `ForecastResult` is shown; it never changes how the result is calculated.
 
 Refresh timing summary:
 
@@ -133,15 +133,15 @@ Refresh timing summary:
 Damage Forecast settings are registered through BaseLib:
 
 ```text
-PartyWatchBaseLibConfig : SimpleModConfig
-=> ModConfigRegistry.Register("sts2-party-watch-v2", config)
-=> PartyWatchSettingsAdapter
-=> PartyWatchUiSettings
+DamageForecastBaseLibConfig : SimpleModConfig
+=> ModConfigRegistry.Register("damage-forecast", config)
+=> DamageForecastSettingsAdapter
+=> DamageForecastUiSettings
 ```
 
-`PartyWatchBaseLibConfig` owns BaseLib-facing persisted values and the generated configuration page.
+`DamageForecastBaseLibConfig` owns BaseLib-facing persisted values and the generated configuration page. BaseLib reads and writes the current `DamageForecast.cfg` file. The isolated compatibility subsystem runs before construction of this type and handles supported legacy-source migration without exposing a legacy DTO to ordinary settings code.
 
-`PartyWatchSettingsAdapter` copies persisted BaseLib values into `PartyWatchUiSettings`, which remains the business-facing settings API read by HUD, visibility, positioning, and display code.
+`DamageForecastSettingsAdapter` copies persisted BaseLib values into `DamageForecastUiSettings`, which remains the business-facing settings API read by HUD, visibility, positioning, and display code.
 
 Phase 13A settings add the damage display mode, incoming-value placement, and
 five independently persisted inclusion switches for current Block, Power/Orb
@@ -151,9 +151,9 @@ placement on the right, and all incoming-defense switches off.
 
 Phase 12B keeps BaseLib's automatic rows and controls. It overrides `SetupConfigUI(...)` only to order rows and apply Damage Forecast-local English / Simplified Chinese text after BaseLib creates standard rows. It does not replace the BaseLib fullscreen shell, left mod list, scrolling, spacing, or controls.
 
-The code-only Mod has no BaseLib `settings_ui` localization PCK. `PartyWatchBaseLibTitlePatch` therefore keeps BaseLib's shared list/button lookup identity stable as English `Damage Forecast`, while the page title is updated separately after BaseLib completes `LoadModConfig(...)` and whenever `ConfigLanguage` changes. This preserves left-list selection, highlighting, and controller focus while allowing the page title and setting text to follow English / Simplified Chinese immediately and across restart.
+The code-only Mod has no BaseLib `settings_ui` localization PCK. `DamageForecastBaseLibTitlePatch` therefore keeps BaseLib's shared list/button lookup identity stable as English `Damage Forecast`, while the page title is updated separately after BaseLib completes `LoadModConfig(...)` and whenever `ConfigLanguage` changes. This preserves left-list selection, highlighting, and controller focus while allowing the page title and setting text to follow English / Simplified Chinese immediately and across restart.
 
-The legacy custom settings route in `PartyWatchSettingsPatch.cs` was removed. The supported settings route is the main-menu BaseLib Mod Configuration page. The in-combat built-in BaseLib configuration route is visible but currently unusable and remains a known limitation.
+The former custom settings route was removed. The supported settings route is the main-menu BaseLib Mod Configuration page. The in-combat built-in BaseLib configuration route is visible but currently unusable and remains a known limitation.
 
 ## Boundaries
 

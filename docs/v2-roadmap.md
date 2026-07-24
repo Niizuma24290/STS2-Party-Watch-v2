@@ -1,8 +1,8 @@
 # v2 Roadmap
 
-Last reconciled: 2026-07-21
+Last reconciled: 2026-07-24
 
-Current player-facing name: `Damage Forecast` / `伤害预测`. Completed-phase wording below is preserved as historical evidence where it used the former `Party Watch` name; technical identifiers are unchanged.
+Current player-facing and active technical identity: `Damage Forecast` / `伤害预测` / `damage-forecast`. Current settings use `DamageForecast.Settings.DamageForecastBaseLibConfig` / `DamageForecast.cfg`; the isolated compatibility subsystem recognizes the former config only as a legacy migration source. Completed-phase wording below is preserved as historical evidence where it used the former product name.
 
 ## Completed Phases
 
@@ -28,6 +28,8 @@ Current player-facing name: `Damage Forecast` / `伤害预测`. Completed-phase 
 | Phase 12B - BaseLib config polish | Complete / RuntimeVerified | Damage Forecast English/Simplified Chinese labels, language switching, restart persistence, colors, and BaseLib-compatible layout are verified. |
 | Phase 13A - Incoming damage display | Implemented / partially RuntimeVerified | Optional incoming damage `N`, display modes, placement, and calculation switches are implemented; the full combat/lifecycle matrix is not fully backfilled. |
 | Phase 12C G0-G5 - Audit, rename, runtime and repository closure | Complete | Audit, Surface Rename, G4 runtime verification, full-history push, GitHub rename, and annotated tags are closed; Workshop was not updated. |
+| G6 - Full Technical Identity Migration | Complete / stable+beta verified | Assembly/DLL, manifest, Mod ID, BaseLib key, Harmony owner, namespaces, project/test paths, publish/install identity, and diagnostics migrated to `damage-forecast` / `DamageForecast`; 18-setting persistence stayed on `STS2PartyWatch.cfg`; beta smoke and the full stable migration matrix passed. |
+| Post-G6 C1-C4 - Full name unification | Complete / stable+beta verified | Ordinary code, current config identity, Godot nodes, active-scope guardrails, compatibility token inventory, current authority, stable full migration matrix, beta smoke, and approved cleanup are closed; Workshop remains unchanged. |
 
 ## Current Initiative
 
@@ -43,6 +45,30 @@ This task establishes one current authority per subject and routes Phase/audit/
 handoff documents as historical evidence. It does not authorize code, tests,
 scripts, manifest, Workshop, install, game runtime, Forecast Engine, G6,
 commit, push, tag, file moves, or deletions.
+
+### Forecast Engine Test Guardrails
+
+Status: `Closed — TG0-TG7 Complete`.
+
+Current task card:
+
+[`docs/task-notes/forecast-engine-test-guardrails-master-task-card.md`](task-notes/forecast-engine-test-guardrails-master-task-card.md)
+
+This closed task established behavior, lifecycle, identity-coherence, publish,
+and dual-target guardrails reused throughout G6. Historical Gate evidence and
+case counts remain in its task card.
+
+### G6 Full Technical Identity Migration
+
+Status: `Closed — G6-0 through G6-7 Complete`.
+
+The active identity is `damage-forecast` / `DamageForecast`; current settings
+use `DamageForecast.Settings.DamageForecastBaseLibConfig` /
+`DamageForecast.cfg`. The compatibility subsystem retains only the bounded
+legacy-source descriptors needed for supported direct upgrade and rollback.
+Stable migration/rollback/re-upgrade and beta matching-artifact/config smoke
+passed. C4 closes the active-scope guards and current authority; Workshop was
+not modified.
 
 ## Deferred Validation Candidates
 
@@ -62,6 +88,16 @@ Deferred evidence:
 - full ordinary Poison, multi-enemy, and same-name matrix;
 - family-specific Nemesis and ToughEgg/Hatch captures;
 - special-power combination matrices outside the documented narrow support.
+
+### CodeGraph index rebuild
+
+Status: deferred maintenance, not the current task.
+
+After Forecast Engine architecture stabilization is complete, fully rebuild the ignored local `.codegraph`
+index. Verify that the rebuilt index covers the intended current C# files,
+contains no deleted paths, and is not treated as authority unless its contents
+match the repository. Do not spend a separate implementation Gate refreshing
+the index before those code and path changes are finished.
 
 ## Workshop State
 
@@ -96,8 +132,12 @@ There is no active approved task. Documentation Authority Consolidation is
 closed: DC5 validation passed, minimal DC3 affected only six superseded
 handoffs, and DC4 physical archive was skipped.
 
-The next candidate is read-only AR0 revalidation of the Forecast Engine
-architecture card. It remains Proposed/Queued and requires separate approval
-before AR1 implementation. G6 Full Technical Identity Migration remains an
-independent optional decision. Workshop changes and formal multiplayer HUD
-stay separately gated and frozen unless explicitly reopened.
+The Forecast Engine test-guardrails card is closed through TG7, and G6 Full
+Technical Identity Migration is closed through G6-7. The next recommended
+behavior candidate is a separate, not-yet-approved diagnosis/fix task for the
+current v0.3.0 user report that any damage-dealing Status or Curse card in hand
+hides the complete HUD while other scenes behave normally. This supersedes the
+earlier Regret/Bad Luck-only scope; the exact matrix and root cause are pending.
+The Forecast Engine architecture card remains Proposed/Queued. Workshop changes
+and formal multiplayer HUD stay separately gated and frozen unless explicitly
+reopened.

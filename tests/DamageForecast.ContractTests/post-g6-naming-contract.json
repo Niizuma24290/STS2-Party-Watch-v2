@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "status": "c1-complete",
+  "approval": {
+    "gate": "C1",
+    "approvedAt": "2026-07-22",
+    "scope": "Ordinary symbols, nine ordinary filenames, MSBuild switches, Godot node names, ownership safeguards, and tests only."
+  },
+  "ordinarySymbolMappings": [
+    { "legacy": "PartyWatchDiagnostics", "current": "DamageForecastDiagnostics" },
+    { "legacy": "PartyWatchBaseLibTitlePatch", "current": "DamageForecastBaseLibTitlePatch" },
+    { "legacy": "PartyWatchBaseLibPageTitlePatch", "current": "DamageForecastBaseLibPageTitlePatch" },
+    { "legacy": "PartyWatchConfigLanguage", "current": "DamageForecastConfigLanguage" },
+    { "legacy": "PartyWatchConfigText", "current": "DamageForecastConfigText" },
+    { "legacy": "PartyWatchSettingsAdapter", "current": "DamageForecastSettingsAdapter" },
+    { "legacy": "PartyWatchHudDisplay", "current": "DamageForecastHudDisplay" },
+    { "legacy": "PartyWatchHudSnapshotStore", "current": "DamageForecastHudSnapshotStore" },
+    { "legacy": "PartyWatchHudVisibilityPolicy", "current": "DamageForecastHudVisibilityPolicy" },
+    { "legacy": "PartyWatchNativeCoveringScreenTracker", "current": "DamageForecastNativeCoveringScreenTracker" },
+    { "legacy": "PartyWatchUiSettings", "current": "DamageForecastUiSettings" },
+    { "legacy": "PartyWatchHudAnchor", "current": "DamageForecastHudAnchor" }
+  ],
+  "fileMappings": [
+    { "legacy": "src/DamageForecast/Diagnostics/PartyWatchDiagnostics.cs", "current": "src/DamageForecast/Diagnostics/DamageForecastDiagnostics.cs" },
+    { "legacy": "src/DamageForecast/Patches/PartyWatchBaseLibTitlePatch.cs", "current": "src/DamageForecast/Patches/DamageForecastBaseLibTitlePatch.cs" },
+    { "legacy": "src/DamageForecast/Settings/PartyWatchConfigText.cs", "current": "src/DamageForecast/Settings/DamageForecastConfigText.cs" },
+    { "legacy": "src/DamageForecast/Settings/PartyWatchSettingsAdapter.cs", "current": "src/DamageForecast/Settings/DamageForecastSettingsAdapter.cs" },
+    { "legacy": "src/DamageForecast/UI/PartyWatchHudDisplay.cs", "current": "src/DamageForecast/UI/DamageForecastHudDisplay.cs" },
+    { "legacy": "src/DamageForecast/UI/PartyWatchHudSnapshotStore.cs", "current": "src/DamageForecast/UI/DamageForecastHudSnapshotStore.cs" },
+    { "legacy": "src/DamageForecast/UI/PartyWatchHudVisibilityPolicy.cs", "current": "src/DamageForecast/UI/DamageForecastHudVisibilityPolicy.cs" },
+    { "legacy": "src/DamageForecast/UI/PartyWatchNativeCoveringScreenTracker.cs", "current": "src/DamageForecast/UI/DamageForecastNativeCoveringScreenTracker.cs" },
+    { "legacy": "src/DamageForecast/UI/PartyWatchUiSettings.cs", "current": "src/DamageForecast/UI/DamageForecastUiSettings.cs" }
+  ],
+  "msbuildMappings": [
+    { "legacy": "PartyWatchVisibilityProfiling", "current": "DamageForecastVisibilityProfiling" },
+    { "legacy": "PartyWatchDisableGlobalVisibilityPatches", "current": "DamageForecastDisableGlobalVisibilityPatches" },
+    { "legacy": "PARTY_WATCH_VISIBILITY_PROFILING", "current": "DAMAGE_FORECAST_VISIBILITY_PROFILING" },
+    { "legacy": "PARTY_WATCH_DISABLE_GLOBAL_VISIBILITY_PATCHES", "current": "DAMAGE_FORECAST_DISABLE_GLOBAL_VISIBILITY_PATCHES" }
+  ],
+  "godotNodeMappings": [
+    { "legacy": "STS2PartyWatchForecastLabel", "current": "DamageForecastExpectedLossLabel", "ownershipGroup": "damage-forecast-hud-expected-loss" },
+    { "legacy": "STS2PartyWatchIncomingDamageLabel", "current": "DamageForecastIncomingDamageLabel", "ownershipGroup": "damage-forecast-hud-incoming-damage" },
+    { "legacy": "STS2PartyWatchForecastDetailsLabel", "current": "DamageForecastDetailsLabel", "ownershipGroup": "damage-forecast-hud-details" }
+  ],
+  "frozenPersistence": {
+    "namespace": "STS2PartyWatch.Settings",
+    "type": "PartyWatchBaseLibConfig",
+    "file": "STS2PartyWatch.cfg",
+    "persistedMember": "EnablePartyWatchHud",
+    "propertyCount": 18
+  },
+  "excludedHistoricalContracts": [
+    "tests/DamageForecast.ContractTests/identity-contract.json"
+  ]
+}

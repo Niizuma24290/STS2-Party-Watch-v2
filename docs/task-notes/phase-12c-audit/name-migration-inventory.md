@@ -3,6 +3,7 @@
 > Authority: classification and disposition of legacy-name hits.
 > Surface rename authorization: Yes (G3 approved and executed on 2026-07-21).
 > Technical identity migration authorization: No (future G6).
+> G6 closure note: technical identity migration was subsequently approved and completed on 2026-07-22. The original 12C-A rows below remain historical pre-G6 dispositions; current closure mapping is appended at the end.
 
 ## Classification
 
@@ -88,3 +89,18 @@
 - Assembly/DLL identity remains `sts2-party-watch-v2, Version=1.0.0.0`; manifest ID, BaseLib key, Harmony owner, root namespace, filenames, and paths remain unchanged.
 - Contract harness expanded from 17 to 21 assertions; all 21 passed against stable v0.107.1 and beta v0.109.0.
 - G4 remains responsible for installation, mod-list/config UI, persistence, load-log, and in-game runtime verification.
+
+## G6 Technical Identity Migration Closure
+
+- REN-0001 / REN-0002 / REN-0009: player-visible `Damage Forecast` / `伤害预测` naming and local-player multiplayer boundary remain active and runtime verified.
+- REN-0003: the primary diagnostic prefix migrated to `[Damage Forecast]`; `[STS2 Party Watch] migrated-to=damage-forecast` remains only the approved v0.2.x support marker.
+- REN-0004: Mod ID, BaseLib registration key, Harmony owner, assembly/DLL stem, manifest ID/stem, and install identity migrated atomically to `damage-forecast`.
+- REN-0005 / REN-0007 / REN-0008: active root namespace, production project/test paths, publish paths, and artifact names migrated to `DamageForecast` / `damage-forecast`.
+- REN-0006: business/HUD `PartyWatch*` symbols and legacy Godot node lookup aliases remain approved compatibility/readability islands; the persistence namespace is handled separately below.
+- Permanent persistence compatibility: `STS2PartyWatch.Settings.PartyWatchBaseLibConfig` and `STS2PartyWatch.cfg` remain unchanged by design. The BaseLib registration key is not the config-file owner.
+- Legacy install identity and old node names remain detection-only allowlists. Unknown or duplicate active identities fail closed; old install artifacts do not remain Loader-visible after migration.
+- REN-0010 through REN-0017 and REN-0031 current authority files were reconciled in G6-7. Historical commands, paths, hashes, URLs, screenshots, dated runtime statements, and the original REN-0018 through REN-0046 evidence were not rewritten.
+- Stable and beta publish trees contain exactly `damage-forecast.dll` plus `damage-forecast.json` and are byte-identical: DLL SHA256 `FB863FF75EA33D6B3F7F9B1471E12E33D5FEBD75595EB680A2D0A49369FDE880`; manifest SHA256 `09D4DC4EFA54BAA11AB3B3B1E2660FF8DB15D5EA153103AB837AAD22DBEB68C5`.
+- Runtime closure: beta matching-artifact/config smoke PASS; stable clean install, old-install upgrade, rollback, conflict preflight, restart persistence, diagnostic attribution, and matching-artifact matrix PASS.
+- Config continuity: all 18 ordered settings remained byte-identical at SHA256 `783C0B880EB1851D813801A6FD35F4D266AE4A2FE69BE50C4812FC7BEA714553`.
+- Workshop was not modified. Repository root rename, commit, push, and tag remained outside G6.

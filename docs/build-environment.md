@@ -30,7 +30,7 @@ C:\Users\ROG\Documents\Codex\STS2-reference-snapshots\v0.107.1-stable-59260271\d
 - The compile-only BaseLib dependency is pinned to `3.3.4` and downloaded from the official BaseLib GitHub release.
 - `scripts/Restore-BaseLibDependency.ps1` verifies SHA256 `C593F14EAAB504FC1D31C89DA7C029116D269F65706D9612D6F71A048E504235` before accepting the DLL.
 - The verified DLL is stored under ignored `work/dependencies/BaseLib/3.3.4/`; it is never committed or copied into the published mod.
-- `STS2PartyWatchCode.csproj` uses a direct compile reference. Override it with `-p:BaseLibReferencePath=<verified-dll>` when necessary.
+- `DamageForecast.csproj` uses a direct compile reference. Override it with `-p:BaseLibReferencePath=<verified-dll>` when necessary.
 - `scripts/Build-DualTargets.ps1` bootstraps the dependency automatically when the default path is missing.
 
 ## ModLoader packaging rules confirmed for this project
@@ -59,28 +59,32 @@ C:\Program Files (x86)\Steam\steamapps\workshop\content\2868840\3737335127\BaseL
 
 ## v2 project rules
 
-- Project: `src/STS2PartyWatchCode/STS2PartyWatchCode.csproj`
-- Assembly name: `sts2-party-watch-v2`
-- Manifest: `src/STS2PartyWatchCode/sts2-party-watch-v2.json`
-- Mod ID: `sts2-party-watch-v2`
-- Entry class: `STS2PartyWatch.MainFile`
+- Project: `src/DamageForecast/DamageForecast.csproj`
+- Assembly name: `damage-forecast`
+- Manifest: `src/DamageForecast/damage-forecast.json`
+- Mod ID: `damage-forecast`
+- Entry class: `DamageForecast.MainFile`
 - Entry marker: `[ModInitializer(nameof(Initialize))]`
-- Startup log marker: `[STS2 Party Watch] Loaded`
+- Primary startup log marker: `[Damage Forecast] Loaded`
+- Current config owner/file: `DamageForecast` / `DamageForecast.cfg`
+- Compatibility input: `STS2PartyWatch.cfg` is a legacy migration source used only by the isolated migration subsystem and rollback tooling.
 
 The publish output must not contain `.deps.json`. The ModLoader scans JSON files under mod folders as manifests, so dependency JSON files can be misread as invalid mod metadata. The project therefore sets `GenerateDependencyFile=false`.
 
 ## Commands
 
 ```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-ForecastGuardrails.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Restore-BaseLibDependency.ps1
-C:\sts2\dotnet\dotnet.exe restore .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj
-C:\sts2\dotnet\dotnet.exe build .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore
-C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore
+C:\sts2\dotnet\dotnet.exe restore .\src\DamageForecast\DamageForecast.csproj
+C:\sts2\dotnet\dotnet.exe build .\src\DamageForecast\DamageForecast.csproj -c Release --no-restore
+C:\sts2\dotnet\dotnet.exe publish .\src\DamageForecast\DamageForecast.csproj -c Release --no-restore
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Save-Sts2ReferenceSnapshot.ps1 -SnapshotName v0.109.0-beta-c12f634d
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Save-Sts2ReferenceSnapshot.ps1 -ReferenceRoot C:\Users\ROG\Documents\Codex\STS2-Party-Watch-v2\work\reflect\bin\Debug\net9.0 -SnapshotName v0.107.1-stable-59260271 -Version v0.107.1 -Branch v0.107.1 -Commit 59260271 -ReleaseDate 2026-06-18T15:43:56-07:00
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-DualTargets.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-DualTargets.ps1 -BetaReferenceRoot C:\Users\ROG\Documents\Codex\STS2-reference-snapshots\v0.109.0-beta-c12f634d\data_sts2_windows_x86_64
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-DualTargets.ps1 -StableReferenceRoot C:\Users\ROG\Documents\Codex\STS2-reference-snapshots\v0.107.1-stable-59260271\data_sts2_windows_x86_64 -BetaReferenceRoot C:\Users\ROG\Documents\Codex\STS2-reference-snapshots\v0.109.0-beta-c12f634d\data_sts2_windows_x86_64
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-IdentityPublishTrees.ps1
 git diff --check
 git status
 ```
@@ -88,18 +92,27 @@ git status
 Expected publish output:
 
 ```text
-src/STS2PartyWatchCode/bin/Release/net9.0/publish/
-├─ sts2-party-watch-v2.json
-└─ sts2-party-watch-v2.dll
+src/DamageForecast/bin/Release/net9.0/publish/
+├─ damage-forecast.json
+└─ damage-forecast.dll
 
-work/publish/beta/sts2-party-watch-v2/
-├─ sts2-party-watch-v2.json
-└─ sts2-party-watch-v2.dll
+work/publish/beta/damage-forecast/
+├─ damage-forecast.json
+└─ damage-forecast.dll
 
-work/publish/stable/sts2-party-watch-v2/
-├─ sts2-party-watch-v2.json
-└─ sts2-party-watch-v2.dll
+work/publish/stable/damage-forecast/
+├─ damage-forecast.json
+└─ damage-forecast.dll
 ```
+
+`Test-IdentityPublishTrees.ps1` is read-only. It requires each stable/beta tree
+to contain exactly the target manifest and DLL at the top level, parses all
+identity/version/dependency fields, reads the managed assembly name, and emits
+per-file SHA256 values. Stable/beta hash differences fail by default; using
+`-ApproveHashDifference` is valid only after the difference has been explained
+and separately approved. `Build-DualTargets.ps1` invokes this validator after a
+two-target publish. Running either publish command still requires an explicit
+publish approval; contract/build approval alone does not authorize it.
 
 Forbidden publish/commit artifacts:
 
@@ -120,19 +133,29 @@ NuGet cache
 Expected local install directory:
 
 ```text
-C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\mods\sts2-party-watch-v2
+C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\mods\damage-forecast
 ```
 
 Expected install tree:
 
 ```text
 mods/
-└─ sts2-party-watch-v2/
-   ├─ sts2-party-watch-v2.json
-   └─ sts2-party-watch-v2.dll
+└─ damage-forecast/
+   ├─ damage-forecast.json
+   └─ damage-forecast.dll
 ```
 
 There must not be an extra nested `publish/` directory under the mod folder.
+
+The identity-aware installer defaults to a read-only JSON plan. It parses manifests, verifies the staging tree, checks the game process and resolved paths, and reports clean-install/upgrade/conflict state:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Install-LocalMod.ps1 `
+  -Mode Plan `
+  -StagingDir .\work\publish\stable\damage-forecast
+```
+
+`Install` requires the reviewed plan's transaction ID, manifest SHA256, DLL SHA256, and explicit `-Execute`; any staging change after review is rejected. `Rollback` also requires explicit `-Execute`. Active staging and installation remain under the resolved `mods` root, while recoverable backups and hash ledgers must remain inside the resolved game root but strictly outside `mods`, because the game Loader recursively discovers JSON manifests below `mods`. A custom backup root inside that Loader-scanned tree is rejected before mutation. Backups are retained through runtime acceptance, and no mutation is authorized merely by running the plan. Workshop scanning is excluded unless `-IncludeWorkshop` and an explicit read-only root are supplied; Workshop mutation is never performed by this script.
 
 Phase 9 task cards use only the explicit commands above. Do not use `STS2PartyWatch.sln`, `NuGet.Config`, or `tools/check-forbidden-files.ps1` for Phase 9.
 
@@ -141,38 +164,52 @@ Phase 9 task cards use only the explicit commands above. Do not use `STS2PartyWa
 - `scripts/Save-Sts2ReferenceSnapshot.ps1` copies the current installed game's or an explicit `ReferenceRoot`'s `release_info.json`, `sts2.dll`, `sts2.xml`, `GodotSharp.dll`, and `0Harmony.dll` to a repository-external snapshot and writes `manifest.json` plus `SHA256SUMS.txt`.
 - With no reference-root arguments, `scripts/Build-DualTargets.ps1` reads each snapshot's `release_info.json`, selects stable `v0.107.1` and beta `v0.109.0`, and builds both targets.
 - Explicit `StableReferenceRoot` and `BetaReferenceRoot` arguments remain available for one-target builds or manual overrides.
-- Stable and beta outputs are independent: `work/bin/<target>/`, `work/obj/<target>/`, and `work/publish/<target>/sts2-party-watch-v2/`.
+- Stable and beta outputs are independent: `work/bin/<target>/`, `work/obj/<target>/`, and `work/publish/<target>/damage-forecast/`.
 - The script redirects NuGet and MSBuild scratch paths into ignored `work/` directories to avoid machine temp lock issues.
 - The script fails immediately when `dotnet restore`, `build`, or `publish` returns a non-zero exit code.
+- A dual-target run also fails unless both publish trees pass exact two-file,
+  manifest, assembly-identity, and SHA256 comparison validation.
 - Current beta baseline: v0.109.0 / branch `v0.109.0` / commit `c12f634d`, build passed with 0 warnings and 0 errors.
 - Current stable baseline: v0.107.1 / branch `v0.107.1` / commit `59260271`, captured from the old `work/reflect/bin/Debug/net9.0` reference candidate; `sts2.xml` shows the stable hook surface with `Hook.BeforeTurnEnd` and 10-argument `Hook.ModifyDamage`. Build passed with 0 warnings and 0 errors.
 - The shared mod manifest sets `min_game_version` to `0.107.1`, so it applies to both baselines; API selection comes from the reference DLLs, not from separate manifest JSON files.
 
 ## Contract tests
 
-The dependency-light executable harness currently covers conservative verified
-turn-end card-shape rules, forecast-result clamping, configuration text,
-BaseLib title compatibility, and the approved audit/Phase 13A seams. Run it once
-against each supported reference root:
+The authoritative local quality gate is:
 
 ```powershell
-C:\sts2\dotnet\dotnet.exe run --project .\tests\STS2PartyWatchCode.ContractTests\STS2PartyWatchCode.ContractTests.csproj -c Release -p:Sts2ReferenceRoot=C:\Users\ROG\Documents\Codex\STS2-reference-snapshots\v0.107.1-stable-59260271\data_sts2_windows_x86_64
-C:\sts2\dotnet\dotnet.exe run --project .\tests\STS2PartyWatchCode.ContractTests\STS2PartyWatchCode.ContractTests.csproj -c Release -p:Sts2ReferenceRoot=C:\Users\ROG\Documents\Codex\STS2-reference-snapshots\v0.109.0-beta-c12f634d\data_sts2_windows_x86_64
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Test-ForecastGuardrails.ps1
 ```
 
-Each run must report `28 contract tests passed.` The 28/28 stable and beta
-closure evidence is recorded in
-[`phase-12c-g4-runtime-verification.md`](task-notes/phase-12c-g4-runtime-verification.md)
-and
-[`phase-12c-g5-repository-closure.md`](task-notes/phase-12c-g5-repository-closure.md).
-Historical audit notes
-retain earlier 7/10/17/21-test checkpoints as evidence of their original dates.
-This harness does not replace the game runtime matrix for Harmony, Godot UI,
-combat lifecycle, or BaseLib integration.
+With no arguments, the script verifies the pinned BaseLib dependency, discovers
+the frozen stable `v0.107.1` and beta `v0.109.0` reference roots, runs the same
+named contract set against both targets, performs independent Release builds,
+then runs `git diff --check` and tracked/working-tree forbidden-artifact review.
+It prints per-target case summaries, durations, exit codes, and one final
+`QUALITY_GATE` result. For development only, pass `-Target stable` or
+`-Target beta`; closure requires the default dual-target run.
 
-## Not verified in this task
+The gate writes only ignored build/intermediate data below
+`work/forecast-guardrails/`. It does not publish, install, launch the game, or
+operate Workshop. Historical audit notes retain their earlier case counts as
+evidence of their original dates. Contract/build success does not replace the
+separate runtime evidence matrix for Harmony, Godot UI, combat lifecycle, or
+BaseLib integration.
+
+## Not verified by the quality-gate command alone
 
 - Steam launch.
 - Game Mod list visibility.
 - Runtime Loaded log.
 - HUD creation, hiding, placement, or attack forecast behavior.
+
+G6 supplies the separate identity-migration runtime evidence: beta v0.109.0
+matching-artifact/config smoke passed, and stable v0.107.1 rollback,
+old-install upgrade, clean install, isolated conflict preflight, restart
+persistence, diagnostic attribution, and matching-artifact checks passed. The
+final installed two-file tree uses DLL SHA256
+`FB863FF75EA33D6B3F7F9B1471E12E33D5FEBD75595EB680A2D0A49369FDE880`
+and manifest SHA256
+`09D4DC4EFA54BAA11AB3B3B1E2660FF8DB15D5EA153103AB837AAD22DBEB68C5`.
+Those runtime observations do not broaden the quality gate into an installer
+or launcher.

@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <AssemblyName>damage-forecast</AssemblyName>
+    <RootNamespace>DamageForecast</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <DamageForecastVisibilityProfiling Condition="'$(DamageForecastVisibilityProfiling)' == ''">false</DamageForecastVisibilityProfiling>
+    <DamageForecastDisableGlobalVisibilityPatches Condition="'$(DamageForecastDisableGlobalVisibilityPatches)' == ''">false</DamageForecastDisableGlobalVisibilityPatches>
+    <BaseLibVersion>3.3.4</BaseLibVersion>
+    <BaseLibReferencePath Condition="'$(BaseLibReferencePath)' == ''">$(MSBuildProjectDirectory)\..\..\work\dependencies\BaseLib\$(BaseLibVersion)\BaseLib.dll</BaseLibReferencePath>
+    <Sts2GameRoot Condition="'$(Sts2GameRoot)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2</Sts2GameRoot>
+    <Sts2ReferenceRoot Condition="'$(Sts2ReferenceRoot)' == ''">$(Sts2GameRoot)\data_sts2_windows_x86_64</Sts2ReferenceRoot>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DamageForecastVisibilityProfiling)' == 'true'">
+    <DefineConstants>$(DefineConstants);DAMAGE_FORECAST_VISIBILITY_PROFILING</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DamageForecastDisableGlobalVisibilityPatches)' == 'true'">
+    <DefineConstants>$(DefineConstants);DAMAGE_FORECAST_DISABLE_GLOBAL_VISIBILITY_PATCHES</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="BaseLib">
+      <HintPath>$(BaseLibReferencePath)</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="sts2">
+      <HintPath>$(Sts2ReferenceRoot)\sts2.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="GodotSharp">
+      <HintPath>$(Sts2ReferenceRoot)\GodotSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(Sts2ReferenceRoot)\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="bin\**\*.cs" />
+    <Compile Remove="obj\**\*.cs" />
+    <None Include="damage-forecast.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DamageForecast.ContractTests" />
+  </ItemGroup>
+</Project>

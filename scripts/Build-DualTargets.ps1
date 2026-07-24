@@ -1,15 +1,16 @@
 param(
     [string]$Configuration = "Release",
-    [string]$Project = "src/STS2PartyWatchCode/STS2PartyWatchCode.csproj",
+    [string]$Project = "src/DamageForecast/DamageForecast.csproj",
     [string]$SnapshotRoot = "C:\Users\ROG\Documents\Codex\STS2-reference-snapshots",
     [string]$StableVersion = "v0.107.1",
     [string]$BetaVersion = "v0.109.0",
     [string]$StableReferenceRoot = "",
     [string]$BetaReferenceRoot = "",
     [string]$BaseLibReferencePath = "",
-    [string]$StableOutputDir = "work/publish/stable/sts2-party-watch-v2",
-    [string]$BetaOutputDir = "work/publish/beta/sts2-party-watch-v2",
-    [switch]$SkipRestore
+    [string]$StableOutputDir = "work/publish/stable/damage-forecast",
+    [string]$BetaOutputDir = "work/publish/beta/damage-forecast",
+    [switch]$SkipRestore,
+    [switch]$ApproveHashDifference
 )
 
 $ErrorActionPreference = "Stop"
@@ -22,6 +23,7 @@ $scratchRoot = Join-Path $repoRoot "work"
 $nugetScratch = Join-Path $scratchRoot "nuget-scratch"
 $msbuildTemp = Join-Path $scratchRoot "msbuild-temp"
 $baseLibBootstrap = Join-Path $PSScriptRoot "Restore-BaseLibDependency.ps1"
+$publishValidator = Join-Path $PSScriptRoot "Test-IdentityPublishTrees.ps1"
 
 function Resolve-SnapshotReferenceRoot {
     param(
@@ -183,7 +185,7 @@ foreach ($target in $targets) {
         $outputPath
     )
 
-    $requiredFiles = @("sts2-party-watch-v2.dll", "sts2-party-watch-v2.json")
+    $requiredFiles = @("damage-forecast.dll", "damage-forecast.json")
     foreach ($file in $requiredFiles) {
         $path = Join-Path $outputPath $file
         if (-not (Test-Path -LiteralPath $path)) {
@@ -199,5 +201,32 @@ foreach ($target in $targets) {
         throw "$($target.Name) publish output contains forbidden files:$([Environment]::NewLine)$names"
     }
 
+    $publishedFiles = @(Get-ChildItem -LiteralPath $outputPath -File -Recurse | ForEach-Object {
+        $_.FullName.Substring($outputPath.Length).TrimStart([char[]]@('\', '/')).Replace('\', '/')
+    } | Sort-Object)
+    if (($publishedFiles -join "`n") -ne (($requiredFiles | Sort-Object) -join "`n")) {
+        throw "$($target.Name) publish output must contain exactly $($requiredFiles -join ', '); actual=$($publishedFiles -join ', ')"
+    }
+
     Write-Host "Built $($target.Name) target to $outputPath"
+}
+
+if ($targets.Count -eq 2) {
+    if (-not (Test-Path -LiteralPath $publishValidator)) {
+        throw "Publish-tree validator not found: $publishValidator"
+    }
+
+    $stableTree = Join-Path $repoRoot (($targets | Where-Object Name -eq "stable").OutputDir)
+    $betaTree = Join-Path $repoRoot (($targets | Where-Object Name -eq "beta").OutputDir)
+    $validatorArguments = @{
+        StableTree = $stableTree
+        BetaTree = $betaTree
+    }
+    if ($ApproveHashDifference) {
+        $validatorArguments.ApproveHashDifference = $true
+    }
+    & $publishValidator @validatorArguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "Publish-tree identity/hash validation failed with exit code $LASTEXITCODE."
+    }
 }

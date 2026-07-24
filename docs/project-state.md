@@ -1,10 +1,12 @@
 # Project State
 
-Last reconciled: 2026-07-21
+Last reconciled: 2026-07-24
 
 ## Product Naming
 
-The current player-facing name is `Damage Forecast` / `伤害预测`; `Party Watch` is the former player-facing name. Technical identifiers such as `sts2-party-watch-v2`, `STS2PartyWatch`, `PartyWatch*`, assembly and project names, paths, and the diagnostic prefix `[STS2 Party Watch]` are intentionally retained. Historical evidence below is not rewritten.
+The current player-facing and active technical identity is `Damage Forecast` / `damage-forecast`, with assembly/DLL, manifest, BaseLib registration, Harmony owner, install identity, config type, and primary diagnostic prefix aligned. Current settings are owned by `DamageForecast.Settings.DamageForecastBaseLibConfig` and stored in `DamageForecast.cfg`. The isolated compatibility subsystem recognizes the former config and loader identity only as a legacy migration source for supported direct upgrade and rollback. Historical evidence below is not rewritten.
+
+G6 provides a manifest-aware, dry-run-first local identity tool. `Plan` is the default; real `Install`/`Rollback` require explicit `-Execute`, keep backups and hash ledgers outside the Loader-scanned `mods` root, and never mutate Workshop. G6-6 completed beta matching-artifact/config smoke and the full stable rollback, old-install upgrade, clean-install, conflict-preflight, restart-persistence, diagnostic-attribution, and matching-artifact matrix.
 
 ## Positioning
 
@@ -57,13 +59,13 @@ Status tags:
 | Mechanism | Current status | Evidence boundary |
 | --- | --- | --- |
 | Enemy `AttackIntent` / DeathBlow intent damage | Implemented, RuntimeVerified | Uses native `AttackIntent.GetTotalDamage(...)`; ordinary attack scenes verified. |
-| Hand turn-end blockable `DamageVar`, including Burn-style cards | Implemented, RuntimeVerified | Reads current local hand and previews `DamageVar` through native `Hook.ModifyDamage(...)`; Burn matrix verified. |
+| Hand turn-end blockable `DamageVar`, including Burn-style cards | Implemented reader, current runtime defect reported | Historical Burn matrix passed. In the current v0.3.0 runtime, the user reports that any damage-dealing Status or Curse card in hand hides the complete HUD; exact current matrix and root cause remain pending. |
 | Frost | Implemented, RuntimeVerified | Reads `FrostOrb.PassiveVal` as verified pre-attack Block. |
 | PlatingPower | Implemented, RuntimeVerified | Reads current local `PlatingPower.Amount`. |
 | Orichalcum / FakeOrichalcum | Implemented, RuntimeVerified, Conditional | Counted only when current Block is 0. |
 | RippleBasin | Implemented, RuntimeVerified, Conditional | Handles already-played Attack and pending `StampedePower` attack exclusion. |
 | CloakClasp | Implemented, RuntimeVerified | Reads current hand count and relic Block var. |
-| Beckon / Bad Luck / Regret | Implemented, RuntimeVerified | Verified direct HP loss sources for `♥`. |
+| Beckon / Bad Luck / Regret | Implemented reader, included in broader current runtime defect | The exact fixed-event reader exists. The current v0.3.0 user observation broadens the failure from Regret/Bad Luck to all damage-dealing Status/Curse cards in hand; scenes without such cards behave normally. The prior strict-classifier explanation is a diagnosis candidate, not yet a confirmed complete root cause for the broader scope. |
 | ConstrictPower / DisintegrationPower self-damage | Implemented, RuntimeVerified | Treated as blockable turn-end Power damage based on code evidence and user Steam verification. |
 | IntangiblePower on local player direct HP loss | Implemented, RuntimeVerified, Conditional | Applies to verified single HP-loss events before Tungsten Rod and Beating Remnant. Aggregate direct HP loss remains unsupported. |
 | TungstenRod | Implemented, Conditional | Applies only to verified single HP-loss events. Aggregate enemy HP loss with Tungsten Rod returns Unknown. |
@@ -128,12 +130,12 @@ Verification state:
 - HUD label is anchored to the local player's `NHealthBar.HpBarContainer` parent or equivalent health-bar node parent.
 - Main expected-loss label, incoming-damage label, and detail label are separate nodes.
 - The temporary health-bar center guide and HUD text guide were removed after the alignment observation task. The remaining HUD labels continue to use the local health-bar lifecycle and parent node.
-- Native covering screen lifecycle is tracked by `PartyWatchNativeCoveringScreenTracker` and `NativeCoveringScreenLifecyclePatch`.
-- Settings are defined through `PartyWatchBaseLibConfig : BaseLib.Config.SimpleModConfig` and registered with `ModConfigRegistry.Register("sts2-party-watch-v2", config)`.
-- The business-facing HUD code still reads settings only through `PartyWatchUiSettings`; `PartyWatchSettingsAdapter` syncs BaseLib config changes into that existing settings surface.
+- Native covering screen lifecycle is tracked by `DamageForecastNativeCoveringScreenTracker` and `NativeCoveringScreenLifecyclePatch`.
+- Settings are defined through `DamageForecast.Settings.DamageForecastBaseLibConfig : BaseLib.Config.SimpleModConfig`, registered with `ModConfigRegistry.Register("damage-forecast", config)`, and read/write `DamageForecast.cfg`.
+- The business-facing HUD code reads settings only through `DamageForecastUiSettings`; `DamageForecastSettingsAdapter` syncs BaseLib config changes into that settings surface.
 - Settings include HUD enabled, local HUD in multiplayer, advanced details, freeze behavior, damage display mode, incoming damage placement, incoming damage calculation switches, anchor preset, X/Y offset, total color, shield detail color, heart detail color, and BaseLib restore-defaults behavior.
-- The old Party Watch-owned `NModInfoContainer.Fill(Mod)` settings route has been removed.
-- The current supported settings route is the BaseLib generated page under the main-menu Mod Configuration flow. User runtime verification on 2026-07-03 confirmed `STS2PartyWatch` appears, opens, and generated controls are usable.
+- The former Mod-owned `NModInfoContainer.Fill(Mod)` settings route has been removed.
+- The current supported settings route is the BaseLib generated page under the main-menu Mod Configuration flow. Post-G6 C3 runtime verification confirmed one `Damage Forecast` entry under the active `damage-forecast` registration key, one config page, and all 18 values in `DamageForecast.cfg`.
 - Phase 13A settings-page smoke verification on 2026-07-16 confirmed the installed incoming-damage settings surface is OK. The full Phase 13A combat HUD matrix is not fully runtime verified.
 - The in-combat built-in `模组配置（BaseLib）` / `打开配置` entry is visible but currently unusable; this is recorded as a Phase 12A known limitation, not a Phase 12A blocker.
 
@@ -300,6 +302,17 @@ Known Phase 12B limitations:
 - Repository closure is recorded in `docs/task-notes/phase-12c-g5-repository-closure.md` and identified remotely by the annotated tag `g5-repository-closure`.
 - Workshop item `3755598583` was not updated during G5.
 
+## Post-G6 Product State
+
+- Active identity: `Damage Forecast` / `damage-forecast` / `DamageForecast`.
+- Active assembly, DLL stem, manifest ID/stem, install directory, BaseLib registration key, Harmony owner, namespace, and primary diagnostic prefix are aligned with the new identity.
+- Current config identity is `DamageForecast.Settings.DamageForecastBaseLibConfig` / `DamageForecast.cfg`; all 18 ordered settings survived first migration, setting write/restart, reverse-sync rollback, old-version read, re-upgrade, and final restart.
+- The compatibility subsystem under `src/DamageForecast/Compatibility/` owns the legacy migration source descriptors and direct schema graph. Ordinary Settings/UI/Combat/Forecast/Patches code contains no legacy config key, file, or Mod ID literal.
+- Final stable local install is v0.3.0 at `mods/damage-forecast`, with DLL SHA256 `EC22C91A20BE88E2B39D5285769771B5999556534FCEDE5EF000E1A82FB0EE43` and manifest SHA256 `FF8D4E07E574F9FC89EDEDF0D569EE8A7CADFE2A6A2907CAA9E3097F476C32DB`.
+- Runtime depth: stable v0.107.1 full migration/rollback/re-upgrade matrix PASS; beta v0.109.0 matching-artifact, config continuity, one-load/one-page/one-HUD smoke PASS; final machine state returned to stable without launch.
+- Workshop identity remains external and unchanged; repository-root rename remains unperformed.
+- Known deferred behavior defect: current v0.3.0 user runtime shows that any damage-dealing Status or Curse card in hand can hide the complete HUD, while scenes without such cards behave normally. This supersedes the earlier Regret/Bad Luck-only scope; exact card-by-card reproduction and root cause remain pending. The successful Post-G6 identity/config migration is recorded separately and does not itself establish causation.
+
 ## Release State
 
 - Branch: `main`.
@@ -316,19 +329,3 @@ Known Phase 12B limitations:
 - Phase 10: Workshop upload / private subscription-test milestone.
 - Phase 11: all new supplements, maintenance fixes, runtime verification backfills, and documentation updates after Workshop upload.
 - Do not create new Phase 9 subphases. Use `docs/task-notes/phase-11-supplements.md` or `phase-11-<topic>.md`.
-
-## Next Single Task
-
-Documentation Authority Consolidation is closed after DC0-DC6. Minimal DC3
-added historical banners only to the six superseded handoffs; DC4 physical
-archive was evaluated and skipped, and DC5 final validation passed. No files
-were moved or deleted.
-
-There is no active approved task. No code, test, script, manifest, Workshop,
-install, game, Forecast Engine, or G6 work is authorized. Any further commit,
-push, or tag requires separate approval.
-
-The Forecast Engine architecture task remains Proposed/Queued; its next
-candidate Gate is read-only AR0 revalidation. G6 Full Technical Identity
-Migration remains optional and separately gated. Keep formal multiplayer HUD
-work frozen unless explicitly reopened.

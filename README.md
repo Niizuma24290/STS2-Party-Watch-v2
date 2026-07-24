@@ -38,9 +38,9 @@ Supported in the current codebase:
 - local-player HUD in single-player combat;
 - local-player HUD in multiplayer combat when `Show local-player Damage Forecast HUD in Multiplayer` is enabled;
 - enemy AttackIntent / DeathBlow intent damage;
-- hand turn-end blockable `DamageVar`, including Burn-style cards;
+- hand turn-end blockable `DamageVar`, including Burn-style cards, subject to the current damaging Status/Curse HUD defect below;
 - Frost, PlatingPower, Orichalcum, FakeOrichalcum, RippleBasin, and CloakClasp;
-- Beckon, Bad Luck, and Regret direct HP loss;
+- exact fixed turn-end HP-loss readers for Beckon, Bad Luck, and Regret, subject to the known hand-classification defect below;
 - ConstrictPower and DisintegrationPower self-damage;
 - IntangiblePower, Tungsten Rod, and Beating Remnant within documented event-granularity limits;
 - capability-routed Diamond Diadem support: preserved legacy card-count reduction plus v0.109 native first-turn Block/Blur handling;
@@ -54,6 +54,14 @@ Explicitly not claimed:
 - generic damage / HP-loss engines;
 - unsupported special enemy Poison lifecycles or HP-loss budgets;
 - unsupported persistence paths outside BaseLib's settings storage.
+
+Known behavior defect: in the current v0.3.0 runtime, the user reports that any
+damage-dealing Status or Curse card in hand makes the complete HUD disappear;
+scenes without such a card behave normally. This supersedes the earlier narrow
+Regret/Bad Luck report and includes, rather than isolates, that pair. Historical
+Burn and direct-HP-loss runtime evidence remains historical evidence; the exact
+current card matrix and root cause are still pending diagnosis. This is recorded
+separately from the successful technical-identity/config migration.
 
 ## Settings
 
@@ -75,28 +83,41 @@ Settings are persisted by BaseLib:
 
 Damage Forecast does not replace any existing settings screen. Changes apply immediately.
 
+The active technical identity is `damage-forecast`. Current settings use
+`DamageForecast.Settings.DamageForecastBaseLibConfig` and `DamageForecast.cfg`.
+The bounded `Compatibility/**` subsystem recognizes the former config only as a
+legacy migration source for direct upgrade and rollback support.
+
 ## Installation
 
 Build and publish with the repository toolchain:
 
 ```powershell
-C:\sts2\dotnet\dotnet.exe build .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore
-C:\sts2\dotnet\dotnet.exe publish .\src\STS2PartyWatchCode\STS2PartyWatchCode.csproj -c Release --no-restore
+C:\sts2\dotnet\dotnet.exe build .\src\DamageForecast\DamageForecast.csproj -c Release --no-restore
+C:\sts2\dotnet\dotnet.exe publish .\src\DamageForecast\DamageForecast.csproj -c Release --no-restore
 ```
 
 The publish output is:
 
 ```text
-src/STS2PartyWatchCode/bin/Release/net9.0/publish/
-|- sts2-party-watch-v2.json
-`- sts2-party-watch-v2.dll
+src/DamageForecast/bin/Release/net9.0/publish/
+|- damage-forecast.json
+`- damage-forecast.dll
 ```
 
-For local testing, place those two files in:
+Before local testing, generate a read-only install/upgrade plan from the verified two-file staging tree:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Install-LocalMod.ps1 -Mode Plan -StagingDir .\work\publish\stable\damage-forecast
+```
+
+The expected target directory is:
 
 ```text
-C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\mods\sts2-party-watch-v2
+C:\Program Files (x86)\Steam\steamapps\common\Slay the Spire 2\mods\damage-forecast
 ```
+
+Real `Install` or `Rollback` execution requires separate approval and explicit `-Execute`; the default plan does not move files or access Workshop.
 
 Do not commit build outputs, DLLs, PDBs, PCKs, logs, `bin/`, `obj/`, `publish/`, `work/`, uploader files, cover assets, `mod_id.txt`, or game directory files.
 

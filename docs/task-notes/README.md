@@ -3,19 +3,14 @@
 `docs/task-notes/` 是 Damage Forecast 的唯一任务登记和历史证据目录。
 不要创建第二套平行进度目录。
 
-当前玩家可见名称为 `Damage Forecast` / `伤害预测`。`Party Watch` 是旧玩家可见名称；历史记录、技术标识、路径和 `[STS2 Party Watch]` 诊断前缀均保留。
+## Task routing
 
-## 当前状态和唯一任务
-
-- Phase 12C G0-G5 已收口；仓库、运行时验证和 tags 以
-  [`docs/project-state.md`](../project-state.md) 及对应 Phase 12C closure note 为准。
-- Documentation Authority Consolidation 已完成 DC0-DC6 并正式关闭；DC3 采用最小范围，
-  DC4 经评估后跳过。关闭记录见
-  [`documentation-authority-consolidation-master-task-card.md`](documentation-authority-consolidation-master-task-card.md)。
-- 当前没有已批准的 active task。
-- [`forecast-engine-architecture-stabilization-master-task-card.md`](forecast-engine-architecture-stabilization-master-task-card.md) 仍是
-  `Proposed / Queued`，没有获得 AR1 或代码实施授权。
-- G6 Full Technical Identity Migration、Workshop 和正式多人 HUD 均未获本任务授权。
+- 收口规则：[`task-closure-standard.md`](task-closure-standard.md)。
+- 当前 checkpoint authority：[`post-g6-full-name-unification-master-task-card.md`](post-g6-full-name-unification-master-task-card.md)。
+- 已关闭测试护栏：[`forecast-engine-test-guardrails-master-task-card.md`](forecast-engine-test-guardrails-master-task-card.md)。
+- 已关闭 G6：[`full-technical-identity-migration-master-task-card.md`](full-technical-identity-migration-master-task-card.md)。
+- 排队中的架构任务：[`forecast-engine-architecture-stabilization-master-task-card.md`](forecast-engine-architecture-stabilization-master-task-card.md)。
+- 历史 authority consolidation：[`documentation-authority-consolidation-master-task-card.md`](documentation-authority-consolidation-master-task-card.md)。
 
 ## 默认阅读顺序
 
@@ -38,17 +33,14 @@
 | 当前机制支持、条件支持、未知与证据矩阵 | [`docs/mechanics-evidence.md`](../mechanics-evidence.md) |
 | 当前构建、依赖、stable/beta 和验证命令 | [`docs/build-environment.md`](../build-environment.md) |
 | 已完成里程碑短摘要与未来方向 | [`docs/v2-roadmap.md`](../v2-roadmap.md) |
-| 当前任务、状态词和历史证据路由 | 本文件 |
+| 当前任务和历史证据路由 | 本文件 |
+| 任务状态词、Gate 与 checkpoint 收口规则 | [`task-closure-standard.md`](task-closure-standard.md) |
 
 其他文档可以提供历史证据，但不得竞争这些 current-state 职责。
 
 ## 状态词
 
-- `Proposed / Not Started`：尚未批准实施。
-- `Approved / In Progress`：仅批准记录的当前 Gate 和文件范围。
-- `Blocked`：达到任务卡规定的阻塞条件。
-- `Closed`：已完成并通过对应验证。
-- `Historical / Superseded`：保留当时事实，不是当前 next-step authority。
+统一使用 [`task-closure-standard.md`](task-closure-standard.md) 第 7 节；本索引不复制状态定义。
 
 ## 按主题读取
 
@@ -57,16 +49,19 @@
 | 预测机制 | [`docs/mechanics-evidence.md`](../mechanics-evidence.md) + 精确 Phase note |
 | 架构 | [`docs/architecture.md`](../architecture.md) + [Forecast Engine task card](forecast-engine-architecture-stabilization-master-task-card.md)（仅在批准后） |
 | 构建/兼容 | [`docs/build-environment.md`](../build-environment.md) + 对应 stable/beta note |
+| 测试护栏 | [已关闭的 Forecast Engine 测试护栏任务卡](forecast-engine-test-guardrails-master-task-card.md) + [`docs/build-environment.md`](../build-environment.md) |
 | 产品/玩家文案 | [`README.md`](../../README.md) + current rename record |
 | 路线和排序 | [`docs/v2-roadmap.md`](../v2-roadmap.md) |
 | 审计复核 | [`phase-12c-audit/`](phase-12c-audit/) 下精确 ledger |
 | Workshop | [`workshop-private-rc-2026-07-01.md`](workshop-private-rc-2026-07-01.md) + [`docs/project-state.md`](../project-state.md) |
-| G6 | [`name-migration-inventory.md`](phase-12c-audit/name-migration-inventory.md) + 未来获批的 G6 task card |
+| G6（已关闭） | [`full-technical-identity-migration-master-task-card.md`](full-technical-identity-migration-master-task-card.md) + [`name-migration-inventory.md`](phase-12c-audit/name-migration-inventory.md) |
+| Post-G6 C1-C4 | [`post-g6-full-name-unification-master-task-card.md`](post-g6-full-name-unification-master-task-card.md) |
 
 ## Task-note classification
 
 - `CURRENT_AUTHORITY`：本文件。
-- `ACTIVE_TASK`：无。
+- `CHECKPOINT_TASK`：[`post-g6-full-name-unification-master-task-card.md`](post-g6-full-name-unification-master-task-card.md)。
+- `CLOSED_TASK`：[`forecast-engine-test-guardrails-master-task-card.md`](forecast-engine-test-guardrails-master-task-card.md)，TG0-TG7 已关闭；[`full-technical-identity-migration-master-task-card.md`](full-technical-identity-migration-master-task-card.md)，G6-0..G6-7 已关闭。
 - `PROPOSED_TASK`：[`forecast-engine-architecture-stabilization-master-task-card.md`](forecast-engine-architecture-stabilization-master-task-card.md)，保持 queued，尚未获得 AR1。
 - `SUPERSEDED_HANDOFF`：所有 `*handoff*` 文件；保留 hash、工作区和当时 next-step。
 - `RAW_EVIDENCE`：`phase-12c-aud-0007-*` 和 `phase-12c-audit/*`。
