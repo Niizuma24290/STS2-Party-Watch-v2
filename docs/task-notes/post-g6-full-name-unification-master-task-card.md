@@ -2,12 +2,12 @@
 
 ## Current Control
 
-State: `Work Complete / Checkpoint Pending`
-Last completed: `C4`
-Next: `Git checkpoint`
-Approved: `Yes — commit / push / checkpoint tag`
+State: `Closed`
+Last completed: `Git checkpoint`
+Next: `None`
+Approved: `N/A`
 Evidence: `§26`
-Repository: `Checkpoint Pending`
+Repository: implementation checkpoint `8d3c734`; closure checkpoint tag `post-g6-c1-c4-closure`
 
 任务性质：独立于 G6 的 Post-G6 命名统一工程。
 
@@ -1993,5 +1993,5 @@ C3D 已闭环。当时 Gate snapshot：`C3D Complete / C4 Approval Pending`；C4
 
 Result: Post-G6 C1-C4 已完成实现、stable/beta 验证、迁移 runtime matrix、获批清理与 authority reconciliation。
 Current state: active install 为唯一 `damage-forecast` v0.3.0；current cfg only `DamageForecast.cfg`；已知 damaging Status/Curse HUD defect 未处理；Workshop unchanged。
-Authority: 本任务卡；当前产品事实同步至 `README.md`、`docs/project-state.md`、`docs/architecture.md`、`docs/mechanics-evidence.md` 与相关 current authority。
-Repository: Checkpoint Pending；用户已批准 commit、push 与 checkpoint tag。
+Authority: 本任务卡；按 `task-closure-standard.md` 收口，当前产品事实同步至 `README.md`、`docs/project-state.md`、`docs/architecture.md`、`docs/mechanics-evidence.md` 与相关 current authority。
+Repository: implementation checkpoint `8d3c734`；annotated tag `post-g6-c1-c4-closure` 标识最终 closure checkpoint。

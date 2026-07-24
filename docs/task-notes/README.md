@@ -6,7 +6,7 @@
 ## Task routing
 
 - 收口规则：[`task-closure-standard.md`](task-closure-standard.md)。
-- 当前 checkpoint authority：[`post-g6-full-name-unification-master-task-card.md`](post-g6-full-name-unification-master-task-card.md)。
+- 最近关闭任务：[`post-g6-full-name-unification-master-task-card.md`](post-g6-full-name-unification-master-task-card.md)。
 - 已关闭测试护栏：[`forecast-engine-test-guardrails-master-task-card.md`](forecast-engine-test-guardrails-master-task-card.md)。
 - 已关闭 G6：[`full-technical-identity-migration-master-task-card.md`](full-technical-identity-migration-master-task-card.md)。
 - 排队中的架构任务：[`forecast-engine-architecture-stabilization-master-task-card.md`](forecast-engine-architecture-stabilization-master-task-card.md)。
@@ -60,8 +60,8 @@
 ## Task-note classification
 
 - `CURRENT_AUTHORITY`：本文件。
-- `CHECKPOINT_TASK`：[`post-g6-full-name-unification-master-task-card.md`](post-g6-full-name-unification-master-task-card.md)。
-- `CLOSED_TASK`：[`forecast-engine-test-guardrails-master-task-card.md`](forecast-engine-test-guardrails-master-task-card.md)，TG0-TG7 已关闭；[`full-technical-identity-migration-master-task-card.md`](full-technical-identity-migration-master-task-card.md)，G6-0..G6-7 已关闭。
+- `CHECKPOINT_TASK`：无。
+- `CLOSED_TASK`：[`post-g6-full-name-unification-master-task-card.md`](post-g6-full-name-unification-master-task-card.md)，C1-C4 已关闭；[`forecast-engine-test-guardrails-master-task-card.md`](forecast-engine-test-guardrails-master-task-card.md)，TG0-TG7 已关闭；[`full-technical-identity-migration-master-task-card.md`](full-technical-identity-migration-master-task-card.md)，G6-0..G6-7 已关闭。
 - `PROPOSED_TASK`：[`forecast-engine-architecture-stabilization-master-task-card.md`](forecast-engine-architecture-stabilization-master-task-card.md)，保持 queued，尚未获得 AR1。
 - `SUPERSEDED_HANDOFF`：所有 `*handoff*` 文件；保留 hash、工作区和当时 next-step。
 - `RAW_EVIDENCE`：`phase-12c-aud-0007-*` 和 `phase-12c-audit/*`。
